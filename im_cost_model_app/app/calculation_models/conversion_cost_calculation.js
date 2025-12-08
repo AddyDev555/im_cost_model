@@ -171,25 +171,40 @@ const ConversionCostCalculation = () => {
             {/* Summary / Results Grid */}
             <div>
                 <div className="bg-gray-50 shadow-md rounded p-3 h-50 overflow-auto">
-                    <ConDataTable
-                        columns={[
-                            { accessorKey: 'label', header: 'Label' }, // Empty header for the first column as per original HTML table
-                            { accessorKey: 'inr', header: 'INR/1000' },
-                            { accessorKey: 'eur', header: 'EUR/1000' },
-                            { accessorKey: 'per', header: '% of Total' },
-                        ]}
-                        data={summaryData}
-                    />
-                    <button
-                        className="bg-blue-500 text-white px-3 py-1 rounded"
-                        onClick={() => {
-                            const dataToSave = prepareDataForSave();
-                            console.log("Data ready to save:", dataToSave); // Placeholder for save logic
-                            // send dataToSave to backend POST endpoint
-                        }}
-                    >
-                        Save
-                    </button>
+                    {loading ? (
+                        <div>
+                            {/* Skeleton loader for summary table */}
+                            {Array.from({ length: 13 }).map((_, index) => (
+                                <div key={index} className="grid grid-cols-4 gap-4 items-center py-2.5">
+                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <>
+                            <ConDataTable
+                                columns={[
+                                    { accessorKey: 'label', header: 'Label' },
+                                    { accessorKey: 'inr', header: 'INR/1000' },
+                                    { accessorKey: 'eur', header: 'EUR/1000' },
+                                    { accessorKey: 'per', header: '% of Total' },
+                                ]}
+                                data={summaryData}
+                            />
+                            <button
+                                className="relative bottom-0 left-0 w-full bg-blue-500 text-white font-semibold py-3 rounded-b-lg"
+                                onClick={() => {
+                                    const dataToSave = prepareDataForSave();
+                                    console.log("Data ready to save:", dataToSave);
+                                }}
+                            >
+                                Calculate
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
