@@ -27,9 +27,14 @@ def material_cost_per_piece(
     # Subtotal and total calculations
     subtotal = s1_resin + s1_mb + s1_add + s2_resin + s2_mb + s2_add + regrind
     wastage = subtotal * (waste_rate_pct/100)
-    total_per_piece = subtotal + wastage + label_cost_per_piece # Total Material cost per piece
+    
+    material_cost_inr = subtotal + wastage + label_cost_per_piece
+    material_cost_eur = material_cost_inr / 101.7
+    material_cost_per = material_cost_inr % 100
 
     return (
-        total_per_piece,
-        total_per_piece * 1000
+        s1_resin,
+        s1_mb,
+        s1_add,
+        material_cost * 1000
     )
