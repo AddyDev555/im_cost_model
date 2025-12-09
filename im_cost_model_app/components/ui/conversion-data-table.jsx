@@ -22,7 +22,7 @@ export default function ConDataTable({ columns, data, hideHeader }) {
                 )}
                 <tbody>
                     {data.map((row, rowIndex) => (
-                        <tr key={row.id || `row-${rowIndex}`} className="odd:bg-white even:bg-gray-50">
+                        <tr readOnly key={row.id || `row-${rowIndex}`} className="odd:bg-white even:bg-gray-50">
                             {columns.map((col, colIndex) => (
                                 <td // Combine row and column keys for a unique cell key
                                     key={`${row.id || `row-${rowIndex}`}-${col.accessorKey || `col-${colIndex}`}`}

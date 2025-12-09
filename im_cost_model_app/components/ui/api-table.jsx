@@ -44,7 +44,7 @@ export default function DataTable({ data }) {
                             {visibleKeys.map((key, colIndex) => (
                                 <td
                                     key={`cell-${rowIndex}-${key}`}
-                                    className={`py-2 text-gray-700 
+                                    className={`py-2 px-2 text-gray-700 
                                         ${colIndex === 0 ? "pr-6" : ""}`}
                                 >
                                     {row[key]}

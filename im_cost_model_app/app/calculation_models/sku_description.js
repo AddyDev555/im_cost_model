@@ -6,6 +6,7 @@ import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
 export default function SKUDescription() {
     const [formData, setFormData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [hoveredItem, setHoveredItem] = useState(null);
     const didRun = useRef(false);
 
     const handleDataChange = (e, key) => {
@@ -23,8 +24,9 @@ export default function SKUDescription() {
                 <input
                     type="text"
                     value={row.description}
+                    readOnly
                     onChange={(e) => handleDataChange(e, row.key)}
-                    className="w-full p-1 border rounded" />
+                    className="w-full p-1 border rounded bg-gray-100" />
             )
         },
     ];
@@ -33,13 +35,21 @@ export default function SKUDescription() {
 
     const CustomizedContent = (props) => {
         const { root, depth, x, y, width, height, index, payload, rank, name, value } = props;
+        const isHovered = hoveredItem === name;
+        const isFaded = hoveredItem !== null && !isHovered;
 
         if (width < 20 || height < 20) { // Don't render text for very small nodes
             return null;
         }
 
         return (
-            <g>
+            <g
+                onMouseEnter={() => setHoveredItem(name)}
+                onMouseLeave={() => setHoveredItem(null)}
+                style={{
+                    opacity: isFaded ? 0.2 : 1,
+                    transition: 'opacity 0.2s ease-in-out',
+                }}>
                 <rect
                     x={x}
                     y={y}

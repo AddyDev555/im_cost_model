@@ -4,7 +4,7 @@ import { Plus, Minus } from 'lucide-react';
 import DataTable from '../../components/ui/data-table';
 import ApiDataTable from '../../components/ui/api-table';
 
-export function MaterialCalculator() {
+export default function MaterialCalculator() {
     const [formData, setFormData] = useState({
         //INPUT DATA VARIABLES
         weight_g: '',
@@ -232,7 +232,8 @@ export function MaterialCalculator() {
                                     name="weight_g"
                                     value={formData.weight_g}
                                     onChange={handleInputChange}
-                                    className="w-14 px-2 py-0.5 text-sm border border-gray-300 rounded"
+                                    readOnly
+                                    className="w-14 px-2 bg-gray-100 py-0.5 text-sm border border-gray-300 rounded"
                                 />
                             </div>
                             <div className="col-span-20 sm:col-span-6 flex gap-2 justify-end mt-2 sm:mt-0">
@@ -267,12 +268,12 @@ export function MaterialCalculator() {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
                                 {/* Column 1: Inputs rendered as a DataTable with input boxes */}
                                 <div className="bg-gray-50 border rounded p-3">
-                                    <h3 className='font-bold pb-3'>Material Inputs</h3>
+                                    <h3 className='font-bold pb-3'>Inputs</h3>
                                     {(() => {
                                         const columnsInputs = [
                                             { key: 'label', title: 'Material' },
                                             {
-                                                key: 'ratio', title: 'Percentage', render: (row) => (
+                                                key: 'ratio', title: 'Ratio', render: (row) => (
                                                     <input
                                                         type="number"
                                                         name={row.ratioName}
@@ -345,7 +346,7 @@ export function MaterialCalculator() {
                                 {/* Column 2: Results / Summary using DataTable */}
                                 <div>
                                     <div className="bg-gray-50 border rounded p-3">
-                                        <h3 className='font-bold pb-3'>Material Summary</h3>
+                                        <h3 className='font-bold pb-3'>Summary</h3>
                                         {(() => {
                                             const columns = [
                                             {

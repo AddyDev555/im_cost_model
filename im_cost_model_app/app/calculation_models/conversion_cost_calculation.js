@@ -103,7 +103,7 @@ const ConversionCostCalculation = () => {
                                     finalValue = num.toFixed(2); // Convert to float and format to 2 decimal places
                                 }
                             }
-                            inputs.push({ name: label, value: finalValue });
+                            inputs.push({ name: label, value1: finalValue, value2: '' });
                         }
                     }
 
@@ -126,18 +126,18 @@ const ConversionCostCalculation = () => {
     const handleInputChange = (index, value) => {
         const updatedData = [...inputData];
 
-        // Remove commas and parse float
-        let parsed = value === '' ? '' : parseFloat(String(value).replace(/,/g, ''));
-        parsed = isNaN(parsed) ? '' : parsed;
+        const cleanedValue = String(value).replace(/,/g, '');
+        const parsedValue = cleanedValue === '' ? '' : parseFloat(cleanedValue);
 
-        updatedData[index].value = parsed;
+        updatedData[index].value2 = isNaN(parsedValue) ? '' : parsedValue;
         setInputData(updatedData);
     };
 
     const prepareDataForSave = () => {
         const saveData = {};
         inputData.forEach(item => {
-            let val = item.value;
+            // Use value2 for saving as it contains user edits
+            let val = item.value2;
             // Add % back if field is a percentage and value is not empty
             if (percentageFields.includes(item.name) && val !== '') {
                 val = `${val}%`;
@@ -148,16 +148,17 @@ const ConversionCostCalculation = () => {
     };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 px-2 pt-2 pb-0">
             {/* Inputs Grid */}
             <div className="bg-gray-50 shadow-md rounded p-2 h-50">
-                <div className="rounded overflow-auto p-2 h-full">
+                <div className="rounded overflow-auto h-full">
+                    <h3 className="font-bold pb-3">Inputs</h3>
                     {loading ? (
                         <div>
                             {Array.from({ length: 15 }).map((_, index) => (
                                 <div key={index} className="grid grid-cols-2 gap-4 items-center py-2.5">
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                                    <div className="h-4 bg-gray-200 rounded animate-pulse col-span-1" />
+                                    <div className="h-4 bg-gray-200 rounded animate-pulse col-span-1" />
                                 </div>
                             ))}
                         </div>
@@ -167,7 +168,8 @@ const ConversionCostCalculation = () => {
                         <ConDataTable
                             columns={[
                                 { accessorKey: 'name', header: 'Label' },
-                                { accessorKey: 'value', header: 'Value', cell: ({ row }) => <input type="text" value={row.original.value} onChange={(e) => handleInputChange(row.index, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300 rounded" /> }
+                                { accessorKey: 'value1', header: 'Rate 1', cell: ({ row }) => <input type="text" value={row.original.value1} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" /> },
+                                { accessorKey: 'value2', header: 'Rate 2', cell: ({ row }) => <input type="text" value={row.original.value2} onChange={(e) => handleInputChange(row.index, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" /> }
                             ]}
                             data={inputData}
                         />
@@ -178,6 +180,7 @@ const ConversionCostCalculation = () => {
             {/* Summary / Results Grid */}
             <div>
                 <div className="bg-gray-50 shadow-md rounded p-3 h-50 overflow-auto">
+                    <h3 className="font-bold pb-3">Summary</h3>
                     {loading ? (
                         <div>
                             {/* Skeleton loader for summary table */}
