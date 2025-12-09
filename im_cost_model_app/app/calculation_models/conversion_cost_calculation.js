@@ -55,21 +55,16 @@ const ConversionCostCalculation = () => {
     };
 
     useEffect(() => {
-        const fetchData = async () => {
+        const loadInitialData = () => {
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:8000/api/conversion/get-conversion-cost-inputs');
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-                }
-
-                const responseData = await response.json();
-                if (responseData.success) {
-                    const allData = responseData.data;
+                const storedData = localStorage.getItem('inputsData');
+                if (storedData) {
+                    const allData = JSON.parse(storedData);
                     const inputs = [];
                     const summary = [
-                        { label: "Conversion Cost", key: "conversion_cost" },
+                        // The summary data is derived from the main data object
+                        { label: "Conversion", key: "conversion_cost" },
                         { label: "Electricity", key: "electricity" },
                         { label: "Labour-Direct", key: "labour_direct" },
                         { label: "Labour-Indirect", key: "labour_indirect" },
@@ -82,38 +77,50 @@ const ConversionCostCalculation = () => {
                         { label: "Distribution", key: "distribution" },
                         { label: "Packaging", key: "packgaging" },
                         { label: "Freight", key: "freight" },
-                    ].map(item => ({
-                        label: item.label,
-                        inr: allData[`${item.key}_inr`],
-                        eur: allData[`${item.key}_eur`],
-                        per: allData[`${item.key}_per`],
-                    }));
-
-                    Object.entries(allData).forEach(([key, value]) => {
-                        if (conversionCostLabelMap[key]) {
-                        let val = String(value).trim().replace(/,/g, ''); // remove commas & spaces
-                        const label = conversionCostLabelMap[key] || key;
-                        if (percentageFields.includes(label) && val.endsWith('%')) {
-                            val = val.slice(0, -1);
-                        }
-                        inputs.push({ name: label, value: val });
-                        }
+                    ].map(item => {
+                        const formatValue = (val) => {
+                            const num = parseFloat(val);
+                            return isNaN(num) ? '0.00' : num.toFixed(2);
+                        };
+                        return {
+                            label: item.label,
+                            inr: `₹${formatValue(allData[`${item.key}_inr`])}`,
+                            eur: `€${formatValue(allData[`${item.key}_eur`])}`,
+                            per: `${formatValue(allData[`${item.key}_per`])}%`,
+                        };
                     });
+                    for (const [key, value] of Object.entries(allData)) {
+                        if (conversionCostLabelMap[key]) {
+                            const label = conversionCostLabelMap[key] || key;
+                            let finalValue = ''; // Default to empty string
+
+                            // Clean and parse the value
+                            if (value !== null && value !== undefined && String(value).trim() !== '') {
+                                const cleanedString = String(value).replace(/[% ,]/g, '').trim();
+                                const num = parseFloat(cleanedString);
+
+                                if (!isNaN(num)) {
+                                    finalValue = num.toFixed(2); // Convert to float and format to 2 decimal places
+                                }
+                            }
+                            inputs.push({ name: label, value: finalValue });
+                        }
+                    }
 
                     setInputData(inputs);
                     setSummaryData(summary);
                 } else {
-                    setError(responseData.error || 'Failed to fetch data');
+                    setError('No initial data found in localStorage.');
                 }
             } catch (e) {
-                setError(`An error occurred while fetching data: ${e.message}`);
+                setError(`An error occurred while loading data: ${e.message}`);
                 console.error(e);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
+        loadInitialData();
     }, []);
 
     const handleInputChange = (index, value) => {
@@ -187,14 +194,14 @@ const ConversionCostCalculation = () => {
                         <>
                             <ConDataTable
                                 columns={[
-                                    { accessorKey: 'label', header: 'Label' },
-                                    { accessorKey: 'inr', header: 'INR/1000' },
-                                    { accessorKey: 'eur', header: 'EUR/1000' },
-                                    { accessorKey: 'per', header: '% of Total' },
+                                    { accessorKey: 'label', header: 'Details' },
+                                    { accessorKey: 'inr', header: 'INR/T' },
+                                    { accessorKey: 'eur', header: 'EUR/T' },
+                                    { accessorKey: 'per', header: '%' },
                                 ]}
                                 data={summaryData}
                             />
-                            <button
+                            {/* <button
                                 className="relative bottom-0 left-0 w-full bg-blue-500 text-white font-semibold py-3 rounded-b-lg"
                                 onClick={() => {
                                     const dataToSave = prepareDataForSave();
@@ -202,7 +209,7 @@ const ConversionCostCalculation = () => {
                                 }}
                             >
                                 Calculate
-                            </button>
+                            </button> */}
                         </>
                     )}
                 </div>

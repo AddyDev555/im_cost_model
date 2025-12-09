@@ -2,8 +2,12 @@ from fastapi import APIRouter, Request
 from google_sheets_con import open_google_spreadsheet
 from scrapper.api_call import get_more_price
 from scrapper.scrap import get_html, extract_html_table
+import requests
 
 router = APIRouter()
+
+APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycby6kdGDrFE_Y45Hl-T2kYHkvKlCaMzp3KU5QqY3lXdW-20P-yqWDOyZeQx0ee-_ORzZ/exec"
+APPSCRIPT_URL_POST = "https://script.google.com/macros/s/AKfycbztquh6ZLnSyuEg79lugUr7mHh3YEVsNOG6vZ7H-xvbZZ1cET0kTgbUElPIvmpYzo-jIw/exec"
 
 def build_label_map(sheet, label_col=1):
     """
@@ -167,6 +171,67 @@ async def material_cost_calculator(request: Request):
                 "add_cost": add_inr,
                 "add_cost_eur": add_eur,
                 "add_cost_per": add_per
+            }
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+    
+@router.post("/update-inputs")
+async def update_material_cost_inputs(request: Request):
+    try:
+        # Read JSON body coming from React
+        incoming = await request.json()
+
+        # Send this data to the Google Apps Script as POST
+        res = requests.post(APPSCRIPT_URL_POST, json=incoming)
+        full = res.json()
+
+        # Extract appscript response
+        data = full.get("data", {})
+        
+        print("AppScript Response: ", full)
+
+        return {
+            "success": True,
+            "data": data
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.get("/get-sheet-data")
+def get_sheet_data():
+    try:
+        res = requests.get(APPSCRIPT_URL)
+        full = res.json()
+        data = full.get('data', {})
+
+        print(full)
+        
+        return {
+            "success": True,
+            "data": {
+                "weight_g": data['weight_g'],
+                "shot1_ratio_pct": data['shot_1_ratio_pct'],
+                "shot1_poly_rate": data['shot_1_polymer_rate_inr_per_kg'],
+                "shot1_mb_dosage_pct": data['shot_1_masterbatch_dosage_pct'],
+                "shot1_mb_rate": data['shot_1_masterbatch_rate_inr_per_kg'],
+                "shot1_add_dosage_pct": data['shot_1_additive_dosage_pct'],
+                "shot1_add_rate": data['shot_1_additive_rate'],
+                "material_cost": data['material_cost_inr'],
+                "material_cost_eur": data['material_cost_eur'],
+                "material_cost_per": data['material_cost_per'],
+                "resin_cost": data['resin_inr'],
+                "resin_cost_eur": data['resin_eur'],
+                "resin_cost_per": data['resin_per'],
+                "mb_cost": data['masterbatch_inr'],
+                "mb_cost_eur": data['masterbatch_eur'],
+                "mb_cost_per": data['masterbatch_per'],
+                "add_cost": data['additive_inr'],
+                "add_cost_eur": data['additive_eur'],
+                "add_cost_per": data['additive_per']
             }
         }
 

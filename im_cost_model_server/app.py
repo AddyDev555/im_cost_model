@@ -4,6 +4,7 @@ from routes.material_cost import router as material_cost_calculator
 from fastapi.middleware.cors import CORSMiddleware
 from routes.sku_data import router as sku_data_router
 from routes.conversion_cost import router as conversion_cost_router
+from routes.inputs_data import router as inputs_data_router
 
 app = FastAPI()
 
@@ -21,6 +22,7 @@ app.add_middleware(
 app.include_router(material_cost_calculator, prefix="/api/material", tags=["Material Cost"])
 app.include_router(sku_data_router, prefix="/api/sku", tags=["SKU Data"])
 app.include_router(conversion_cost_router, prefix="/api/conversion", tags=["Conversion Cost"])
+app.include_router(inputs_data_router, prefix="/api/inputs", tags=["Inputs Data"])
 
 # The uvicorn.run() is great for development.
 # For production, consider using a process manager like Gunicorn:

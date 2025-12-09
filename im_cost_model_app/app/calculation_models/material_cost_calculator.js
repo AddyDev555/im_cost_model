@@ -69,42 +69,39 @@ export function MaterialCalculator() {
         if (didRun.current) return;
         didRun.current = true;
 
-        const fetchInitialData = async () => {
+        const loadInitialData = () => {
             setLoadingInputs(true);
             setLoadingSummary(true);
             try {
-                const response = await fetch('http://127.0.0.1:8000/api/material/get-inputs');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const result = await response.json();
+                const storedData = localStorage.getItem('inputsData');
+                if (storedData) {
+                    const data = JSON.parse(storedData);
 
-                if (result.success && result.data) {
                     // Parse string values from backend to numbers
-                    const numericData = Object.entries(result.data).reduce((acc, [key, value]) => {
+                    const numericData = Object.entries(data).reduce((acc, [key, value]) => {
                         if (value === null || value === '') {
                             acc[key] = '';
                         } else {
                             const cleaned = String(value).replace(/,/g, '');
-                            acc[key] = parseFloat(cleaned);
+                            const parsed = parseFloat(cleaned);
+                            acc[key] = isNaN(parsed) ? '' : parsed;
                         }
                         return acc;
                     }, {});
 
                     setFormData(prev => ({ ...prev, ...numericData }));
-
-                    // turn off input loader
-                    setLoadingInputs(false);
-                    setLoadingSummary(false);
+                } else {
+                    console.log("No initial data found in localStorage for Material Calculator.");
                 }
             } catch (error) {
-                console.error("Failed to fetch initial data:", error);
+                console.error("Failed to load initial data from localStorage:", error);
+            } finally {
                 setLoadingInputs(false);
                 setLoadingSummary(false);
             }
         };
 
-        fetchInitialData();
+        loadInitialData();
     }, []);
 
     useEffect(() => {
@@ -142,35 +139,7 @@ export function MaterialCalculator() {
         const numValue = parsed === '' || Number.isNaN(parsed) ? '' : parsed;
 
         setFormData(prev => {
-            const updated = { ...prev, [name]: numValue };
-
-            // If user updated any applicable_rate, update only the corresponding rate field
-            // Mapping rules:
-            // - 'shotN_applicable_rate'           -> 'shotN_poly_rate' (polymer)
-            // - 'shotN_mb_applicable_rate'        -> 'shotN_mb_rate' (masterbatch)
-            // - 'shotN_add_applicable_rate'       -> 'shotN_add_rate' (additive)
-            // - 'regrind_applicable_rate'         -> 'regrind_rate'
-            if (name.includes('_applicable_rate')) {
-                const prefix = name.replace('_applicable_rate', ''); // e.g. 'shot1', 'shot1_mb', 'shot1_add', 'regrind'
-                let rateFieldName = '';
-
-                if (prefix.endsWith('_mb')) {
-                    rateFieldName = `${prefix}_rate`; // shot1_mb_rate
-                } else if (prefix.endsWith('_add')) {
-                    rateFieldName = `${prefix}_rate`; // shot1_add_rate
-                } else if (prefix === 'regrind') {
-                    rateFieldName = 'regrind_rate';
-                } else {
-                    // default -> polymer rate name
-                    rateFieldName = `${prefix}_poly_rate`;
-                }
-
-                if (rateFieldName && rateFieldName in prev) {
-                    updated[rateFieldName] = numValue === '' ? '' : numValue;
-                }
-            }
-
-            return updated;
+            return { ...prev, [name]: numValue };
         });
     };
 
@@ -190,31 +159,34 @@ export function MaterialCalculator() {
             regrind_applicable_rate: '',
         }));
 
-        // 1️⃣ Create final payload with % added only to ratio/dosage fields
-        const finalPayload = Object.entries(formData).reduce((acc, [key, value]) => {
+        // Create a temporary payload for the API, overriding rates with applicable rates where provided.
+        const payload = { ...formData };
+        const rateMap = {
+            'shot1_applicable_rate': 'shot1_poly_rate',
+            'shot1_mb_applicable_rate': 'shot1_mb_rate',
+            'shot1_add_applicable_rate': 'shot1_add_rate',
+            'shot2_applicable_rate': 'shot2_poly_rate',
+            'shot2_mb_applicable_rate': 'shot2_mb_rate',
+            'shot2_add_applicable_rate': 'shot2_add_rate',
+            'regrind_applicable_rate': 'regrind_rate',
+        };
 
-            if (value === '' || value === null) {
-                acc[key] = value;
-            } else {
-                // Add % only for ratio & dosage at submit time
-                if (key.includes("ratio") || key.includes("dosage")) {
-                    acc[key] = `${value}%`;
-                } else {
-                    acc[key] = value;
-                }
+        for (const applicableKey in rateMap) {
+            const rateKey = rateMap[applicableKey];
+            const applicableValue = formData[applicableKey];
+            if (applicableValue !== '' && applicableValue !== null && applicableValue !== undefined) {
+                payload[rateKey] = applicableValue;
             }
-
-            return acc;
-        }, {});
+        }
 
         try {
-            fetch('http://127.0.0.1:8000/api/material/calculator', {
+            fetch('http://127.0.0.1:8000/api/material/update-inputs', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-
-                body: JSON.stringify(finalPayload),
+                // Send the temporary payload with overwritten rates
+                body: JSON.stringify(payload),
             })
                 .then(response => response.json())
                 .then(data => {
@@ -245,7 +217,6 @@ export function MaterialCalculator() {
             console.error('Error:', err);
         }
     };
-
 
     return (
         <div className="w-full px-1">
@@ -296,17 +267,19 @@ export function MaterialCalculator() {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
                                 {/* Column 1: Inputs rendered as a DataTable with input boxes */}
                                 <div className="bg-gray-50 border rounded p-3">
+                                    <h3 className='font-bold pb-3'>Material Inputs</h3>
                                     {(() => {
                                         const columnsInputs = [
                                             { key: 'label', title: 'Material' },
                                             {
-                                                key: 'ratio', title: 'Ratio', render: (row) => (
+                                                key: 'ratio', title: 'Percentage', render: (row) => (
                                                     <input
                                                         type="number"
                                                         name={row.ratioName}
                                                         value={formData[row.ratioName] || ''}
+                                                        readOnly
                                                         onChange={handleInputChange}
-                                                        className="w-full px-2 py-0.5 text-sm border border-gray-300"
+                                                        className="w-full px-2 py-0.5 text-sm border border-gray-300 bg-gray-100"
                                                     />
                                                 )
                                             },
@@ -372,12 +345,29 @@ export function MaterialCalculator() {
                                 {/* Column 2: Results / Summary using DataTable */}
                                 <div>
                                     <div className="bg-gray-50 border rounded p-3">
+                                        <h3 className='font-bold pb-3'>Material Summary</h3>
                                         {(() => {
                                             const columns = [
-                                                { key: "label", title: "Material" },
-                                                { key: "inr", title: "INR/1000" },
-                                                { key: "eur", title: "EUR/1000" },
-                                                { key: "pct", title: "% of Total" },
+                                            {
+                                                key: "label",
+                                                title: "Material",
+                                                render: (row) => <div className={row.label === 'Total' ? 'font-bold' : ''}>{row.label}</div>
+                                            },
+                                            {
+                                                key: "inr",
+                                                title: "INR/T",
+                                                render: (row) => <div className={row.label === 'Total' ? 'font-bold' : ''}>{row.inr}</div>
+                                            },
+                                            {
+                                                key: "eur",
+                                                title: "EUR/T",
+                                                render: (row) => <div className={row.label === 'Total' ? 'font-bold' : ''}>{row.eur}</div>
+                                            },
+                                            {
+                                                key: "pct",
+                                                title: "%",
+                                                render: (row) => <div className={row.label === 'Total' ? 'font-bold' : ''}>{row.pct}</div>
+                                            },
                                             ];
 
                                             const rows = [
@@ -430,8 +420,9 @@ export function MaterialCalculator() {
 
                                 {/* Column 3: Empty placeholder for future content */}
                                 <div>
-                                    <div className="bg-gray-50 border rounded p-3 h-full flex items-center justify-center text-sm text-gray-400">
+                                    <div className="bg-gray-50 border rounded p-3 h-full items-center justify-center text-sm text-gray-400">
                                         {/* Placeholder - empty for now */}
+                                        <h3 className='font-bold pb-3 text-black'>Polymer Prices</h3>
                                         <ApiDataTable data={ppRate} />
                                     </div>
                                 </div>

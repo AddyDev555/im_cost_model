@@ -1,8 +1,8 @@
 import requests
 
 def fetch_google_sheet_appscript():
-    url = "https://script.google.com/macros/s/AKfycbytVO9G4jqaSAIhlpvau48T-btRYpA2I5k6UcsZEg1qYo0PriZZaUhDtiWOq1bygVESxA/exec"
-    response = requests.get(url)
+    APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycby6kdGDrFE_Y45Hl-T2kYHkvKlCaMzp3KU5QqY3lXdW-20P-yqWDOyZeQx0ee-_ORzZ/exec"
+    response = requests.get(APPSCRIPT_URL)
     
     if response.status_code == 200:
         return response.json()

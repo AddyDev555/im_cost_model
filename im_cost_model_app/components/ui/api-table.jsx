@@ -19,7 +19,7 @@ export default function DataTable({ data }) {
     }
 
     // Only show these specific keys
-    const visibleKeys = ["Grade", "Price", "Company", "State"];
+    const visibleKeys = ["Grade", "Date", "Price", "Company", "State"];
 
     return (
         <div className="w-full overflow-auto h-42">
@@ -30,7 +30,7 @@ export default function DataTable({ data }) {
                             <th
                                 key={`header-${key}`}
                                 className={`text-left text-xs text-gray-500 pb-2 border-b 
-                                    ${idx === 0 ? "pr-2" : ""}`}
+                                    ${idx === 0 ? "" : ""}`}
                             >
                                 {key}
                             </th>

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DataTable from '../../components/ui/data-table';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function SKUDescription() {
     const [formData, setFormData] = useState(null);
@@ -29,19 +29,32 @@ export default function SKUDescription() {
         },
     ];
 
-    const machineInfoColumns = [
-        { key: "label", title: "Mould Info" },
-        {
-            key: "description", title: "Description",
-            render: (row) => (
-                <input
-                    type="text"
-                    value={row.description}
-                    onChange={(e) => handleDataChange(e, row.key)}
-                    className="w-full p-1 border rounded" />
-            )
-        },
-    ];
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DD0', '#FF69B4', '#7D3C98'];
+
+    const CustomizedContent = (props) => {
+        const { root, depth, x, y, width, height, index, payload, rank, name, value } = props;
+
+        if (width < 20 || height < 20) { // Don't render text for very small nodes
+            return null;
+        }
+
+        return (
+            <g>
+                <rect
+                    x={x}
+                    y={y}
+                    width={width}
+                    height={height}
+                    style={{
+                        fill: COLORS[index % COLORS.length],
+                        stroke: '#fff',
+                        strokeWidth: 2,
+                    }} />
+                <text x={x + width / 2} y={y + height / 2 + 18} textAnchor="middle" fill="#fff" fontSize={12} fontWeight="bold">{name}</text>
+                <text x={x + width / 2} y={y + height / 2} textAnchor="middle" fill="#fff" fontSize={20}>{`${value.toFixed(2)}%`}</text>
+            </g>
+        );
+    };
 
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
@@ -77,26 +90,30 @@ export default function SKUDescription() {
     useEffect(() => {
         if (didRun.current) return; // prevent second call
         didRun.current = true;
-        const fetchData = async () => {
+        const loadInitialData = () => {
             setLoading(true);
             try {
-                const skuRes = await fetch('http://127.0.0.1:8000/api/sku/get-sku-inputs');
-                if (!skuRes.ok) throw new Error(`SKU fetch failed: HTTP ${skuRes.status}`);
-                const skuResult = await skuRes.json();
-                setFormData(skuResult.data || {});
-            } catch (err) {
-                console.error('Failed to fetch data:', err);
-                setFormData({}); // Set to empty object on error to avoid render issues
+                const storedData = localStorage.getItem('inputsData');
+                if (storedData) {
+                    const data = JSON.parse(storedData);
+                    setFormData(data || {});
+                } else {
+                    console.log("No initial data found in localStorage for SKU Description.");
+                    setFormData({}); // Set to empty to avoid render issues
+                }
+            } catch (error) {
+                console.error("Failed to load initial data from localStorage:", error);
+                setFormData({});
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchData();
+        loadInitialData();
     }, []);
 
-    const { skuData, machineData, summaryData } = useMemo(() => {
-        if (!formData) return { skuData: [], machineData: [], summaryData: [] };
+    const { skuData, summaryData, summaryTableData } = useMemo(() => {
+        if (!formData) return { skuData: [], summaryData: [], summaryTableData: [] };
 
         const parseVal = (v) => (v === null || v === undefined) ? '' : String(v);
 
@@ -110,64 +127,88 @@ export default function SKUDescription() {
             { label: 'Annual Volume', key: 'annual_volume' },
         ];
 
-        const machineRowsMap = [
-            { label: 'Mould Cavitation', key: 'mould_cavitation' },
-            { label: 'Mould Cycle Time', key: 'mould_cycle_time' },
-            { label: 'Machine Model Tonnage', key: 'machine_model_tonnage' },
-            { label: 'Setups Per Year', key: 'no_of_setups_per_year' },
-            { label: 'Ramp-ups Per Year', key: 'no_of_ramp_ups_per_year' },
-        ];
-
         const summaryKeys = [
-            'conversion_cost_per', 'freight_cost_per', 'margin_cost_per',
-            'material_cost_per', 'packaging_cost_per'
+            'material_cost_per', 'conversion_cost_per', 'margin_cost_per',
+            'packaging_cost_per', 'freight_cost_per'
         ];
 
         const skuData = skuRowsMap.map(r => ({ ...r, description: parseVal(formData[r.key]) }));
-        const machineData = machineRowsMap.map(r => ({ ...r, description: parseVal(formData[r.key]) }));
 
         const summaryData = summaryKeys
             .map(key => ({
-                name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                name: key.replace('_cost_per', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                 value: parseFloat(formData[key]) || 0
             }))
             .filter(item => item.value > 0);
 
-        return { skuData, machineData, summaryData };
+        const summaryTableData = summaryKeys.map(key => {
+            const baseName = key.replace('_cost_per', '');
+            const value = parseFloat(formData[key]) || 0;
+            const inrValue = parseFloat(formData[`${baseName}_cost_inr`]) || 0;
+            const eurValue = parseFloat(formData[`${baseName}_cost_eur`]) || 0;
+            // The 'value' is already a percentage from the backend. We just need to format it.
+            const costRatio = value.toFixed(2);
+
+            return {
+                name: key.replace('_cost_per', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                value,
+                cost_ratio: `${costRatio}%`,
+                inr_value: `₹${inrValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                eur_value: `€${eurValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            };
+        }).filter(item => item.value > 0);
+
+        // Add Total row if data is available
+        if (formData.total_inr !== undefined && formData.total_eur !== undefined && formData.total_per !== undefined) {
+            const totalInr = parseFloat(formData.total_inr) || 0;
+            const totalEur = parseFloat(formData.total_eur) || 0;
+            const totalPer = parseFloat(formData.total_per) || 0;
+
+            summaryTableData.push({
+                name: 'Total',
+                value: totalPer,
+                cost_ratio: `${totalPer.toFixed(2)}%`,
+                inr_value: `₹${totalInr.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+                eur_value: `€${totalEur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            });
+        }
+
+        return { skuData, summaryData, summaryTableData };
     }, [formData]);
 
-    const updateAllInputs = async () => {
-        try {
-            setLoading(true);
+    const summaryColumns = [
+        {
+            key: "name",
+            title: "Details",
+            render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.name}</div>
+        },
+        {
+            key: "inr_value",
+            title: "INR/T",
+            render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.inr_value}</div>
+        },
+        {
+            key: "eur_value",
+            title: "EUR/T",
+            render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.eur_value}</div>
+        },
+        {
+            key: "cost_ratio",
+            title: "%",
+            render: (row) => (
+                <div className={`${row.name === 'Total' ? 'font-bold' : ''}`}>
+                    {row.cost_ratio}
+                </div>
+            )
+        },
+    ];
 
-            const res = await fetch("http://127.0.0.1:8000/api/sku/update-sku-inputs", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
-            });
-
-            if (!res.ok) throw new Error(`Update failed: HTTP ${res.status}`);
-
-            const updated = await res.json();
-
-            if (updated.success) {
-                setFormData(updated.data);
-            } else {
-                throw new Error(updated.message || "An unknown error occurred during update.");
-            }
-
-        } catch (error) {
-            console.error("Update failed:", error);
-            // Optionally, show an error to the user
-        } finally {
-            setLoading(false);
-        }
-    };
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full pt-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full pt-2">
             {/* SKU Data */}
-            <div className="overflow-auto border rounded shadow h-50 p-3 flex flex-col">
+            <div className="overflow-auto border bg-gray-50 rounded shadow h-66.5 p-3 flex flex-col">
+                <h3 className="pb-2 font-bold">SKU Descriptions</h3>
                 {loading ? (
                     <div>
                         {[0, 1, 2, 3, 4].map(i => (
@@ -182,62 +223,39 @@ export default function SKUDescription() {
                 )}
             </div>
 
-            {/* Machine Data */}
-            <div className="overflow-auto border rounded shadow h-50 p-3 flex flex-col">
+            {/* Summary Table */}
+            <div className="overflow-auto border rounded bg-gray-50 shadow h-66.5 p-3 flex flex-col">
+                {/* <h3 className="pb-2 font-bold">Summary</h3> */}
                 {loading ? (
                     <div>
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className="grid grid-cols-12 gap-2 items-center py-1">
-                                <div className="col-span-5 h-4 bg-gray-200 rounded animate-pulse" />
-                                <div className="col-span-7 h-4 bg-gray-200 rounded animate-pulse" />
+                                <div className="col-span-3 h-4 bg-gray-200 rounded animate-pulse" />
+                                <div className="col-span-9 h-4 bg-gray-200 rounded animate-pulse" />
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <DataTable columns={machineInfoColumns} data={machineData} />
-                )}
-                {!loading && (
-                    <button
-                        onClick={updateAllInputs}
-                        className="mt-4 px-4 py-2 bg-violet-500 text-white cursor-pointer rounded hover:bg-violet-600 disabled:bg-gray-400"
-                    >
-                        Update
-                    </button>
+                    <DataTable columns={summaryColumns} data={summaryTableData} />
                 )}
             </div>
 
             {/* Pie Chart */}
-            <div className="overflow-hidden border rounded shadow h-50 p-3 flex flex-col">
-                <h3 className="text-sm font-semibold">Cost Breakdown</h3>
+            <div className="overflow-hidden border rounded shadow h-66.5 flex flex-col">
                 {loading ? (
-                    <div className="flex items-center justify-center w-full h-full">
-                        <div className="w-24 h-24 bg-gray-200 rounded-full animate-pulse" />
-                    </div>
+                    <div className="w-full h-full bg-gray-200 rounded animate-pulse" />
                 ) : (
                     summaryData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height={250} className="relative bottom-12">
-                            <PieChart>
-                                <Pie
-                                    data={summaryData}
-                                    dataKey="value"
-                                    nameKey="name"
-                                    cx="50%"
-                                    cy="50%"
-                                    outerRadius={80}
-                                    innerRadius={40}
-                                    fill="#8884d8"
-                                    labelLine={false}
-                                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
-                                >
-                                    {summaryData.map((entry, index) => (
-                                        <Cell
-                                            key={`cell-${index}`}
-                                            fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DD0'][index % 5]}
-                                        />
-                                    ))}
-                                </Pie>
+                        <ResponsiveContainer width="100%" height={280}>
+                            <Treemap
+                                data={summaryData}
+                                dataKey="value"
+                                nameKey="name"
+                                ratio={4 / 3}
+                                isAnimationActive={false} // Recommended for treemaps to avoid confusing transitions
+                                content={<CustomizedContent />}>
                                 <Tooltip content={<CustomTooltip />} />
-                            </PieChart>
+                            </Treemap>
                         </ResponsiveContainer>
                     ) : (
                         <div className="text-sm text-gray-500">No summary data to display</div>

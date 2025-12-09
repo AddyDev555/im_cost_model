@@ -1,7 +1,10 @@
 from fastapi import APIRouter, Request
 from google_sheets_con import open_google_spreadsheet
+import requests
 
 router = APIRouter()
+
+APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycby6kdGDrFE_Y45Hl-T2kYHkvKlCaMzp3KU5QqY3lXdW-20P-yqWDOyZeQx0ee-_ORzZ/exec"
 
 # ---------------- UTILITY FUNCTIONS ----------------
 def build_label_map(sheet, label_col=1):
@@ -64,6 +67,51 @@ async def get_sku_data_inputs():
             data[label.lower().replace(" ", "_") + "_cost_per"] = get_value(sum_map, summary_sheet, label, 4)
 
         return {"success": True, "data": data}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@router.get("/get-sheet-data")
+async def get_sku_sheet_data():
+    try:
+        res = requests.get(APPSCRIPT_URL)
+        full = res.json()
+        data = full.get('data', {})
+
+        print(full)
+        
+        return {
+            "success": True,
+            "data": {
+                "sku_desc": data.get("sku_description"),
+                "sku_code": data.get("sku_code"),
+                "sku_country": data.get("country"),
+                "sku_currency": data.get("currency"),
+                "sku_supplier": data.get("supplier"),
+                "annual_volume": data.get("annual_volume_pcs"),
+                "mould_cavitation": data.get("mould_cavitation_nos"),
+                "mould_cycle_time": data.get("mould_cycle_time_secs"),
+                "machine_model_tonnage": data.get("machine_model_&_tonnage"),
+                "no_of_setups_per_year": data.get("no_of_set_up_/_year_nos"),
+                "no_of_ramp_ups_per_year": data.get("no_of_ramp_ups/year_nos"),
+                "material_cost_inr": data.get("material_cost_inr"),
+                "material_cost_eur": data.get("material_cost_eur"),
+                "material_cost_per": data.get("material_cost_per"),
+                "conversion_cost_inr": data.get("conversion_cost_inr"),
+                "conversion_cost_eur": data.get("conversion_cost_eur"),
+                "conversion_cost_per": data.get("conversion_cost_per"),
+                "margin_cost_inr": data.get("margin_inr"),
+                "margin_cost_eur": data.get("margin_eur"),
+                "margin_cost_per": data.get("margin_per"),
+                "packaging_cost_inr": data.get("packaging_inr"),
+                "packaging_cost_eur": data.get("packaging_eur"),
+                "packaging_cost_per": data.get("packaging_per"),
+                "freight_cost_inr": data.get("freight_inr"),
+                "freight_cost_eur": data.get("freight_eur"),
+                "freight_cost_per": data.get("freight_per")
+            }
+        }
 
     except Exception as e:
         return {"error": str(e)}

@@ -1,4 +1,5 @@
-import React from 'react'
+'use client';
+import React, { useEffect } from 'react'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { MaterialCalculator } from './calculation_models/material_cost_calculator';
 import SKUDescription from './calculation_models/sku_description';
@@ -6,10 +7,44 @@ import ConversionCostCalculation from './calculation_models/conversion_cost_calc
 import { Plus } from 'lucide-react';
 
 export default function page() {
+
+  useEffect(() => {
+    const fetchAndStoreInputsData = async () => {
+      console.log('Fetching new data from backend...');
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/inputs/get-inputs-data');
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          localStorage.setItem('inputsData', JSON.stringify(result.data));
+          localStorage.setItem('inputsDataTimestamp', new Date().getTime().toString());
+          console.log('Inputs data has been successfully fetched and stored in localStorage.');
+        } else {
+          console.error('Failed to get data from backend:', result.error || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('An error occurred while fetching inputs data:', error);
+      }
+    };
+
+    const storedDataTimestamp = localStorage.getItem('inputsDataTimestamp');
+    const oneDay = 24 * 60 * 60 * 1000; // 1 day in milliseconds
+
+    if (storedDataTimestamp && (new Date().getTime() - parseInt(storedDataTimestamp, 10) < oneDay)) {
+      console.log('Using cached data from localStorage as it is less than 1 day old.');
+    } else {
+      fetchAndStoreInputsData();
+    }
+  }, []);
+
   return (
     <div>
       {/* <h1 className="text-3xl font-semibold px-4 py-2">IM Cost Model</h1> */}
-
       <div className="px-4">
         <Accordion type="single" collapsible>
           <AccordionItem value="item-1">
