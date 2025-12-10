@@ -3,14 +3,13 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import DataTable from '../../components/ui/data-table';
 import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
 
-export default function SKUDescription() {
-    const [formData, setFormData] = useState(null);
+export default function SKUDescription({ allFormData, setAllFormData }) {
     const [loading, setLoading] = useState(true);
     const [hoveredItem, setHoveredItem] = useState(null);
     const didRun = useRef(false);
 
     const handleDataChange = (e, key) => {
-        setFormData(prev => ({
+        setAllFormData(prev => ({
             ...prev,
             [key]: e.target.value
         }));
@@ -23,7 +22,7 @@ export default function SKUDescription() {
             render: (row) => (
                 <input
                     type="text"
-                    value={row.description}
+                    value={allFormData[row.key] || ""}
                     readOnly
                     onChange={(e) => handleDataChange(e, row.key)}
                     className="w-full p-1 border rounded bg-gray-100" />
@@ -34,32 +33,20 @@ export default function SKUDescription() {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DD0', '#FF69B4', '#7D3C98'];
 
     const CustomizedContent = (props) => {
-        const { root, depth, x, y, width, height, index, payload, rank, name, value } = props;
+        const { x, y, width, height, index, name, value } = props;
         const isHovered = hoveredItem === name;
         const isFaded = hoveredItem !== null && !isHovered;
 
-        if (width < 20 || height < 20) { // Don't render text for very small nodes
-            return null;
-        }
+        if (width < 20 || height < 20) return null;
 
         return (
             <g
                 onMouseEnter={() => setHoveredItem(name)}
                 onMouseLeave={() => setHoveredItem(null)}
-                style={{
-                    opacity: isFaded ? 0.2 : 1,
-                    transition: 'opacity 0.2s ease-in-out',
-                }}>
+                style={{ opacity: isFaded ? 0.2 : 1, transition: 'opacity 0.2s ease-in-out' }}>
                 <rect
-                    x={x}
-                    y={y}
-                    width={width}
-                    height={height}
-                    style={{
-                        fill: COLORS[index % COLORS.length],
-                        stroke: '#fff',
-                        strokeWidth: 2,
-                    }} />
+                    x={x} y={y} width={width} height={height}
+                    style={{ fill: COLORS[index % COLORS.length], stroke: '#fff', strokeWidth: 2 }} />
                 <text x={x + width / 2} y={y + height / 2 + 18} textAnchor="middle" fill="#fff" fontSize={12} fontWeight="bold">{name}</text>
                 <text x={x + width / 2} y={y + height / 2} textAnchor="middle" fill="#fff" fontSize={20}>{`${value.toFixed(2)}%`}</text>
             </g>
@@ -71,8 +58,8 @@ export default function SKUDescription() {
             const data = payload[0].payload;
             const value = data.value;
             const name = data.name;
-            const conversionRates = { 'USD': { 'INR': 90.02, 'EUR': 0.8589 } }; // This could be dynamic
-            const baseCurrency = formData?.sku_currency?.toUpperCase() || 'USD';
+            const conversionRates = { 'USD': { 'INR': 90.02, 'EUR': 0.8589 } };
+            const baseCurrency = allFormData?.sku_currency?.toUpperCase() || 'USD';
             const rates = conversionRates[baseCurrency];
 
             let inrValue, eurValue;
@@ -98,32 +85,13 @@ export default function SKUDescription() {
     };
 
     useEffect(() => {
-        if (didRun.current) return; // prevent second call
+        if (didRun.current) return;
         didRun.current = true;
-        const loadInitialData = () => {
-            setLoading(true);
-            try {
-                const storedData = localStorage.getItem('inputsData');
-                if (storedData) {
-                    const data = JSON.parse(storedData);
-                    setFormData(data || {});
-                } else {
-                    console.log("No initial data found in localStorage for SKU Description.");
-                    setFormData({}); // Set to empty to avoid render issues
-                }
-            } catch (error) {
-                console.error("Failed to load initial data from localStorage:", error);
-                setFormData({});
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadInitialData();
+        setLoading(false); // We rely on parent allFormData; initial cache is already loaded
     }, []);
 
     const { skuData, summaryData, summaryTableData } = useMemo(() => {
-        if (!formData) return { skuData: [], summaryData: [], summaryTableData: [] };
+        if (!allFormData) return { skuData: [], summaryData: [], summaryTableData: [] };
 
         const parseVal = (v) => (v === null || v === undefined) ? '' : String(v);
 
@@ -142,21 +110,20 @@ export default function SKUDescription() {
             'packaging_cost_per', 'freight_cost_per'
         ];
 
-        const skuData = skuRowsMap.map(r => ({ ...r, description: parseVal(formData[r.key]) }));
+        const skuData = skuRowsMap.map(r => ({ ...r, description: parseVal(allFormData[r.key]) }));
 
         const summaryData = summaryKeys
             .map(key => ({
                 name: key.replace('_cost_per', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                value: parseFloat(formData[key]) || 0
+                value: parseFloat(allFormData[key]) || 0
             }))
             .filter(item => item.value > 0);
 
         const summaryTableData = summaryKeys.map(key => {
             const baseName = key.replace('_cost_per', '');
-            const value = parseFloat(formData[key]) || 0;
-            const inrValue = parseFloat(formData[`${baseName}_cost_inr`]) || 0;
-            const eurValue = parseFloat(formData[`${baseName}_cost_eur`]) || 0;
-            // The 'value' is already a percentage from the backend. We just need to format it.
+            const value = parseFloat(allFormData[key]) || 0;
+            const inrValue = parseFloat(allFormData[`${baseName}_cost_inr`]) || 0;
+            const eurValue = parseFloat(allFormData[`${baseName}_cost_eur`]) || 0;
             const costRatio = value.toFixed(2);
 
             return {
@@ -168,11 +135,10 @@ export default function SKUDescription() {
             };
         }).filter(item => item.value > 0);
 
-        // Add Total row if data is available
-        if (formData.total_inr !== undefined && formData.total_eur !== undefined && formData.total_per !== undefined) {
-            const totalInr = parseFloat(formData.total_inr) || 0;
-            const totalEur = parseFloat(formData.total_eur) || 0;
-            const totalPer = parseFloat(formData.total_per) || 0;
+        if (allFormData.total_inr !== undefined && allFormData.total_eur !== undefined && allFormData.total_per !== undefined) {
+            const totalInr = parseFloat(allFormData.total_inr) || 0;
+            const totalEur = parseFloat(allFormData.total_eur) || 0;
+            const totalPer = parseFloat(allFormData.total_per) || 0;
 
             summaryTableData.push({
                 name: 'Total',
@@ -184,35 +150,14 @@ export default function SKUDescription() {
         }
 
         return { skuData, summaryData, summaryTableData };
-    }, [formData]);
+    }, [allFormData]);
 
     const summaryColumns = [
-        {
-            key: "name",
-            title: "Details",
-            render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.name}</div>
-        },
-        {
-            key: "inr_value",
-            title: "INR/T",
-            render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.inr_value}</div>
-        },
-        {
-            key: "eur_value",
-            title: "EUR/T",
-            render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.eur_value}</div>
-        },
-        {
-            key: "cost_ratio",
-            title: "%",
-            render: (row) => (
-                <div className={`${row.name === 'Total' ? 'font-bold' : ''}`}>
-                    {row.cost_ratio}
-                </div>
-            )
-        },
+        { key: "name", title: "Details", render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.name}</div> },
+        { key: "inr_value", title: "INR/T", render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.inr_value}</div> },
+        { key: "eur_value", title: "EUR/T", render: (row) => <div className={row.name === 'Total' ? 'font-bold' : ''}>{row.eur_value}</div> },
+        { key: "cost_ratio", title: "%", render: (row) => <div className={`${row.name === 'Total' ? 'font-bold' : ''}`}>{row.cost_ratio}</div> },
     ];
-
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 w-full pt-2">
@@ -235,7 +180,6 @@ export default function SKUDescription() {
 
             {/* Summary Table */}
             <div className="overflow-auto border rounded bg-gray-50 shadow h-66.5 p-3 flex flex-col">
-                {/* <h3 className="pb-2 font-bold">Summary</h3> */}
                 {loading ? (
                     <div>
                         {[0, 1, 2, 3].map(i => (
@@ -262,8 +206,9 @@ export default function SKUDescription() {
                                 dataKey="value"
                                 nameKey="name"
                                 ratio={4 / 3}
-                                isAnimationActive={false} // Recommended for treemaps to avoid confusing transitions
-                                content={<CustomizedContent />}>
+                                isAnimationActive={false}
+                                content={<CustomizedContent />}
+                            >
                                 <Tooltip content={<CustomTooltip />} />
                             </Treemap>
                         </ResponsiveContainer>

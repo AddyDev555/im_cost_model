@@ -1,9 +1,12 @@
 from fastapi import APIRouter
 import requests
+import os
+from dotenv import load_dotenv
 
 router = APIRouter()
+load_dotenv()
 
-APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycby6kdGDrFE_Y45Hl-T2kYHkvKlCaMzp3KU5QqY3lXdW-20P-yqWDOyZeQx0ee-_ORzZ/exec"
+APPSCRIPT_URL = os.getenv("APPSCRIPT_GS_URL")
 
 @router.get("/get-inputs-data")
 async def get_inputs_data():
@@ -21,7 +24,7 @@ async def get_inputs_data():
             except (ValueError, TypeError):
                 return value
 
-        print(full)
+        # print(full)
         
         return {
             "success": True,

@@ -2,9 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ConDataTable from '../../components/ui/conversion-data-table';
 
-const ConversionCostCalculation = () => {
-    const [inputData, setInputData] = useState([]);
-    const [summaryData, setSummaryData] = useState([]);
+const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -55,97 +53,73 @@ const ConversionCostCalculation = () => {
     };
 
     useEffect(() => {
-        const loadInitialData = () => {
-            setLoading(true);
-            try {
-                const storedData = localStorage.getItem('inputsData');
-                if (storedData) {
-                    const allData = JSON.parse(storedData);
-                    const inputs = [];
-                    const summary = [
-                        // The summary data is derived from the main data object
-                        { label: "Conversion", key: "conversion_cost" },
-                        { label: "Electricity", key: "electricity" },
-                        { label: "Labour-Direct", key: "labour_direct" },
-                        { label: "Labour-Indirect", key: "labour_indirect" },
-                        { label: "Repair & Maintenance", key: "repair_maintenance" },
-                        { label: "Other Overheads", key: "overheads" },
-                        { label: "Lease", key: "lease_cost" },
-                        { label: "Depreciation", key: "depreciation" },
-                        { label: "Interest", key: "interest" },
-                        { label: "Margin", key: "margin" },
-                        { label: "Distribution", key: "distribution" },
-                        { label: "Packaging", key: "packgaging" },
-                        { label: "Freight", key: "freight" },
-                    ].map(item => {
-                        const formatValue = (val) => {
-                            const num = parseFloat(val);
-                            return isNaN(num) ? '0.00' : num.toFixed(2);
-                        };
-                        return {
-                            label: item.label,
-                            inr: `₹${formatValue(allData[`${item.key}_inr`])}`,
-                            eur: `€${formatValue(allData[`${item.key}_eur`])}`,
-                            per: `${formatValue(allData[`${item.key}_per`])}%`,
-                        };
-                    });
-                    for (const [key, value] of Object.entries(allData)) {
-                        if (conversionCostLabelMap[key]) {
-                            const label = conversionCostLabelMap[key] || key;
-                            let finalValue = ''; // Default to empty string
+        // If data already exists in allFormData, loading can be set to false immediately
+        if (allFormData && Object.keys(allFormData).length > 0) {
+            setLoading(false);
+        }
+    }, [allFormData]);
 
-                            // Clean and parse the value
-                            if (value !== null && value !== undefined && String(value).trim() !== '') {
-                                const cleanedString = String(value).replace(/[% ,]/g, '').trim();
-                                const num = parseFloat(cleanedString);
-
-                                if (!isNaN(num)) {
-                                    finalValue = num.toFixed(2); // Convert to float and format to 2 decimal places
-                                }
-                            }
-                            inputs.push({ name: label, value1: finalValue, value2: '' });
-                        }
-                    }
-
-                    setInputData(inputs);
-                    setSummaryData(summary);
-                } else {
-                    setError('No initial data found in localStorage.');
-                }
-            } catch (e) {
-                setError(`An error occurred while loading data: ${e.message}`);
-                console.error(e);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        loadInitialData();
-    }, []);
-
-    const handleInputChange = (index, value) => {
-        const updatedData = [...inputData];
-
+    const handleInputChange = (label, value) => {
         const cleanedValue = String(value).replace(/,/g, '');
         const parsedValue = cleanedValue === '' ? '' : parseFloat(cleanedValue);
 
-        updatedData[index].value2 = isNaN(parsedValue) ? '' : parsedValue;
-        setInputData(updatedData);
+        setAllFormData(prev => ({
+            ...prev,
+            [label]: isNaN(parsedValue) ? '' : parsedValue
+        }));
     };
 
     const prepareDataForSave = () => {
         const saveData = {};
-        inputData.forEach(item => {
-            // Use value2 for saving as it contains user edits
-            let val = item.value2;
-            // Add % back if field is a percentage and value is not empty
-            if (percentageFields.includes(item.name) && val !== '') {
+        for (const [key, value] of Object.entries(allFormData)) {
+            let val = value;
+            if (percentageFields.includes(key) && val !== '') {
                 val = `${val}%`;
             }
-            saveData[item.name] = val;
-        });
+            saveData[key] = val;
+        }
         return saveData;
     };
+
+    // Generate input table data from allFormData
+    const inputTableData = Object.entries(allFormData || {}).map(([key, value]) => {
+        if (!conversionCostLabelMap[key]) return null;
+        return {
+            name: conversionCostLabelMap[key],
+            value1: typeof value === 'number' ? value.toFixed(2) : value,
+            value2: typeof value === 'number' ? value.toFixed(2) : value
+        };
+    }).filter(Boolean);
+
+    // Generate summary table data from allFormData
+    const summaryKeys = [
+        { label: "Conversion", key: "conversion_cost" },
+        { label: "Electricity", key: "electricity" },
+        { label: "Labour-Direct", key: "labour_direct" },
+        { label: "Labour-Indirect", key: "labour_indirect" },
+        { label: "Repair & Maintenance", key: "repair_maintenance" },
+        { label: "Other Overheads", key: "overheads" },
+        { label: "Lease", key: "lease_cost" },
+        { label: "Depreciation", key: "depreciation" },
+        { label: "Interest", key: "interest" },
+        { label: "Margin", key: "margin" },
+        { label: "Distribution", key: "distribution" },
+        { label: "Packaging", key: "packgaging" },
+        { label: "Freight", key: "freight" },
+    ];
+
+    const summaryTableData = summaryKeys.map(item => {
+        const formatValue = (val) => {
+            const num = parseFloat(val);
+            return isNaN(num) ? '0.00' : num.toFixed(2);
+        };
+        return {
+            label: item.label,
+            inr: `₹${formatValue(allFormData[`${item.key}_inr`])}`,
+            eur: `€${formatValue(allFormData[`${item.key}_eur`])}`,
+            per: `${formatValue(allFormData[`${item.key}_per`])}%`,
+        };
+    });
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2 px-2 pt-2 pb-0">
@@ -168,22 +142,21 @@ const ConversionCostCalculation = () => {
                         <ConDataTable
                             columns={[
                                 { accessorKey: 'name', header: 'Label' },
-                                { accessorKey: 'value1', header: 'Rate 1', cell: ({ row }) => <input type="text" value={row.original.value1} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" /> },
-                                { accessorKey: 'value2', header: 'Rate 2', cell: ({ row }) => <input type="text" value={row.original.value2} onChange={(e) => handleInputChange(row.index, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" /> }
+                                { accessorKey: 'value1', header: 'Rate 1', cell: ({ row }) => <input type="text" value={row.original.value1 ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" /> },
+                                { accessorKey: 'value2', header: 'Rate 2', cell: ({ row }) => <input type="text" onChange={(e) => handleInputChange(row.original.name, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" /> }
                             ]}
-                            data={inputData}
+                            data={inputTableData}
                         />
                     )}
                 </div>
             </div>
 
-            {/* Summary / Results Grid */}
+            {/* Summary Grid */}
             <div>
                 <div className="bg-gray-50 shadow-md rounded p-3 h-50 overflow-auto">
                     <h3 className="font-bold pb-3">Summary</h3>
                     {loading ? (
                         <div>
-                            {/* Skeleton loader for summary table */}
                             {Array.from({ length: 13 }).map((_, index) => (
                                 <div key={index} className="grid grid-cols-4 gap-4 items-center py-2.5">
                                     <div className="h-4 bg-gray-200 rounded animate-pulse" />
@@ -194,31 +167,20 @@ const ConversionCostCalculation = () => {
                             ))}
                         </div>
                     ) : (
-                        <>
-                            <ConDataTable
-                                columns={[
-                                    { accessorKey: 'label', header: 'Details' },
-                                    { accessorKey: 'inr', header: 'INR/T' },
-                                    { accessorKey: 'eur', header: 'EUR/T' },
-                                    { accessorKey: 'per', header: '%' },
-                                ]}
-                                data={summaryData}
-                            />
-                            {/* <button
-                                className="relative bottom-0 left-0 w-full bg-blue-500 text-white font-semibold py-3 rounded-b-lg"
-                                onClick={() => {
-                                    const dataToSave = prepareDataForSave();
-                                    console.log("Data ready to save:", dataToSave);
-                                }}
-                            >
-                                Calculate
-                            </button> */}
-                        </>
+                        <ConDataTable
+                            columns={[
+                                { accessorKey: 'label', header: 'Details' },
+                                { accessorKey: 'inr', header: 'INR/T' },
+                                { accessorKey: 'eur', header: 'EUR/T' },
+                                { accessorKey: 'per', header: '%' },
+                            ]}
+                            data={summaryTableData}
+                        />
                     )}
                 </div>
             </div>
 
-            {/* API Request Data from 3rd Party App Grid */}
+            {/* API Data Grid */}
             <div>
                 <div className="bg-white shadow-md rounded-lg p-5 h-full">
                     <h2 className="text-sm font-semibold mb-4">API Request Data from 3rd Party App</h2>

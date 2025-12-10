@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import DataTable from "../../components/ui/data-table";
 
-export default function MaterialCostCalculation() {
+export default function MaterialCostCalculation({allFormData, setAllFormData}) {
     const [rows, setRows] = useState([]);
 
     // Keys you want to display

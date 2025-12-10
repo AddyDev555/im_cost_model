@@ -3,11 +3,14 @@ from google_sheets_con import open_google_spreadsheet
 from scrapper.api_call import get_more_price
 from scrapper.scrap import get_html, extract_html_table
 import requests
+from dotenv import load_dotenv
+import os
 
 router = APIRouter()
+load_dotenv()
 
-APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycby6kdGDrFE_Y45Hl-T2kYHkvKlCaMzp3KU5QqY3lXdW-20P-yqWDOyZeQx0ee-_ORzZ/exec"
-APPSCRIPT_URL_POST = "https://script.google.com/macros/s/AKfycbztquh6ZLnSyuEg79lugUr7mHh3YEVsNOG6vZ7H-xvbZZ1cET0kTgbUElPIvmpYzo-jIw/exec"
+APPSCRIPT_URL = os.getenv("APPSCRIPT_GS_URL")
+APPSCRIPT_URL_POST = os.getenv("APPSCRIPT_GS_URL")
 
 def build_label_map(sheet, label_col=1):
     """
