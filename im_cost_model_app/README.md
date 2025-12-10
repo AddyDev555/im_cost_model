@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 # Windows & macOS
 Go to the official Node.js download page:
-👉 https://nodejs.org
+👉 https://nodejs.org/en/download
 
 Download the LTS version (recommended for most users).
 
