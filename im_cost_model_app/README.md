@@ -1,8 +1,6 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Setup of IM Cost Model Web App
 
-## Installation of Node
-
-# Windows & macOS
+## Windows & macOS
 Go to the official Node.js download page:
 👉 https://nodejs.org/en/download
 
@@ -14,34 +12,33 @@ Run the installer:
 3) Keep all default settings
 4) After installation, check your version: 
 
-# Linux
+## Linux
 
 ```bash
 sudo apt update
 sudo apt install nodejs npm
 ```
 
-# Check versions:
+## Check versions:
 ```bash
 node -v
 
 npm -v
 ```
 
-# Go to the project directory 
+## Go to the project directory 
 ```bash
 cd im_cost_model_app
 ```
 
-# Now, Install node modules:
+## Now, Install node modules:
 ```bash
 npm install
 ```
 
-# Second, run the development server
+## Second, run the development server
 ```bash
 npm run dev
 ```
-
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
