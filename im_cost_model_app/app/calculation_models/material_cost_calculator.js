@@ -5,9 +5,8 @@ import DataTable from '../../components/ui/data-table';
 import ApiDataTable from '../../components/ui/api-table';
 import { api } from "@/utils/api";
 
-export default function MaterialCalculator({ allFormData, setAllFormData }) {
+export default function MaterialCalculator({ allFormData, setAllFormData, loadingSummary}) {
     const [showShot2, setShowShot2] = useState(false);
-    const [loadingSummary, setLoadingSummary] = useState(false);
     const [ppRate, setPpRate] = useState([]);
     const [ppColumns, setPpColumns] = useState([]);
 
@@ -39,68 +38,6 @@ export default function MaterialCalculator({ allFormData, setAllFormData }) {
         setAllFormData(prev => ({ ...prev, [name]: numValue }));
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setLoadingSummary(true);
-
-        // Clear applicable_rate inputs
-        setAllFormData(prev => ({
-            ...prev,
-            shot1_applicable_rate: '',
-            shot1_mb_applicable_rate: '',
-            shot1_add_applicable_rate: '',
-            shot2_applicable_rate: '',
-            shot2_mb_applicable_rate: '',
-            shot2_add_applicable_rate: '',
-            regrind_applicable_rate: '',
-        }));
-
-        const payload = { ...allFormData };
-        const rateMap = {
-            'shot1_applicable_rate': 'shot1_poly_rate',
-            'shot1_mb_applicable_rate': 'shot1_mb_rate',
-            'shot1_add_applicable_rate': 'shot1_add_rate',
-            'shot2_applicable_rate': 'shot2_poly_rate',
-            'shot2_mb_applicable_rate': 'shot2_mb_rate',
-            'shot2_add_applicable_rate': 'shot2_add_rate',
-            'regrind_applicable_rate': 'regrind_rate',
-        };
-
-        for (const applicableKey in rateMap) {
-            const rateKey = rateMap[applicableKey];
-            const applicableValue = allFormData[applicableKey];
-            if (applicableValue !== '' && applicableValue !== null && applicableValue !== undefined) {
-                payload[rateKey] = applicableValue;
-            }
-        }
-
-        fetch('http://127.0.0.1:8000/api/updates/update-inputs', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data) {
-                    const numericData = Object.entries(data.data).reduce((acc, [key, value]) => {
-                        if (value === '' || value === null) {
-                            acc[key] = '';
-                        } else {
-                            const cleaned = String(value).replace(/,/g, '');
-                            acc[key] = parseFloat(cleaned);
-                        }
-                        return acc;
-                    }, {});
-                    setAllFormData(prev => ({ ...prev, ...numericData }));
-                    setLoadingSummary(false);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                setLoadingSummary(false);
-            });
-    };
-
     return (
         <div className="w-full px-1">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -118,14 +55,6 @@ export default function MaterialCalculator({ allFormData, setAllFormData }) {
                                     readOnly
                                     className="w-14 px-2 bg-gray-100 py-0.5 text-sm border border-gray-300 rounded"
                                 />
-                            </div>
-                            <div className="col-span-20 sm:col-span-6 flex gap-2 justify-end mt-2 sm:mt-0">
-                                <button
-                                    type="submit"
-                                    className="px-3 py-1 bg-violet-600 text-white rounded-md cursor-pointer font-medium transition-colors text-sm"
-                                >
-                                    Calculate
-                                </button>
                             </div>
                         </div>
                     </div>

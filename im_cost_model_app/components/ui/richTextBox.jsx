@@ -20,10 +20,22 @@ import {
 
 export default function SlateEditor() {
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    const [initialValue] = useState([
-        { type: 'paragraph', children: [{ text: '' }] }
-    ]);
+    
+    // Load initial value from localStorage or use a default.
+    const initialValue = useMemo(() => {
+        if (typeof window !== 'undefined') {
+            const savedNotes = localStorage.getItem('slate-notes');
+            try {
+                return savedNotes ? JSON.parse(savedNotes) : [{ type: 'paragraph', children: [{ text: '' }] }];
+            } catch (error) {
+                console.error("Error parsing notes from localStorage:", error);
+            }
+        }
+        return [{ type: 'paragraph', children: [{ text: '' }] }];
+    }, []);
 
+    const [value, setValue] = useState(initialValue);
+    
     const renderLeaf = useCallback(props => <Leaf {...props} />, []);
 
     // Helpers
@@ -85,16 +97,57 @@ export default function SlateEditor() {
 
     const renderElement = useCallback(props => <Element {...props} />, []);
 
+    const onKeyDown = useCallback(event => {
+        if (!event.ctrlKey) {
+            return;
+        }
+
+        // The user wants Ctrl+Shift+Z for redo, which is common on Windows.
+        if (event.shiftKey && event.key.toLowerCase() === 'z') {
+            event.preventDefault();
+            editor.redo();
+            return;
+        }
+
+        switch (event.key.toLowerCase()) {
+            case 'z':
+                event.preventDefault();
+                editor.undo();
+                break;
+            case 'b':
+                event.preventDefault();
+                toggleMark(editor, 'bold');
+                break;
+            case 'i':
+                event.preventDefault();
+                toggleMark(editor, 'italic');
+                break;
+            case 'u':
+                event.preventDefault();
+                toggleMark(editor, 'underline');
+                break;
+        }
+    }, [editor]);
+
     return (
         <div className="border rounded shadow-md">
             {/* In newer versions, `value` is for uncontrolled and `initialValue` for controlled components.
-                However, for simplicity and to fix the error, we use initialValue and let slate manage internal state updates.
-                If you need to lift the state up, you'd use a controlled component with `value` and `onChange`. */}
-            <Slate editor={editor} initialValue={initialValue} onChange={() => {}}>
+                We are now using a controlled component to manage saving to localStorage. */}
+            <Slate
+                editor={editor}
+                initialValue={value}
+                onChange={newValue => {
+                    setValue(newValue);
+                    // Save the new value to localStorage.
+                    const content = JSON.stringify(newValue);
+                    localStorage.setItem('slate-notes', content);
+                }}
+            >
                 <Toolbar toggleMark={toggleMark} isMarkActive={isMarkActive} toggleBlock={toggleBlock} isBlockActive={isBlockActive} />
                 <Editable
                     renderLeaf={renderLeaf}
                     renderElement={renderElement}
+                    onKeyDown={onKeyDown}
                     placeholder="Add you Note…"
                     className="min-h-[150px] p-2 outline-none"
                 />
