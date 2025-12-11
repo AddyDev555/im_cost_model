@@ -15,10 +15,12 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
 
                 <div className="mb-4 page-break-after">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">Summary</h2>
-                    <Summary
-                        allFormData={allFormData}
-                        setAllFormData={setAllFormData}
-                    />
+                    <div className="w-full">
+                        <Summary
+                            allFormData={allFormData}
+                            setAllFormData={setAllFormData}
+                        />
+                    </div>
                 </div>
 
                 <div className="mb-4 page-break-after">

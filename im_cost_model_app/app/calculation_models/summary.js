@@ -26,7 +26,7 @@ export default function Summary({ allFormData, setAllFormData }) {
                     x={x} y={y} width={width} height={height}
                     style={{ fill: COLORS[index % COLORS.length], stroke: '#fff', strokeWidth: 2 }} />
                 <text x={x + width / 2} y={y + height / 2 + 18} textAnchor="middle" fill="#fff" fontSize={12} fontWeight="bold">{name}</text>
-                <text x={x + width / 2} y={y + height / 2} textAnchor="middle" fill="#fff" fontSize={20}>{`${value.toFixed(0)}%`}</text>
+                <text x={x + width / 2} y={y + height / 2} textAnchor="middle" fill="#fff" fontSize={15}>{`${value.toFixed(0)}%`}</text>
             </g>
         );
     };
@@ -34,26 +34,17 @@ export default function Summary({ allFormData, setAllFormData }) {
     const CustomTooltip = ({ active, payload }) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
-            const value = data.value;
             const name = data.name;
-            const conversionRates = { 'USD': { 'INR': 90.02, 'EUR': 0.8589 } };
-            const baseCurrency = allFormData?.sku_currency?.toUpperCase() || 'USD';
-            const rates = conversionRates[baseCurrency];
-
-            let inrValue, eurValue;
-            if (rates) {
-                inrValue = value * rates['INR'];
-                eurValue = value * rates['EUR'];
-            }
+            const inrValue = data.inr_value || 0;
+            // const eurValue = data.eur_value || 0;
 
             return (
                 <div className="bg-white p-2 border border-gray-300 rounded shadow-lg">
                     <p className="font-bold">{name}</p>
-                    <p>{`Cost: ${value.toLocaleString()} ${baseCurrency}`}</p>
-                    {rates && (
+                    {inrValue > 0 && (
                         <>
                             <p>{`Cost in INR: ₹${inrValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p>
-                            <p>{`Cost in EUR: €${eurValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p>
+                            {/* <p>{`Cost in EUR: €${eurValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</p> */}
                         </>
                     )}
                 </div>
@@ -77,10 +68,15 @@ export default function Summary({ allFormData, setAllFormData }) {
         ];
 
         const summaryData = summaryKeys
-            .map(key => ({
-                name: key.replace('_cost_per', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                value: parseFloat(allFormData[key]) || 0
-            }))
+            .map(key => {
+                const baseName = key.replace('_cost_per', '');
+                return {
+                    name: baseName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    value: parseFloat(allFormData[key]) || 0,
+                    inr_value: parseFloat(allFormData[`${baseName}_cost_inr`]) || 0,
+                    eur_value: parseFloat(allFormData[`${baseName}_cost_eur`]) || 0,
+                };
+            })
             .filter(item => item.value > 0);
 
         const summaryTableData = summaryKeys.map(key => {
@@ -160,7 +156,9 @@ export default function Summary({ allFormData, setAllFormData }) {
             .filter(item => item.name !== "Total") // Optional: skip Total in graph
             .map(item => ({
                 name: item.name,
-                value: parseFloat(item.per_value) || 0
+                value: parseFloat(item.per_value) || 0,
+                inr_value: parseFloat(String(item.inr_value).replace(/[^0-9.-]+/g,"")) || 0,
+                eur_value: parseFloat(String(item.eur_value).replace(/[^0-9.-]+/g,"")) || 0,
             }))
             .filter(item => item.value > 0);
     }, [processDataTable]);
@@ -192,18 +190,20 @@ export default function Summary({ allFormData, setAllFormData }) {
                     <div className="w-full h-full bg-gray-200 rounded animate-pulse" />
                 ) : (
                     summaryData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <Treemap
-                                data={summaryData}
-                                dataKey="value"
-                                nameKey="name"
-                                ratio={4 / 3}
-                                isAnimationActive={false}
-                                content={<CustomizedContent />}
-                            >
-                                <Tooltip content={<CustomTooltip />} />
-                            </Treemap>
-                        </ResponsiveContainer>
+                        <div className="w-full h-full print:w-[400px] print:h-[280px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <Treemap
+                                    data={summaryData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    ratio={4 / 3}
+                                    isAnimationActive={false}
+                                    content={<CustomizedContent />}
+                                >
+                                    <Tooltip content={<CustomTooltip />} />
+                                </Treemap>
+                            </ResponsiveContainer>
+                        </div>
                     ) : (
                         <div className="text-sm text-gray-500">No summary data to display</div>
                     )
@@ -233,18 +233,20 @@ export default function Summary({ allFormData, setAllFormData }) {
                     <div className="w-full h-full bg-gray-200 rounded animate-pulse" />
                 ) : (
                     processGraphData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                            <Treemap
-                                data={processGraphData}
-                                dataKey="value"
-                                nameKey="name"
-                                ratio={4 / 3}
-                                isAnimationActive={false}
-                                content={<CustomizedContent />}
-                            >
-                                <Tooltip content={<CustomTooltip />} />
-                            </Treemap>
-                        </ResponsiveContainer>
+                        <div className="w-full h-full print:w-[400px] print:h-[280px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <Treemap
+                                    data={processGraphData}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    ratio={4 / 3}
+                                    isAnimationActive={false}
+                                    content={<CustomizedContent />}
+                                >
+                                    <Tooltip content={<CustomTooltip />} />
+                                </Treemap>
+                            </ResponsiveContainer>
+                        </div>
                     ) : (
                         <div className="text-sm text-gray-500">No processing data</div>
                     )

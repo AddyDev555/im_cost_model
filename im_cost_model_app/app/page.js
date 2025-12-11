@@ -8,8 +8,12 @@ import ConversionCostCalculation from './calculation_models/conversion_cost_calc
 import MachineCostCalculation from './calculation_models/machine_cost_calculation';
 import SlateEditor from '../components/ui/richTextBox';
 import PDFDownload from './calculation_models/pdf_download';
-import { NotebookPen, Download, FileText} from 'lucide-react';
+import { NotebookPen, Download, FileText } from 'lucide-react';
 import { api } from "@/utils/api";
+
+// Remove these static imports:
+// import domtoimage from "dom-to-image-more";
+// import jsPDF from "jspdf";
 
 export default function page() {
   const [allFormData, setAllFormData] = useState({});
@@ -112,7 +116,7 @@ export default function page() {
       shot2_add_applicable_rate: '',
       regrind_applicable_rate: '',
     }));
-    
+
     // Clear all `_rate2` fields for ConversionCostCalculation
     setAllFormData(prev => {
       const newState = { ...prev };
@@ -173,19 +177,43 @@ export default function page() {
       });
   };
 
+  // Modified downloadPdf function with dynamic imports
+  const downloadPdf = async () => {
+    try {
+      // Dynamically import the libraries only when needed
+      const domtoimage = (await import("dom-to-image-more")).default;
+      const jsPDF = (await import("jspdf")).default;
+      
+      const element = document.getElementById("pdf-content");
+
+      const dataUrl = await domtoimage.toPng(element);
+      const pdf = new jsPDF("p", "mm", "a4");
+      pdf.addImage(dataUrl, "PNG", 0, 0, 210, 297);
+      pdf.save("report.pdf");
+    } catch (err) {
+      console.error("Error generating PDF:", err);
+    }
+  };
+
+
   return (
     <div>
       <div className="px-4 print:hidden">
-        <div className="flex items-center justify-between w-full px-4 py-2 bg-white shadow-sm rounded-md">
+        <div className="flex flex-col md:flex-row items-center justify-between w-full px-4 py-2 bg-white shadow-sm rounded-md">
           <div className="flex items-center gap-2">
             {/* <img src="./logo-tej-teams.png" alt="logo" className="w-6 h-6" />
             <h2 className="text-xl font-semibold tracking-tight">
               Tej Teams
             </h2> */}
+
+            <SkuDescription
+                allFormData={allFormData}
+                setAllFormData={setAllFormData}
+              />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mt-6">
             <button
               type="button"
               onClick={handleReset}
@@ -219,7 +247,7 @@ export default function page() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-2">
+          {/* <AccordionItem value="item-2">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
               SKU Description
             </AccordionTrigger>
@@ -229,7 +257,7 @@ export default function page() {
                 setAllFormData={setAllFormData}
               />
             </AccordionContent>
-          </AccordionItem>
+          </AccordionItem> */}
 
           <AccordionItem value="item-3">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
@@ -272,11 +300,13 @@ export default function page() {
       </div>
 
       {/* Hidden container for PDF/Print */}
-      <PDFDownload
-        allFormData={allFormData}
-        setAllFormData={setAllFormData}
-        loadingSummary={loadingSummary}
-      />
+      <div id="pdf-content">
+        <PDFDownload
+          allFormData={allFormData}
+          setAllFormData={setAllFormData}
+          loadingSummary={loadingSummary}
+        />
+      </div>
 
       {/* Floating Notes Editor */}
       {isNotesVisible && (
@@ -286,16 +316,16 @@ export default function page() {
       )}
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-8 right-8 z-50 flex items-center gap-2">
+      <div className="fixed bottom-8 right-8 z-50 flex items-center gap-2 print:hidden">
         <button
-          onClick={() => window.print()}
-          className="cursor-pointer px-4 py-2 border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors"
+          onClick={()=>window.print()}
+          className="cursor-pointer px-4 py-2 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors"
           aria-label="Download PDF"
         >
           {/* <Download className="w-5 h-5" /> */}
           <div className="flex align-center">
             <p className="pr-2">Save pdf</p>
-            <FileText/>
+            <FileText />
           </div>
         </button>
         <button
