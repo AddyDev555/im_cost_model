@@ -129,10 +129,10 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData, loadingSummary
     });
 
     return (
-        <div className="grid grid-cols-1 shadow-lg border md:grid-cols-3 gap-2 px-2 py-2">
+        <div className="grid grid-cols-1 shadow-lg border md:grid-cols-2 gap-2 px-2 py-2">
             {/* Inputs Grid */}
-            <div className="bg-gray-50 shadow-md p-2 h-50">
-                <div className="overflow-auto h-full">
+            <div className="bg-gray-50 shadow-md p-2 h-50 print:h-auto">
+                <div className="overflow-auto print:overflow-visible h-full">
                     <h3 className="font-bold pb-3">Inputs</h3>
                     {loading ? (
                         <div>
@@ -188,7 +188,7 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData, loadingSummary
 
             {/* Summary Grid */}
             <div>
-                <div className="bg-gray-50 shadow-md p-3 h-50 overflow-auto">
+                <div className="bg-gray-50 shadow-md p-3 h-50 overflow-auto print:h-auto print:overflow-visible">
                     <h3 className="font-bold pb-3">Summary</h3>
                     {loadingSummary ? (
                         <div>
@@ -228,11 +228,11 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData, loadingSummary
             </div>
 
             {/* API Data Grid */}
-            <div>
+            {/* <div>
                 <div className="bg-white shadow-md p-5 h-full">
                     <h2 className="text-sm font-semibold mb-4">API Request Data from 3rd Party App</h2>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

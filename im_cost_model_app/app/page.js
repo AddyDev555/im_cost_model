@@ -200,7 +200,7 @@ export default function page() {
     <div>
       <div className="px-4 print:hidden">
         <div className="flex flex-col md:flex-row items-center justify-between w-full px-4 py-2 bg-white shadow-sm rounded-md">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pt-2">
             {/* <img src="./logo-tej-teams.png" alt="logo" className="w-6 h-6" />
             <h2 className="text-xl font-semibold tracking-tight">
               Tej Teams

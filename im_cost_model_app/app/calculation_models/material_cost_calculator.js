@@ -79,7 +79,7 @@ export default function MaterialCalculator({ allFormData, setAllFormData, loadin
 
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
                                 {/* Column 1: Inputs rendered as a DataTable with input boxes */}
-                                <div className="bg-gray-50 border rounded p-3">
+                                <div className="bg-gray-50 border rounded p-3 overflow-auto print:overflow-visible print:h-auto">
                                     <h3 className='font-bold pb-3'>Inputs</h3>
                                     {(() => {
                                         const columnsInputs = [
@@ -156,7 +156,7 @@ export default function MaterialCalculator({ allFormData, setAllFormData, loadin
 
                                 {/* Column 2: Results / Summary using DataTable */}
                                 <div>
-                                    <div className="bg-gray-50 border rounded p-3">
+                                    <div className="bg-gray-50 border rounded p-3 overflow-auto print:overflow-visible print:h-auto">
                                         <h3 className='font-bold pb-3'>Summary</h3>
                                         {(() => {
                                             const columns = [
@@ -232,7 +232,7 @@ export default function MaterialCalculator({ allFormData, setAllFormData, loadin
 
                                 {/* Column 3: Empty placeholder for future content */}
                                 <div>
-                                    <div className="bg-gray-50 border rounded p-3 h-full items-center justify-center text-sm text-gray-400">
+                                    <div className="bg-gray-50 border rounded p-3 h-full items-center justify-center text-sm text-gray-400 overflow-auto print:overflow-visible print:h-auto">
                                         {/* Placeholder - empty for now */}
                                         <h3 className='font-bold pb-3 text-black'>Polymer Prices</h3>
                                         <ApiDataTable data={ppRate} />

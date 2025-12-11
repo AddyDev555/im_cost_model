@@ -190,9 +190,27 @@ export default function Summary({ allFormData, setAllFormData }) {
                     <div className="w-full h-full bg-gray-200 rounded animate-pulse" />
                 ) : (
                     summaryData.length > 0 ? (
-                        <div className="w-full h-full print:w-[400px] print:h-[280px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <Treemap
+                        <>
+                            {/* Chart for Screen View (Responsive) */}
+                            <div className="w-full h-full print:hidden">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <Treemap
+                                        data={summaryData}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        ratio={4 / 3}
+                                        isAnimationActive={false}
+                                        content={<CustomizedContent />}
+                                    >
+                                        <Tooltip content={<CustomTooltip />} />
+                                    </Treemap>
+                                </ResponsiveContainer>
+                            </div>
+                            {/* Chart for Print View (Fixed Size) */}
+                            <div className="hidden print:block">
+                                <Treemap                                 
+                                    width={700}
+                                    height={280}
                                     data={summaryData}
                                     dataKey="value"
                                     nameKey="name"
@@ -202,8 +220,8 @@ export default function Summary({ allFormData, setAllFormData }) {
                                 >
                                     <Tooltip content={<CustomTooltip />} />
                                 </Treemap>
-                            </ResponsiveContainer>
-                        </div>
+                            </div>
+                        </>
                     ) : (
                         <div className="text-sm text-gray-500">No summary data to display</div>
                     )
@@ -233,9 +251,27 @@ export default function Summary({ allFormData, setAllFormData }) {
                     <div className="w-full h-full bg-gray-200 rounded animate-pulse" />
                 ) : (
                     processGraphData.length > 0 ? (
-                        <div className="w-full h-full print:w-[400px] print:h-[280px]">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <Treemap
+                        <>
+                            {/* Chart for Screen View (Responsive) */}
+                            <div className="w-full h-full print:hidden">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <Treemap
+                                        data={processGraphData}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        ratio={4 / 3}
+                                        isAnimationActive={false}
+                                        content={<CustomizedContent />}
+                                    >
+                                        <Tooltip content={<CustomTooltip />} />
+                                    </Treemap>
+                                </ResponsiveContainer>
+                            </div>
+                            {/* Chart for Print View (Fixed Size) */}
+                            <div className="hidden print:block">
+                                <Treemap                                  
+                                    width={700}
+                                    height={280}
                                     data={processGraphData}
                                     dataKey="value"
                                     nameKey="name"
@@ -245,8 +281,8 @@ export default function Summary({ allFormData, setAllFormData }) {
                                 >
                                     <Tooltip content={<CustomTooltip />} />
                                 </Treemap>
-                            </ResponsiveContainer>
-                        </div>
+                            </div>
+                        </>
                     ) : (
                         <div className="text-sm text-gray-500">No processing data</div>
                     )

@@ -56,7 +56,7 @@ export default function MachineCostCalculation({allFormData, setAllFormData}) {
     }, [loading]); // Only re-calculate when loading is finished.
 
     return (
-        <div className="grid grid-cols-1 border shadow-lg md:grid-cols-3 gap-2 p-2">
+        <div className="grid grid-cols-1 border shadow-lg md:grid-cols-1 gap-2 p-2">
             {/* Inputs Grid */}
             <div className="bg-gray-50 shadow-md p-2 h-57">
                 <div className="rounded overflow-auto h-full">
@@ -73,22 +73,6 @@ export default function MachineCostCalculation({allFormData, setAllFormData}) {
                             data={initialInputData}
                         />
                     )}
-                </div>
-            </div>
-
-            {/* Summary / Results Grid */}
-            <div>
-                <div className="bg-gray-50 shadow-md p-3 h-57 overflow-auto">
-                    <h3 className="font-bold pb-3">Summary</h3>
-                    {/* Summary content will go here */}
-                </div>
-            </div>
-
-            {/* API Request Data from 3rd Party App Grid */}
-            <div>
-                <div className="bg-white shadow-md p-5 h-full">
-                    <h2 className="text-sm font-semibold mb-4">API Request Data from 3rd Party App</h2>
-                    {/* 3rd party app data content will go here */}
                 </div>
             </div>
         </div>
