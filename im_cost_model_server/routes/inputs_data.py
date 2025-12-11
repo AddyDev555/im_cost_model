@@ -24,7 +24,7 @@ async def get_inputs_data():
             except (ValueError, TypeError):
                 return value
 
-        # print(full)
+        print(full)
         
         return {
             "success": True,
@@ -147,7 +147,19 @@ async def get_inputs_data():
                 'freight_per': to_percentage(data.get("freight_per")),
                 'total_inr': data.get("total_inr"),
                 "total_eur": data.get("total_eur"),
-                "total_per": to_percentage(data.get("total_per"))
+                "total_per": to_percentage(data.get("total_per")),
+                "feedstock_inr": data.get("feedstock_inr"),
+                "feedstock_eur": data.get("feedstock_eur"),
+                "feedstock_per": to_percentage(data.get("feedstock_per")),
+                "injection_inr": data.get("injection_inr"),
+                "injection_eur": data.get("injection_eur"),
+                "injection_per": to_percentage(data.get("injection_per")),
+                "dispatch_inr": data.get("dispatch_inr"),
+                "dispatch_eur": data.get("dispatch_eur"),
+                "dispatch_per": to_percentage(data.get("dispatch_per")),
+                "assembly_inr": data.get("assembly_inr") or 0,
+                "assembly_eur": data.get("assembly_eur") or 0,
+                "assembly_per": to_percentage(data.get("assembly_per")) or 0,
             }
         }
 

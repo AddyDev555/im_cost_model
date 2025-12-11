@@ -2,12 +2,13 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import MaterialCalculator from './calculation_models/material_cost_calculator';
-import SKUDescription from './calculation_models/sku_description';
+import Summary from './calculation_models/summary';
+import SkuDescription from './calculation_models/sku_description';
 import ConversionCostCalculation from './calculation_models/conversion_cost_calculation';
 import MachineCostCalculation from './calculation_models/machine_cost_calculation';
 import SlateEditor from '../components/ui/richTextBox';
-
-import { NotebookPen } from 'lucide-react';
+import PDFDownload from './calculation_models/pdf_download';
+import { NotebookPen, Download, FileText} from 'lucide-react';
 import { api } from "@/utils/api";
 
 export default function page() {
@@ -111,6 +112,20 @@ export default function page() {
       shot2_add_applicable_rate: '',
       regrind_applicable_rate: '',
     }));
+    
+    // Clear all `_rate2` fields for ConversionCostCalculation
+    setAllFormData(prev => {
+      const newState = { ...prev };
+      for (const key in newState) {
+        if (key.endsWith('_rate2')) {
+          newState[key] = '';
+        }
+      }
+      // Also clear rate2 fields for MachineCostCalculation
+      newState['mould_cavitation_rate2'] = '';
+      newState['mould_cycle_time_rate2'] = '';
+      return newState;
+    });
 
     const payload = { ...allFormData };
     const rateMap = {
@@ -160,7 +175,7 @@ export default function page() {
 
   return (
     <div>
-      <div className="px-4">
+      <div className="px-4 print:hidden">
         <div className="flex items-center justify-between w-full px-4 py-2 bg-white shadow-sm rounded-md">
           <div className="flex items-center gap-2">
             {/* <img src="./logo-tej-teams.png" alt="logo" className="w-6 h-6" />
@@ -194,10 +209,10 @@ export default function page() {
         <Accordion type="single" collapsible>
           <AccordionItem value="item-1">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              SKU Description
+              Summary
             </AccordionTrigger>
             <AccordionContent>
-              <SKUDescription
+              <Summary
                 allFormData={allFormData}
                 setAllFormData={setAllFormData}
               />
@@ -206,7 +221,19 @@ export default function page() {
 
           <AccordionItem value="item-2">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              Material Cost Model
+              SKU Description
+            </AccordionTrigger>
+            <AccordionContent>
+              <SkuDescription
+                allFormData={allFormData}
+                setAllFormData={setAllFormData}
+              />
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="item-3">
+            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
+              Material Cost
             </AccordionTrigger>
             <AccordionContent>
               <MaterialCalculator
@@ -217,21 +244,22 @@ export default function page() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-3">
+          <AccordionItem value="item-4">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              Conversion Cost Model
+              Conversion Cost
             </AccordionTrigger>
             <AccordionContent>
               <ConversionCostCalculation
                 allFormData={allFormData}
                 setAllFormData={setAllFormData}
+                loadingSummary={loadingSummary}
               />
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-4">
+          <AccordionItem value="item-5">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              Machine Cost Model
+              Machine Cost
             </AccordionTrigger>
             <AccordionContent>
               <MachineCostCalculation
@@ -243,6 +271,13 @@ export default function page() {
         </Accordion>
       </div>
 
+      {/* Hidden container for PDF/Print */}
+      <PDFDownload
+        allFormData={allFormData}
+        setAllFormData={setAllFormData}
+        loadingSummary={loadingSummary}
+      />
+
       {/* Floating Notes Editor */}
       {isNotesVisible && (
         <div ref={notesEditorRef} className="fixed bottom-20 right-8 z-50">
@@ -250,15 +285,28 @@ export default function page() {
         </div>
       )}
 
-      {/* Floating Action Button to toggle notes */}
-      <button
-        ref={notesButtonRef}
-        onClick={() => setIsNotesVisible(!isNotesVisible)}
-        className="fixed bottom-8 right-8 z-50 w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors"
-        aria-label="Toggle notes editor"
-      >
-        <NotebookPen className="w-5 h-5" />
-      </button>
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-8 right-8 z-50 flex items-center gap-2">
+        <button
+          onClick={() => window.print()}
+          className="cursor-pointer px-4 py-2 border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors"
+          aria-label="Download PDF"
+        >
+          {/* <Download className="w-5 h-5" /> */}
+          <div className="flex align-center">
+            <p className="pr-2">Save pdf</p>
+            <FileText/>
+          </div>
+        </button>
+        <button
+          ref={notesButtonRef}
+          onClick={() => setIsNotesVisible(!isNotesVisible)}
+          className="cursor-pointer w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors"
+          aria-label="Toggle notes editor"
+        >
+          <NotebookPen className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
 

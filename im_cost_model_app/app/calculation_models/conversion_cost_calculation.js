@@ -1,8 +1,8 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ConDataTable from '../../components/ui/conversion-data-table';
 
-const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
+const ConversionCostCalculation = ({ allFormData, setAllFormData, loadingSummary }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -10,11 +10,11 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
         "Interest on Long Term Loan",
         "Interest on Working Capital",
         "Depreciation on Plant Machinery",
-        "margin",
-        "Efficiency",
+        "Margin",
         "Repair & Maintenance",
         "Other Overheads",
-        "Depreciation on Building"
+        "Depreciation on Building",
+        "Efficiency"
     ];
 
     const conversionCostLabelMap = {
@@ -59,41 +59,48 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
         }
     }, [allFormData]);
 
-    const handleInputChange = (label, value) => {
+    const handleInputChange = (key, value) => {
         const cleanedValue = String(value).replace(/,/g, '');
         const parsedValue = cleanedValue === '' ? '' : parseFloat(cleanedValue);
-
+        const finalValue = isNaN(parsedValue) ? '' : parsedValue;
+ 
         setAllFormData(prev => ({
             ...prev,
-            [label]: isNaN(parsedValue) ? '' : parsedValue
+            // Store the new value in a separate key for the 'rate2' input
+            [`${key}_rate2`]: finalValue,
+            // If the new value is a valid number, overwrite the original rate value
+            // This will be used in calculations but not displayed in the 'rate1' input.
+            ...(finalValue !== '' && { [key]: finalValue })
         }));
     };
 
-    const prepareDataForSave = () => {
-        const saveData = {};
-        for (const [key, value] of Object.entries(allFormData)) {
-            let val = value;
-            if (percentageFields.includes(key) && val !== '') {
-                val = `${val}%`;
-            }
-            saveData[key] = val;
+    const getKeyFromLabel = (label) => {
+        for (const key in conversionCostLabelMap) {
+            if (conversionCostLabelMap[key] === label) return key;
         }
-        return saveData;
+        return null;
     };
 
     // Generate input table data from allFormData
-    const inputTableData = Object.entries(allFormData || {}).map(([key, value]) => {
-        if (!conversionCostLabelMap[key]) return null;
-        return {
-            name: conversionCostLabelMap[key],
-            value1: typeof value === 'number' ? value.toFixed(2) : value,
-            value2: typeof value === 'number' ? value.toFixed(2) : value
-        };
-    }).filter(Boolean);
+    const initialInputData = useMemo(() => {
+        return Object.entries(allFormData || {})
+            .map(([key, value]) => {
+                if (!conversionCostLabelMap[key] || key.endsWith('_rate2')) {
+                    return null;
+                }
+                return {
+                    name: conversionCostLabelMap[key],
+                    value: value,
+                    isPercentage: percentageFields.includes(conversionCostLabelMap[key]),
+                };
+            })
+            .filter(Boolean);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loading]); // Only re-calculate when loading is finished.
 
     // Generate summary table data from allFormData
     const summaryKeys = [
-        { label: "Conversion", key: "conversion_cost" },
+        { label: "Total", key: "conversion_cost" },
         { label: "Electricity", key: "electricity" },
         { label: "Labour-Direct", key: "labour_direct" },
         { label: "Labour-Indirect", key: "labour_indirect" },
@@ -122,10 +129,10 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
     });
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 px-2 pt-2 pb-0">
+        <div className="grid grid-cols-1 shadow-lg border md:grid-cols-3 gap-2 px-2 py-2">
             {/* Inputs Grid */}
-            <div className="bg-gray-50 shadow-md rounded p-2 h-50">
-                <div className="rounded overflow-auto h-full">
+            <div className="bg-gray-50 shadow-md p-2 h-50">
+                <div className="overflow-auto h-full">
                     <h3 className="font-bold pb-3">Inputs</h3>
                     {loading ? (
                         <div>
@@ -141,11 +148,39 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
                     ) : (
                         <ConDataTable
                             columns={[
-                                { accessorKey: 'name', header: 'Label' },
-                                { accessorKey: 'value1', header: 'Rate 1', cell: ({ row }) => <input type="text" value={row.original.value1 ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" /> },
-                                { accessorKey: 'value2', header: 'Rate 2', cell: ({ row }) => <input type="text" onChange={(e) => handleInputChange(row.original.name, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" /> }
+                                { accessorKey: 'name', header: 'Label', cell: ({ row }) => <div className="text-sm">{row.original.name}</div> },
+                                {
+                                    accessorKey: 'ratio', header: 'Ratio', cell: ({ row }) => {
+                                        const { value, isPercentage } = row.original;
+                                        if (!isPercentage) {
+                                            return <div className="w-full px-2 py-0.5 text-sm text-center">-</div>;
+                                        }
+                                        return <input type="text" value={value ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" />;
+                                    }
+                                },
+                                {
+                                    accessorKey: 'rate1', header: 'Rate (INR)', cell: ({ row }) => {
+                                        const { value, isPercentage } = row.original;
+                                        if (isPercentage) {
+                                            return <div className="w-full px-2 py-0.5 text-sm text-center">-</div>;
+                                        }
+                                        return <input type="text" value={value ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" />
+                                    }
+                                },
+                                {
+                                    accessorKey: 'rate2', header: 'Rate (INR)', cell: ({ row }) => {
+                                        const { name, value, isPercentage } = row.original;
+                                        const key = getKeyFromLabel(name);
+                                        if (isPercentage) {
+                                            return <div className="w-full px-2 py-0.5 text-sm text-center">-</div>;
+                                        }
+                                        // For non-percentage fields, show an empty input for new values.
+                                        const rate2Value = allFormData[`${key}_rate2`] ?? '';
+                                        return <input type="text" value={rate2Value} onChange={(e) => handleInputChange(key, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" />;
+                                    }
+                                }
                             ]}
-                            data={inputTableData}
+                            data={initialInputData}
                         />
                     )}
                 </div>
@@ -153,9 +188,9 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
 
             {/* Summary Grid */}
             <div>
-                <div className="bg-gray-50 shadow-md rounded p-3 h-50 overflow-auto">
+                <div className="bg-gray-50 shadow-md p-3 h-50 overflow-auto">
                     <h3 className="font-bold pb-3">Summary</h3>
-                    {loading ? (
+                    {loadingSummary ? (
                         <div>
                             {Array.from({ length: 13 }).map((_, index) => (
                                 <div key={index} className="grid grid-cols-4 gap-4 items-center py-2.5">
@@ -169,10 +204,22 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
                     ) : (
                         <ConDataTable
                             columns={[
-                                { accessorKey: 'label', header: 'Details' },
-                                { accessorKey: 'inr', header: 'INR/T' },
-                                { accessorKey: 'eur', header: 'EUR/T' },
-                                { accessorKey: 'per', header: '%' },
+                                { 
+                                    accessorKey: 'label', header: 'Details',
+                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.label}</div>
+                                },
+                                { 
+                                    accessorKey: 'inr', header: 'INR/T',
+                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.inr}</div>
+                                },
+                                { 
+                                    accessorKey: 'eur', header: 'EUR/T',
+                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.eur}</div>
+                                },
+                                { 
+                                    accessorKey: 'per', header: '%',
+                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.per}</div>
+                                },
                             ]}
                             data={summaryTableData}
                         />
@@ -182,7 +229,7 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData }) => {
 
             {/* API Data Grid */}
             <div>
-                <div className="bg-white shadow-md rounded-lg p-5 h-full">
+                <div className="bg-white shadow-md p-5 h-full">
                     <h2 className="text-sm font-semibold mb-4">API Request Data from 3rd Party App</h2>
                 </div>
             </div>

@@ -130,7 +130,7 @@ export default function SlateEditor() {
     }, [editor]);
 
     return (
-        <div className="border rounded shadow-md">
+        <div className="border rounded shadow-md bg-white">
             {/* In newer versions, `value` is for uncontrolled and `initialValue` for controlled components.
                 We are now using a controlled component to manage saving to localStorage. */}
             <Slate
