@@ -8,7 +8,8 @@ import ConversionCostCalculation from './calculation_models/conversion_cost_calc
 import MachineCostCalculation from './calculation_models/machine_cost_calculation';
 import SlateEditor from '../components/ui/richTextBox';
 import PDFDownload from './calculation_models/pdf_download';
-import { NotebookPen, Download, FileText } from 'lucide-react';
+import ChatWithSheet from "./calculation_models/chatSheet";
+import { NotebookPen, Download, FileText, MessageCircle } from 'lucide-react';
 import { api } from "@/utils/api";
 
 // Remove these static imports:
@@ -21,7 +22,10 @@ export default function page() {
   const [isNotesVisible, setIsNotesVisible] = useState(false);
   const notesEditorRef = useRef(null);
   const notesButtonRef = useRef(null);
+  const chatSheetRef = useRef(null);
+  const chatButtonRef = useRef(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
+  const [isChatVisible, setIsChatVisible] = useState(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -61,7 +65,7 @@ export default function page() {
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (
+      if (isNotesVisible &&
         notesEditorRef.current &&
         !notesEditorRef.current.contains(event.target) &&
         notesButtonRef.current &&
@@ -69,16 +73,24 @@ export default function page() {
       ) {
         setIsNotesVisible(false);
       }
+      if (isChatVisible &&
+        chatSheetRef.current &&
+        !chatSheetRef.current.contains(event.target) &&
+        chatButtonRef.current &&
+        !chatButtonRef.current.contains(event.target)
+      ) {
+        setIsChatVisible(false);
+      }
     }
 
-    if (isNotesVisible) {
+    if (isNotesVisible || isChatVisible) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isNotesVisible]);
+  }, [isNotesVisible, isChatVisible]);
 
   if (isLoading) {
     return (
@@ -101,35 +113,35 @@ export default function page() {
     }
   };
 
+  const printWithFilename = () => {
+    const originalTitle = document.title;
+
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+
+    const filename = `${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}_IMCostModel`;
+
+    // Set temporary title
+    document.title = filename;
+
+    // Trigger print
+    window.print();
+
+    // Restore original title (important!)
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 2000);
+  };
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoadingSummary(true);
-
-    // Clear applicable_rate inputs
-    setAllFormData(prev => ({
-      ...prev,
-      shot1_applicable_rate: '',
-      shot1_mb_applicable_rate: '',
-      shot1_add_applicable_rate: '',
-      shot2_applicable_rate: '',
-      shot2_mb_applicable_rate: '',
-      shot2_add_applicable_rate: '',
-      regrind_applicable_rate: '',
-    }));
-
-    // Clear all `_rate2` fields for ConversionCostCalculation
-    setAllFormData(prev => {
-      const newState = { ...prev };
-      for (const key in newState) {
-        if (key.endsWith('_rate2')) {
-          newState[key] = '';
-        }
-      }
-      // Also clear rate2 fields for MachineCostCalculation
-      newState['mould_cavitation_rate2'] = '';
-      newState['mould_cycle_time_rate2'] = '';
-      return newState;
-    });
 
     const payload = { ...allFormData };
     const rateMap = {
@@ -177,24 +189,6 @@ export default function page() {
       });
   };
 
-  // Modified downloadPdf function with dynamic imports
-  const downloadPdf = async () => {
-    try {
-      // Dynamically import the libraries only when needed
-      const domtoimage = (await import("dom-to-image-more")).default;
-      const jsPDF = (await import("jspdf")).default;
-      
-      const element = document.getElementById("pdf-content");
-
-      const dataUrl = await domtoimage.toPng(element);
-      const pdf = new jsPDF("p", "mm", "a4");
-      pdf.addImage(dataUrl, "PNG", 0, 0, 210, 297);
-      pdf.save("report.pdf");
-    } catch (err) {
-      console.error("Error generating PDF:", err);
-    }
-  };
-
 
   return (
     <div>
@@ -207,9 +201,9 @@ export default function page() {
             </h2> */}
 
             <SkuDescription
-                allFormData={allFormData}
-                setAllFormData={setAllFormData}
-              />
+              allFormData={allFormData}
+              setAllFormData={setAllFormData}
+            />
           </div>
 
           {/* Buttons */}
@@ -315,10 +309,17 @@ export default function page() {
         </div>
       )}
 
+      {/* Floating Chat Component */}
+      {isChatVisible && (
+        <div ref={chatSheetRef} className="fixed bottom-20 right-8 z-50">
+          <ChatWithSheet />
+        </div>
+      )}
+
       {/* Floating Action Buttons */}
       <div className="fixed bottom-8 right-8 z-50 flex items-center gap-2 print:hidden">
         <button
-          onClick={()=>window.print()}
+          onClick={printWithFilename}
           className="cursor-pointer px-4 py-2 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors"
           aria-label="Download PDF"
         >
@@ -335,6 +336,14 @@ export default function page() {
           aria-label="Toggle notes editor"
         >
           <NotebookPen className="w-5 h-5" />
+        </button>
+        <button
+          ref={chatButtonRef}
+          onClick={() => setIsChatVisible(!isChatVisible)}
+          className="cursor-pointer w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors"
+          aria-label="Toggle chat"
+        >
+          <MessageCircle className="w-5 h-5" />
         </button>
       </div>
     </div>

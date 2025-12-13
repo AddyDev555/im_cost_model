@@ -32,7 +32,7 @@ export default function SkuDescription({allFormData, setAllFormData}) {
     }, [allFormData]);
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-1 gap-1 w-full">
+        <div className="w-full">
             {/* SKU Data */}
             <div className="overflow-auto">
                 {loading ? (

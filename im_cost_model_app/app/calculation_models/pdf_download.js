@@ -13,7 +13,15 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
             <div className="p-4">
                 <h1 className="text-2xl font-bold mb-4">Cost Model Report</h1>
 
-                <div className="mb-4 page-break-after">
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold border-b pb-2 mb-2">SKU Description</h2>
+                    <SkuDescription
+                        allFormData={allFormData}
+                        setAllFormData={setAllFormData}
+                    />
+                </div>
+
+                <div className="mb-4">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">Summary</h2>
                     <div className="w-full">
                         <Summary
@@ -23,15 +31,8 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                     </div>
                 </div>
 
-                <div className="mb-4 page-break-after">
-                    <h2 className="text-xl font-semibold border-b pb-2 mb-2">SKU Description</h2>
-                    <SkuDescription
-                        allFormData={allFormData}
-                        setAllFormData={setAllFormData}
-                    />
-                </div>
 
-                <div className="mb-4 page-break-after">
+                <div className="mb-4">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">Material Cost</h2>
                     <MaterialCalculator
                         allFormData={allFormData}
@@ -40,7 +41,7 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                     />
                 </div>
 
-                <div className="mb-4 page-break-after">
+                <div className="mb-4">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">Conversion Cost</h2>
                     <ConversionCostCalculation
                         allFormData={allFormData}
@@ -48,7 +49,7 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                     />
                 </div>
 
-                <div>
+                <div className="mb-4">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">Machine Cost</h2>
                     <MachineCostCalculation
                         allFormData={allFormData}
@@ -56,11 +57,6 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                     />
                 </div>
             </div>
-            <style jsx global>{`
-                .page-break-after {
-                    page-break-after: always;
-                }
-            `}</style>
         </div>
     );
 }

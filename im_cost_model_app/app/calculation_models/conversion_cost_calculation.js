@@ -96,7 +96,7 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData, loadingSummary
             })
             .filter(Boolean);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loading]); // Only re-calculate when loading is finished.
+    }, [allFormData, loading]); // Only re-calculate when loading is finished.
 
     // Generate summary table data from allFormData
     const summaryKeys = [
@@ -164,7 +164,14 @@ const ConversionCostCalculation = ({ allFormData, setAllFormData, loadingSummary
                                         if (isPercentage) {
                                             return <div className="w-full px-2 py-0.5 text-sm text-center">-</div>;
                                         }
-                                        return <input type="text" value={value ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" />
+                                        const key = getKeyFromLabel(row.original.name);
+                                        const rate2Value = allFormData[`${key}_rate2`];
+                                        
+                                        // If rate2 has a value and it's different from the backend value, it means the user has provided a new rate.
+                                        // In that case, we want to display the original backend value in the rate1 column.
+                                        const displayValue = (rate2Value !== undefined && rate2Value !== '' && rate2Value !== value) ? value : allFormData[key];
+
+                                        return <input type="text" value={displayValue ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" />
                                     }
                                 },
                                 {

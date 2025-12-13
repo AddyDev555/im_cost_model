@@ -73,7 +73,10 @@ export default function Summary({ allFormData, setAllFormData }) {
                 return {
                     name: baseName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                     value: parseFloat(allFormData[key]) || 0,
-                    inr_value: parseFloat(allFormData[`${baseName}_cost_inr`]) || 0,
+                    inr_value: parseFloat(
+                        // Handle special case for material cost which doesn't have '_inr' suffix
+                        baseName === 'material' ? allFormData['material_cost'] : allFormData[`${baseName}_cost_inr`]
+                    ) || 0,
                     eur_value: parseFloat(allFormData[`${baseName}_cost_eur`]) || 0,
                 };
             })
@@ -82,7 +85,10 @@ export default function Summary({ allFormData, setAllFormData }) {
         const summaryTableData = summaryKeys.map(key => {
             const baseName = key.replace('_cost_per', '');
             const value = parseFloat(allFormData[key]) || 0;
-            const inrValue = parseFloat(allFormData[`${baseName}_cost_inr`]) || 0;
+            const inrValue = parseFloat(
+                // Handle special case for material cost which doesn't have '_inr' suffix
+                baseName === 'material' ? allFormData['material_cost'] : allFormData[`${baseName}_cost_inr`]
+            ) || 0;
             const eurValue = parseFloat(allFormData[`${baseName}_cost_eur`]) || 0;
             const costRatio = value.toFixed(0);
 
