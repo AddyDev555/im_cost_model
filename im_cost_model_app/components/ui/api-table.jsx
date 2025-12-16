@@ -29,7 +29,7 @@ export default function DataTable({ data }) {
                         {visibleKeys.map((key, idx) => (
                             <th
                                 key={`header-${key}`}
-                                className={`text-left text-xs text-gray-500 pb-2 border-b 
+                                className={`text-left bg-violet-100 p-2 text-xs text-gray-500 pb-2 border-b 
                                     ${idx === 0 ? "" : ""}`}
                             >
                                 {key}

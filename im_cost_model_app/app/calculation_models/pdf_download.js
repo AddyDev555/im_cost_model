@@ -8,10 +8,14 @@ import { saveAs } from 'file-saver';
 import { pdf } from '@react-pdf/renderer';
 
 export default function PDFDownload({ allFormData, setAllFormData, loadingSummary }) {
+    const formattedDateTime = new Date().toLocaleString();
     return (
         <div id="pdf-content" className="hidden print:block">
             <div className="p-4">
-                <h1 className="text-2xl font-bold mb-4">Cost Model Report</h1>
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold">Cost Model Report</h1>
+                    <p className="text-md">{formattedDateTime}</p>
+                </div>
 
                 <div className="mb-4">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">SKU Description</h2>
@@ -49,13 +53,13 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                     />
                 </div>
 
-                <div className="mb-4">
+                {/* <div className="mb-4">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">Machine Cost</h2>
                     <MachineCostCalculation
                         allFormData={allFormData}
                         setAllFormData={setAllFormData}
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     );

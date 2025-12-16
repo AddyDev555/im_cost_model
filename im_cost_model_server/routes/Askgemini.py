@@ -4,12 +4,58 @@ from dotenv import load_dotenv
 import os
 import requests
 import re
+import json
+from transformers import T5Tokenizer, T5ForConditionalGeneration
+
 
 router = APIRouter()
 load_dotenv()
 
 APPS_SCRIPT_URL = os.getenv("APPSCRIPT_GS_URL")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+DATA_FILE = "../data.json"
+
+MODEL_NAME = "google/flan-t5-base"
+MODEL_DIR = "./models/flan-t5-base"
+
+print("⬇️ Downloading tokenizer...")
+tokenizer = T5Tokenizer.from_pretrained(
+    MODEL_NAME,
+    cache_dir=MODEL_DIR
+)
+
+print("⬇️ Downloading model...")
+model = T5ForConditionalGeneration.from_pretrained(
+    MODEL_NAME,
+    cache_dir=MODEL_DIR
+)
+
+def ask(prompt: str) -> str:
+    inputs = tokenizer(prompt, return_tensors="pt")
+    outputs = model.generate(
+        **inputs,
+        max_length=256,
+        temperature=0.3
+    )
+    return tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+
+def update_qna(question: str, answer: str):
+    """Reads data.json, appends a new Q&A object, and writes it back."""
+    try:
+        if os.path.exists(DATA_FILE):
+            with open(DATA_FILE, "r") as f:
+                data = json.load(f)
+        else:
+            data = {"notes": [], "qna": []}
+
+        data.setdefault("qna", []).append({"question": question, "answer": answer})
+
+        with open(DATA_FILE, "w") as f:
+            json.dump(data, f, indent=4)
+    except Exception as e:
+        # Log the error or handle it as needed, but don't block the main response
+        print(f"Error updating Q&A file: {e}")
 
 
 def clean_gemini_answer(text: str) -> str:
@@ -104,6 +150,11 @@ Provide a clean and concise summary per sheet.
             )
 
             answer = parts[0].get("text", "No answer returned") if parts else "No answer returned"
+            
+            # answer = ask(final_prompt)
+
+            # Save Q&A to data.json
+            update_qna(question="Summarize all sheets.", answer=answer)
 
             return {
                 "success": True,
@@ -160,6 +211,11 @@ You are an AI assistant specialized in understanding Google Sheets.
 
             answer = parts[0].get("text", "No answer returned") if parts else "No answer returned"
 
+            # answer = ask(final_prompt)
+            
+            # Save Q&A to data.json
+            update_qna(question=question, answer=answer)
+
             return {
                 "success": True,
                 "mode": "ask",
@@ -203,6 +259,9 @@ Formulas: {formulas}
             )
 
             answer = parts[0].get("text", "No answer returned") if parts else "No answer returned"
+
+            # Save Q&A to data.json
+            update_qna(question=f"Summarize sheet: {sheet_name}", answer=answer)
 
             return {
                 "success": True,

@@ -11,7 +11,7 @@ export default function ConDataTable({ columns, data, hideHeader }) {
                             {columns.map((col, idx) => (
                                 <th // Use a unique key for the header cells
                                     key={col.accessorKey || `header-${idx}`}
-                                    className={`text-left text-xs text-gray-500 pb-2 border-b 
+                                    className={`text-left p-2 bg-violet-100 text-xs text-gray-500 pb-2 border-b 
                                         ${idx === 0 ? "pr-2" : ""}`}
                                 >
                                     {col.header}
@@ -26,7 +26,7 @@ export default function ConDataTable({ columns, data, hideHeader }) {
                             {columns.map((col, colIndex) => (
                                 <td // Combine row and column keys for a unique cell key
                                     key={`${row.id || `row-${rowIndex}`}-${col.accessorKey || `col-${colIndex}`}`}
-                                    className={`py-2 text-gray-700 
+                                    className={`p-2 text-gray-700 
                                         ${colIndex === 0 ? "pr-6" : ""}`}
                                 >
                                     {col.cell ? col.cell({ row: { original: row, index: rowIndex } }) : row[col.accessorKey]}

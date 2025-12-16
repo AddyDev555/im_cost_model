@@ -1,247 +1,258 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
-import ConDataTable from '../../components/ui/conversion-data-table';
+import React, { useState, useEffect } from 'react';
+import DataTable from '../../components/ui/data-table';
 
-const ConversionCostCalculation = ({ allFormData, setAllFormData, loadingSummary }) => {
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+export default function ConversionCostCalculation({
+    allFormData,
+    setAllFormData,
+    loadingSummary
+}) {
+    const [originalInputData, setOriginalInputData] = useState([]);
 
-    const percentageFields = [
-        "Interest on Long Term Loan",
-        "Interest on Working Capital",
-        "Depreciation on Plant Machinery",
-        "Margin",
-        "Repair & Maintenance",
-        "Other Overheads",
-        "Depreciation on Building",
-        "Efficiency"
-    ];
-
-    const conversionCostLabelMap = {
-        electricity_rate: "Electricity Rate",
-        skilled_labour_rate: "Skilled Labour Rate",
-        engineer_rate: "Engineer Rate",
-        production_manager: "Production Manager",
-        repair_maintainance: "Repair & Maintenance",
-        other_overheads: "Other Overheads",
-        depreciation_on_plant_machinery: "Depreciation on Plant Machinery",
-        depreciation_on_building: "Depreciation on Building",
-        completed_life_of_asset: "Completed Life of Asset",
-        land_cost: "Land Cost",
-        building_investment: "Building Investment",
-        lease_cost: "Lease Cost",
-        type_of_premises: "Type of Premises",
-        interest_on_long_term_loan: "Interest on Long Term Loan",
-        interest_on_working_capital: "Interest on Working Capital",
-        Margin: "Margin",
-        margin_calculation: "Margin Calculation",
-        no_of_orders_per_year: "No of Orders per Year",
-        caps_per_box: "Caps per Box",
-        boxes_per_pallet: "Boxes per Pallet",
-        pallet_type: "Pallet Type",
-        type_of_container: "Type of Container",
-        boxes_per_container: "Boxes per Container",
-        shipper_cost: "Shipper Cost",
-        polybag_cost: "Polybag Cost",
-        packing_cost: "Packing Cost",
-        freight_cost_per_container: "Freight Cost per Container",
-        days_per_year: "Days per Year",
-        shifts_per_day: "Shifts per Day",
-        hours_per_day: "Hours per Day",
-        efficiency: "Efficiency",
-        available_hours_per_year: "Available Hours per Year"
-    };
-
+    // Store the original input data on first load to preserve "Value 1"
     useEffect(() => {
-        // If data already exists in allFormData, loading can be set to false immediately
-        if (allFormData && Object.keys(allFormData).length > 0) {
-            setLoading(false);
+        if (allFormData?.inputData && originalInputData.length === 0) {
+            const conversionInputs = allFormData.inputData.filter(r => LABEL_MAP[r.label]);
+            setOriginalInputData(conversionInputs);
         }
-    }, [allFormData]);
+    }, [allFormData?.inputData]);
 
+
+    /* ---------------- Input Change Handler ---------------- */
     const handleInputChange = (key, value) => {
         const cleanedValue = String(value).replace(/,/g, '');
         const parsedValue = cleanedValue === '' ? '' : parseFloat(cleanedValue);
         const finalValue = isNaN(parsedValue) ? '' : parsedValue;
- 
-        setAllFormData(prev => ({
-            ...prev,
-            // Store the new value in a separate key for the 'rate2' input
-            [`${key}_rate2`]: finalValue,
-            // If the new value is a valid number, overwrite the original rate value
-            // This will be used in calculations but not displayed in the 'rate1' input.
-            ...(finalValue !== '' && { [key]: finalValue })
-        }));
-    };
 
-    const getKeyFromLabel = (label) => {
-        for (const key in conversionCostLabelMap) {
-            if (conversionCostLabelMap[key] === label) return key;
-        }
-        return null;
-    };
-
-    // Generate input table data from allFormData
-    const initialInputData = useMemo(() => {
-        return Object.entries(allFormData || {})
-            .map(([key, value]) => {
-                if (!conversionCostLabelMap[key] || key.endsWith('_rate2')) {
-                    return null;
+        setAllFormData(prev => {
+            const newInputData = prev.inputData.map(item => {
+                if (item.label === key) {
+                    return { ...item, value: finalValue !== '' ? finalValue : item.value };
                 }
-                return {
-                    name: conversionCostLabelMap[key],
-                    value: value,
-                    isPercentage: percentageFields.includes(conversionCostLabelMap[key]),
-                };
-            })
-            .filter(Boolean);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [allFormData, loading]); // Only re-calculate when loading is finished.
+                return item;
+            });
+            return {
+                ...prev,
+                inputData: newInputData,
+                [`${key}_value2`]: finalValue,
+            };
+        });
+    };
 
-    // Generate summary table data from allFormData
-    const summaryKeys = [
-        { label: "Total", key: "conversion_cost" },
-        { label: "Electricity", key: "electricity" },
-        { label: "Labour-Direct", key: "labour_direct" },
-        { label: "Labour-Indirect", key: "labour_indirect" },
-        { label: "Repair & Maintenance", key: "repair_maintenance" },
-        { label: "Other Overheads", key: "overheads" },
-        { label: "Lease", key: "lease_cost" },
-        { label: "Depreciation", key: "depreciation" },
-        { label: "Interest", key: "interest" },
-        { label: "Margin", key: "margin" },
-        { label: "Distribution", key: "distribution" },
-        { label: "Packaging", key: "packgaging" },
-        { label: "Freight", key: "freight" },
-    ];
+    /* ---------------- INPUT LABEL MAP ---------------- */
+    const LABEL_MAP = {
+        electricity_rate: "Electricity Rate",
 
-    const summaryTableData = summaryKeys.map(item => {
-        const formatValue = (val) => {
-            const num = parseFloat(val);
-            return isNaN(num) ? '0.00' : num.toFixed(2);
-        };
-        return {
-            label: item.label,
-            inr: `₹${formatValue(allFormData[`${item.key}_inr`])}`,
-            eur: `€${formatValue(allFormData[`${item.key}_eur`])}`,
-            per: `${formatValue(allFormData[`${item.key}_per`])}%`,
-        };
+        skilled_labour: "Skilled Labour",
+        engineer: "Engineer",
+        production_manager: "Production Manager",
+
+        repair_maintainance: "Repair & Maintainance",
+        other_overheads: "Other Overheads",
+
+        depreciation_plant: "Depreciation on Plant & Machinery",
+        depreciation_building: "Depreciation on Building",
+        completed_life_of_asset: "Completed life of asset",
+
+        land_cost: "Land Cost",
+        building_investment: "Building Investment",
+        lease_cost: "Lease Cost",
+        type_of_premises: "Type of Premises",
+
+        interest_long_term: "Interest on Long Term Loan",
+        interest_working_capital: "Interest on Working Capital",
+        margin: "Margin",
+        margin_calculation: "Margin Calculation",
+
+        no_of_orders_per_year: "No of Orders / Year",
+
+        caps_per_box: "Caps Per Box",
+        boxes_per_pallet: "Boxes Per Pallet",
+        pallet_type: "Pallet Type",
+        type_of_container: "Type of Container",
+        boxes_per_container: "Boxes Per Container",
+        shipper_cost: "Shipper Cost",
+        polybag_cost: "Polybag Cost",
+        packing_cost: "Packing Cost",
+        freight_cost_per_container: "Freight cost per container",
+
+        days_per_year: "Days per Year",
+        shifts_per_day: "Shifts per Day",
+        hours_per_day: "Hours per Day",
+        efficiency: "Efficiency",
+        available_hours_per_year: "Available hours per year",
+
+        eur_to_inr: "EUR to INR",
+        usd_to_inr: "USD to INR",
+
+        rm_payment_term: "RM Payment term",
+        fg_payment_term: "FG Payment term",
+
+        mould_cavitation: "Mould Cavitation",
+        mould_cycle_time: "Mould Cycle Time",
+        annual_volume: "Annual Volume"
+    };
+
+    /* ---------------- SUMMARY LABEL MAP ---------------- */
+    const SUMMARY_LABEL_MAP = {
+        conversion_cost: "Conversion Cost",
+        electricity: "Electricity",
+        "labour-direct": "Labour-Direct",
+        "labour-indirect": "Labour-Indirect",
+        "repair_&_maintenance": "Repair & Maintenance",
+        other_overheads: "Other Overheads",
+        lease: "Lease",
+        depreciation: "Depreciation",
+        interest: "Interest",
+        margin: "Margin",
+        distribution: "Distribution",
+        packgaging: "Packgaging",
+        freight: "Freight"
+    };
+
+    /* ---------------- SUMMARY TABLE BUILD ---------------- */
+    const summaryTableData = [];
+    let totalRow = {
+        labelKey: "conversion_cost",
+        label: "Conversion Cost",
+        inr: "",
+        eur: "",
+        pct: ""
+    };
+
+    (allFormData?.summaryData || []).forEach(curr => {
+        if (!SUMMARY_LABEL_MAP[curr.label]) return;
+
+        if (curr.label === "conversion_cost") {
+            if (curr.currency === "INR")
+                totalRow.inr = `₹${Number(curr.value || 0).toFixed(0)}`;
+            if (curr.currency === "EUR")
+                totalRow.eur = `€${Number(curr.value || 0).toFixed(0)}`;
+            if (curr.percent)
+                totalRow.pct = `${(Number(curr.percent) * 100).toFixed(0)}%`;
+            return;
+        }
+
+        let existing = summaryTableData.find(r => r.labelKey === curr.label);
+        if (!existing) {
+            existing = {
+                labelKey: curr.label,
+                label: SUMMARY_LABEL_MAP[curr.label],
+                inr: "",
+                eur: "",
+                pct: ""
+            };
+            summaryTableData.push(existing);
+        }
+
+        if (curr.currency === "INR") {
+            existing.inr = `₹${Number(curr.value || 0).toFixed(0)}`;
+            existing.pct = curr.percent
+                ? `${(Number(curr.percent) * 100).toFixed(0)}%`
+                : "";
+        }
+
+        if (curr.currency === "EUR") {
+            existing.eur = `€${Number(curr.value || 0).toFixed(0)}`;
+        }
     });
 
+    summaryTableData.push(totalRow);
+
     return (
-        <div className="grid grid-cols-1 shadow-lg border md:grid-cols-2 gap-2 px-2 py-2">
-            {/* Inputs Grid */}
-            <div className="bg-gray-50 shadow-md p-2 h-50 print:h-auto">
-                <div className="overflow-auto print:overflow-visible h-full">
+        <div className="bg-white rounded-lg shadow-lg border p-2">
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+
+                {/* ---------------- INPUTS ---------------- */}
+                <div className="bg-gray-50 border rounded p-3 h-57 overflow-auto print:h-auto print:overflow-visible">
                     <h3 className="font-bold pb-3">Inputs</h3>
-                    {loading ? (
-                        <div>
-                            {Array.from({ length: 15 }).map((_, index) => (
-                                <div key={index} className="grid grid-cols-2 gap-4 items-center py-2.5">
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse col-span-1" />
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse col-span-1" />
-                                </div>
-                            ))}
-                        </div>
-                    ) : error ? (
-                        <p className="text-red-500">{error}</p>
-                    ) : (
-                        <ConDataTable
-                            columns={[
-                                { accessorKey: 'name', header: 'Label', cell: ({ row }) => <div className="text-sm">{row.original.name}</div> },
-                                {
-                                    accessorKey: 'ratio', header: 'Ratio', cell: ({ row }) => {
-                                        const { value, isPercentage } = row.original;
-                                        if (!isPercentage) {
-                                            return <div className="w-full px-2 py-0.5 text-sm text-center">-</div>;
-                                        }
-                                        return <input type="text" value={value ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" />;
-                                    }
-                                },
-                                {
-                                    accessorKey: 'rate1', header: 'Rate (INR)', cell: ({ row }) => {
-                                        const { value, isPercentage } = row.original;
-                                        if (isPercentage) {
-                                            return <div className="w-full px-2 py-0.5 text-sm text-center">-</div>;
-                                        }
-                                        const key = getKeyFromLabel(row.original.name);
-                                        const rate2Value = allFormData[`${key}_rate2`];
-                                        
-                                        // If rate2 has a value and it's different from the backend value, it means the user has provided a new rate.
-                                        // In that case, we want to display the original backend value in the rate1 column.
-                                        const displayValue = (rate2Value !== undefined && rate2Value !== '' && rate2Value !== value) ? value : allFormData[key];
 
-                                        return <input type="text" value={displayValue ?? ''} readOnly className="w-full px-2 py-0.5 text-sm bg-gray-100 border border-gray-300" />
-                                    }
-                                },
-                                {
-                                    accessorKey: 'rate2', header: 'Rate (INR)', cell: ({ row }) => {
-                                        const { name, value, isPercentage } = row.original;
-                                        const key = getKeyFromLabel(name);
-                                        if (isPercentage) {
-                                            return <div className="w-full px-2 py-0.5 text-sm text-center">-</div>;
-                                        }
-                                        // For non-percentage fields, show an empty input for new values.
-                                        const rate2Value = allFormData[`${key}_rate2`] ?? '';
-                                        return <input type="text" value={rate2Value} onChange={(e) => handleInputChange(key, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" />;
-                                    }
-                                }
-                            ]}
-                            data={initialInputData}
-                        />
-                    )}
+                    <DataTable
+                        columns={[
+                            { key: 'label', title: 'Label', render: (row) => <div className="text-sm">{row.label}</div> },
+                            { key: 'unit', title: 'Unit', render: (row) => <div className="text-sm">{row.unit}</div> },
+                            {
+                                key: 'value',
+                                title: 'Value 1',
+                                render: (row) => (
+                                    <input
+                                        type="text"
+                                        value={row.value ?? ""}
+                                        readOnly
+                                        className="w-full bg-gray-100 px-2 py-0.5 text-sm border border-gray-300"
+                                    />
+                                )
+                            },
+                            {
+                                key: 'value2',
+                                title: 'Value 2',
+                                render: (row) => <input
+                                    type="text"
+                                    value={allFormData[`${row.key}_value2`] || ''}
+                                    onChange={(e) => handleInputChange(row.key, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" />
+                            },
+                        ]}
+                        data={
+                            (originalInputData || [])
+                                .map(r => ({
+                                    key: r.label,
+                                    label: LABEL_MAP[r.label],
+                                    unit: r.unit || "-",
+                                    value: r.value
+                                }))
+                        }
+                    />
                 </div>
-            </div>
 
-            {/* Summary Grid */}
-            <div>
-                <div className="bg-gray-50 shadow-md p-3 h-50 overflow-auto print:h-auto print:overflow-visible">
+                {/* ---------------- SUMMARY ---------------- */}
+                <div className="bg-gray-50 border rounded p-3 h-57 overflow-auto print:h-auto print:overflow-visible">
                     <h3 className="font-bold pb-3">Summary</h3>
-                    {loadingSummary ? (
-                        <div>
-                            {Array.from({ length: 13 }).map((_, index) => (
-                                <div key={index} className="grid grid-cols-4 gap-4 items-center py-2.5">
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                                    <div className="h-4 bg-gray-200 rounded animate-pulse" />
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <ConDataTable
-                            columns={[
-                                { 
-                                    accessorKey: 'label', header: 'Details',
-                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.label}</div>
-                                },
-                                { 
-                                    accessorKey: 'inr', header: 'INR/T',
-                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.inr}</div>
-                                },
-                                { 
-                                    accessorKey: 'eur', header: 'EUR/T',
-                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.eur}</div>
-                                },
-                                { 
-                                    accessorKey: 'per', header: '%',
-                                    cell: ({ row }) => <div className={row.original.label === 'Total' ? 'font-bold' : ''}>{row.original.per}</div>
-                                },
-                            ]}
-                            data={summaryTableData}
-                        />
-                    )}
-                </div>
-            </div>
 
-            {/* API Data Grid */}
-            {/* <div>
-                <div className="bg-white shadow-md p-5 h-full">
-                    <h2 className="text-sm font-semibold mb-4">API Request Data from 3rd Party App</h2>
+                    <DataTable
+                        columns={[
+                            {
+                                key: "label",
+                                title: "Details",
+                                render: (row) => (
+                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                        {row.label}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: "inr",
+                                title: "INR/T",
+                                render: (row) => (
+                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                        {row.inr}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: "eur",
+                                title: "EUR/T",
+                                render: (row) => (
+                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                        {row.eur}
+                                    </span>
+                                )
+                            },
+                            {
+                                key: "pct",
+                                title: "%",
+                                render: (row) => (
+                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                        {row.pct}
+                                    </span>
+                                )
+                            }
+                        ]}
+                        data={summaryTableData}
+                    />
                 </div>
-            </div> */}
+
+            </div>
         </div>
     );
-};
-
-export default ConversionCostCalculation;
+}

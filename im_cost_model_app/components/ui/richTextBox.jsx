@@ -18,23 +18,15 @@ import {
     Redo
 } from 'lucide-react';
 
-export default function SlateEditor() {
+export default function SlateEditor({notes, setNotes}) {
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
     
-    // Load initial value from localStorage or use a default.
     const initialValue = useMemo(() => {
-        if (typeof window !== 'undefined') {
-            const savedNotes = localStorage.getItem('slate-notes');
-            try {
-                return savedNotes ? JSON.parse(savedNotes) : [{ type: 'paragraph', children: [{ text: '' }] }];
-            } catch (error) {
-                console.error("Error parsing notes from localStorage:", error);
-            }
+        if (notes && Array.isArray(notes) && notes.length > 0) {
+            return notes;
         }
         return [{ type: 'paragraph', children: [{ text: '' }] }];
-    }, []);
-
-    const [value, setValue] = useState(initialValue);
+    }, [notes]);
     
     const renderLeaf = useCallback(props => <Leaf {...props} />, []);
 
@@ -131,16 +123,11 @@ export default function SlateEditor() {
 
     return (
         <div className="border rounded shadow-md bg-white">
-            {/* In newer versions, `value` is for uncontrolled and `initialValue` for controlled components.
-                We are now using a controlled component to manage saving to localStorage. */}
             <Slate
                 editor={editor}
-                initialValue={value}
+                initialValue={initialValue}
                 onChange={newValue => {
-                    setValue(newValue);
-                    // Save the new value to localStorage.
-                    const content = JSON.stringify(newValue);
-                    localStorage.setItem('slate-notes', content);
+                    setNotes(newValue);
                 }}
             >
                 <Toolbar toggleMark={toggleMark} isMarkActive={isMarkActive} toggleBlock={toggleBlock} isBlockActive={isBlockActive} />

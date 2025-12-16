@@ -1,61 +1,67 @@
 "use client";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 
-export default function SkuDescription({allFormData, setAllFormData}) {
+export default function SkuDescription({ allFormData }) {
     const [loading, setLoading] = useState(true);
     const didRun = useRef(false);
 
     useEffect(() => {
         if (didRun.current) return;
         didRun.current = true;
-        setLoading(false); // We rely on parent allFormData; initial cache is already loaded
+        setLoading(false);
     }, []);
 
-    const { skuData } = useMemo(() => {
-        if (!allFormData) return { skuData: [] };
+    /* -------------------------------------------
+       SKU LABEL → BACKEND LABEL MAPPING
+       (same pattern as conversion/material cost)
+    ------------------------------------------- */
+    const SKU_LABEL_MAP = {
+        sku_description: "SKU Description",
+        sku_code: "SKU Code",
+        country: "Country",
+        currency: "Currency",
+        supplier: "Supplier",
+    };
 
-        const parseVal = (v) => (v === null || v === undefined) ? '' : String(v);
+    /* -------------------------------------------
+       Build display data from inputData
+    ------------------------------------------- */
+    const skuData = useMemo(() => {
+        if (!allFormData?.inputData) return [];
 
-        const skuRowsMap = [
-            { label: 'SKU Description', key: 'sku_desc' },
-            { label: 'SKU Code', key: 'sku_code' },
-            { label: 'Country', key: 'sku_country' },
-            { label: 'Currency', key: 'sku_currency' },
-            { label: 'Supplier', key: 'sku_supplier' },
-            // { label: 'Costing Period', key: 'costing_period' },
-            // { label: 'Annual Volume', key: 'annual_volume' },
-        ];
-
-        const skuData = skuRowsMap.map(r => ({ ...r, description: parseVal(allFormData[r.key]) }));
-
-        return { skuData };
+        return allFormData.inputData
+            .filter(row => SKU_LABEL_MAP[row.label])
+            .map(row => ({
+                key: row.label,
+                label: SKU_LABEL_MAP[row.label],
+                value: row.value ?? "",
+            }));
     }, [allFormData]);
 
     return (
         <div className="w-full">
-            {/* SKU Data */}
-            <div className="overflow-auto">
+            <div className="overflow-auto print:overflow-visible">
                 {loading ? (
-                    <div>
-                        <div className="flex flex-wrap gap-4">
-                            {[0, 1, 2, 3, 4].map(i => (
-                                <div key={i} className="flex flex-col">
-                                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1" />
-                                    <div className="h-8 w-40 bg-gray-200 rounded animate-pulse" />
-                                </div>
-                            ))}
-                        </div>
+                    <div className="flex flex-wrap gap-4">
+                        {[0, 1, 2, 3, 4].map(i => (
+                            <div key={i} className="flex flex-col">
+                                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1" />
+                                <div className="h-8 w-40 bg-gray-200 rounded animate-pulse" />
+                            </div>
+                        ))}
                     </div>
                 ) : (
                     <div className="flex flex-wrap gap-x-4 gap-y-4">
-                        {skuData.map((item) => (
+                        {skuData.map(item => (
                             <div key={item.key} className="flex flex-col">
-                                <label className="text-sm font-medium text-gray-600">{item.label}</label>
+                                <label className="text-sm font-medium text-gray-600">
+                                    {item.label}
+                                </label>
                                 <input
                                     type="text"
-                                    value={item.description || ""}
+                                    value={item.value}
                                     readOnly
-                                    className="p-1 border rounded bg-gray-100 mt-1 text-sm w-48"
+                                    className="p-1 px-2 border rounded bg-gray-100 mt-1 text-sm w-48"
                                 />
                             </div>
                         ))}

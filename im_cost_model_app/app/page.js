@@ -11,6 +11,7 @@ import PDFDownload from './calculation_models/pdf_download';
 import ChatWithSheet from "./calculation_models/chatSheet";
 import { NotebookPen, Download, FileText, MessageCircle } from 'lucide-react';
 import { api } from "@/utils/api";
+import { toast } from 'react-toastify';
 
 // Remove these static imports:
 // import domtoimage from "dom-to-image-more";
@@ -25,6 +26,8 @@ export default function page() {
   const chatSheetRef = useRef(null);
   const chatButtonRef = useRef(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
+  const [notes, setNotes] = useState("");
+  const isInitialNotesLoad = useRef(true);
   const [isChatVisible, setIsChatVisible] = useState(false);
 
   useEffect(() => {
@@ -45,10 +48,10 @@ export default function page() {
         console.log('Fetching new data from backend...');
         const result = await api.get("/api/inputs/get-inputs-data");
 
-        if (result.success && result.data) {
-          localStorage.setItem("inputsData", JSON.stringify(result.data));
+        if (result.success && result.inputData) {
+          localStorage.setItem("inputsData", JSON.stringify(result));
           localStorage.setItem("inputsDataTimestamp", new Date().getTime().toString());
-          setAllFormData(result.data);
+          setAllFormData(result);
           console.log("Inputs data has been successfully fetched and stored in localStorage.");
         } else {
           console.error("Failed to get data from backend:", result.error || "Unknown error");
@@ -62,6 +65,67 @@ export default function page() {
 
     initializeApp();
   }, []);
+
+  useEffect(() => {
+    const fetchNotes = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/notes/get-notes');
+        const data = await response.json();
+        // Transform the notes data to be compatible with Slate's format.
+        if (data.notes && Array.isArray(data.notes)) {
+          const slateNotes = data.notes.map(note => ({
+            type: 'paragraph',
+            children: [{ text: note.content || '' }],
+          }));
+          setNotes(slateNotes);
+          isInitialNotesLoad.current = true; // Prevent saving on initial fetch
+        }
+      } catch (error) {
+        console.error('Failed to fetch notes:', error);
+      }
+    };
+
+    fetchNotes();
+  }, []);
+
+  // Debounced effect to save notes to the backend
+  useEffect(() => {
+    // Don't save on the initial load when notes are first fetched.
+    if (isInitialNotesLoad.current) {
+      isInitialNotesLoad.current = false;
+      return;
+    }
+
+    // If notes is empty (e.g., after initialization), don't save.
+    if (!notes || notes === "") {
+      return;
+    }
+
+    const handler = setTimeout(() => {
+      // Transform Slate's format to the simple format for the backend.
+      const notesToSave = notes.map(node => {
+        // Extract text from all children of a node (like a paragraph)
+        const content = node.children.map(child => child.text).join('');
+        return { content };
+      });
+
+      fetch('http://127.0.0.1:8000/api/notes/update-notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // Send the transformed data
+        body: JSON.stringify({ notes: notesToSave }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            toast.success('Notes saved!');
+          }
+        })
+        .catch(err => console.error("Failed to save notes:", err));
+    }, 3000); // 3-second debounce delay
+
+    return () => clearTimeout(handler);
+  }, [notes]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -114,28 +178,23 @@ export default function page() {
   };
 
   const printWithFilename = () => {
-    const originalTitle = document.title;
 
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const hh = String(now.getHours()).padStart(2, '0');
-    const min = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-
-    const filename = `${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}_IMCostModel`;
-
-    // Set temporary title
-    document.title = filename;
-
-    // Trigger print
-    window.print();
-
-    // Restore original title (important!)
     setTimeout(() => {
-      document.title = originalTitle;
-    }, 2000);
+        const originalTitle = document.title;
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const filename = `${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}_IMCostModel`;
+
+        document.title = filename;
+        window.print();
+        document.title = originalTitle;
+
+    }, 100); // Small delay to allow state to update and components to re-render
   };
 
 
@@ -143,51 +202,35 @@ export default function page() {
     e.preventDefault();
     setLoadingSummary(true);
 
-    const payload = { ...allFormData };
-    const rateMap = {
-      'shot1_applicable_rate': 'shot1_poly_rate',
-      'shot1_mb_applicable_rate': 'shot1_mb_rate',
-      'shot1_add_applicable_rate': 'shot1_add_rate',
-      'shot2_applicable_rate': 'shot2_poly_rate',
-      'shot2_mb_applicable_rate': 'shot2_mb_rate',
-      'shot2_add_applicable_rate': 'shot2_add_rate',
-      'regrind_applicable_rate': 'regrind_rate',
+    // ✅ Build payload in generalized structure
+    const payload = {
+      inputData: allFormData.inputData || []
     };
 
-    for (const applicableKey in rateMap) {
-      const rateKey = rateMap[applicableKey];
-      const applicableValue = allFormData[applicableKey];
-      if (applicableValue !== '' && applicableValue !== null && applicableValue !== undefined) {
-        payload[rateKey] = applicableValue;
-      }
-    }
-
-    fetch('http://127.0.0.1:8000/api/updates/update-inputs', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("http://127.0.0.1:8000/api/updates/update-inputs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success && data.data) {
-          const numericData = Object.entries(data.data).reduce((acc, [key, value]) => {
-            if (value === '' || value === null) {
-              acc[key] = '';
-            } else {
-              const cleaned = String(value).replace(/,/g, '');
-              acc[key] = parseFloat(cleaned);
-            }
-            return acc;
-          }, {});
-          setAllFormData(prev => ({ ...prev, ...numericData }));
-          setLoadingSummary(false);
+      .then(res => res.json())
+      .then(res => {
+        if (!res.success) {
+          throw new Error("Update failed");
         }
+
+        setAllFormData(prev => ({
+          ...prev,
+          summaryData: res.summaryData || []
+        }));
+
+        setLoadingSummary(false);
       })
-      .catch(error => {
-        console.error('Error:', error);
+      .catch(err => {
+        console.error("Submit error:", err);
         setLoadingSummary(false);
       });
   };
+
 
 
   return (
@@ -279,7 +322,7 @@ export default function page() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-5">
+          {/* <AccordionItem value="item-5">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
               Machine Cost
             </AccordionTrigger>
@@ -289,7 +332,7 @@ export default function page() {
                 setAllFormData={setAllFormData}
               />
             </AccordionContent>
-          </AccordionItem>
+          </AccordionItem> */}
         </Accordion>
       </div>
 
@@ -305,19 +348,19 @@ export default function page() {
       {/* Floating Notes Editor */}
       {isNotesVisible && (
         <div ref={notesEditorRef} className="fixed bottom-20 right-8 z-50">
-          <SlateEditor />
+          <SlateEditor notes={notes} setNotes={setNotes} />
         </div>
       )}
 
       {/* Floating Chat Component */}
-      {isChatVisible && (
+      {/* {isChatVisible && (
         <div ref={chatSheetRef} className="fixed bottom-20 right-8 z-50">
           <ChatWithSheet />
         </div>
-      )}
+      )} */}
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-8 right-8 z-50 flex items-center gap-2 print:hidden">
+      <div className="fixed bottom-4 right-8 z-50 flex items-center gap-2 print:hidden">
         <button
           onClick={printWithFilename}
           className="cursor-pointer px-4 py-2 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors"
@@ -325,8 +368,8 @@ export default function page() {
         >
           {/* <Download className="w-5 h-5" /> */}
           <div className="flex align-center">
-            <p className="pr-2">Save pdf</p>
-            <FileText />
+            <p className="text-sm pr-2">Save pdf</p>
+            <FileText className="w-5 h-5" />
           </div>
         </button>
         <button
@@ -337,14 +380,14 @@ export default function page() {
         >
           <NotebookPen className="w-5 h-5" />
         </button>
-        <button
+        {/* <button
           ref={chatButtonRef}
           onClick={() => setIsChatVisible(!isChatVisible)}
           className="cursor-pointer w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors"
           aria-label="Toggle chat"
         >
           <MessageCircle className="w-5 h-5" />
-        </button>
+        </button> */}
       </div>
     </div>
   );

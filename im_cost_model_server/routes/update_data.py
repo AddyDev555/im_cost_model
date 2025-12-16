@@ -10,39 +10,42 @@ APPSCRIPT_URL_POST = os.getenv("APPSCRIPT_GS_URL")
 
 
 @router.post("/update-inputs")
-async def update_material_cost_inputs(request: Request):
+async def update_inputs(request: Request):
     try:
-        # Read JSON from frontend
+        # 1️⃣ Read payload from frontend
         incoming = await request.json()
+        print("Incoming payload:", incoming)
 
-        # Always force mode = "update"
-        incoming["mode"] = "update"
+        # 2️⃣ Forward payload to Apps Script
+        res = requests.post(
+            APPSCRIPT_URL_POST,
+            json=incoming,
+            headers={"Content-Type": "application/json"},
+            timeout=30
+        )
 
-        # Send to Apps Script
-        res = requests.post(APPSCRIPT_URL_POST, json=incoming)
-        full = res.json()
+        # Do NOT raise yet — Apps Script may return 200 with success:false
+        gs_response = res.json()
 
-        # Extract data
-        data = full.get("data", {})
+        # 3️⃣ Return EXACT Apps Script response
+        return gs_response
 
-        # Convert ratios to percentage
-        def to_percentage(value):
-            if value is None or value == "":
-                return value
-            try:
-                return float(value) * 100
-            except (ValueError, TypeError):
-                return value
-
-        # Convert *_per keys to %
-        for key, value in data.items():
-            if key.endswith("_per"):
-                data[key] = to_percentage(value)
-
+    except requests.exceptions.Timeout:
         return {
-            "success": True,
-            "data": data
+            "success": False,
+            "error": "Apps Script request timed out"
+        }
+
+    except requests.exceptions.RequestException as e:
+        return {
+            "success": False,
+            "error": "Apps Script request failed",
+            "details": str(e)
         }
 
     except Exception as e:
-        return {"error": str(e)}
+        return {
+            "success": False,
+            "error": "Server error",
+            "details": str(e)
+        }
