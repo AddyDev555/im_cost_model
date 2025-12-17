@@ -3,7 +3,6 @@ import Summary from './summary';
 import SkuDescription from './sku_description';
 import MaterialCalculator from './material_cost_calculator';
 import ConversionCostCalculation from './conversion_cost_calculation';
-import MachineCostCalculation from './machine_cost_calculation';
 import { saveAs } from 'file-saver';
 import { pdf } from '@react-pdf/renderer';
 

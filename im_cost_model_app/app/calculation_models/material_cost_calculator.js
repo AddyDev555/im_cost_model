@@ -4,10 +4,11 @@ import { Plus, Minus } from 'lucide-react';
 import DataTable from '../../components/ui/data-table';
 import ApiDataTable from '../../components/ui/api-table';
 import { api } from "@/utils/api";
+import { IMCostModelMapper } from "../costingModels/models";
 
 export default function MaterialCalculator({ allFormData, setAllFormData, loadingSummary }) {
     const [showShot2, setShowShot2] = useState(false);
-    const [ppRate, setPpRate] = useState([]);    
+    const [ppRate, setPpRate] = useState([]);
     const [originalInputData, setOriginalInputData] = useState([]);
 
     /* ---------------- Fetch Polymer Prices ---------------- */
@@ -55,22 +56,10 @@ export default function MaterialCalculator({ allFormData, setAllFormData, loadin
     };
 
     /* ---------------- Label Mapping (UI Friendly) ---------------- */
-    const LABEL_MAP = {
-        weight: "Weight",
-        shot_1_ratio: "Ratio",
-        shot_1_polymer_rate: "Polymer Rate",
-        shot_1_masterbatch_dosage: "Masterbatch Dosage",
-        shot_1_masterbatch_rate: "Masterbatch Rate",
-        shot_1_additive_dosage: "Additive Dosage",
-        shot_1_additive_rate: "Additive Rate"
-    };
+    const LABEL_MAP = IMCostModelMapper.material_inputs;
 
-    const SUMMARY_LABEL_MAP = {
-        resin: "Resin",
-        masterbatch: "Masterbatch",
-        additive: "Additive",
-        material_cost: "Total"
-    };
+    /* ---------------- Summary Label Mapping ---------------- */
+    const SUMMARY_LABEL_MAP = IMCostModelMapper.material_summary;
 
     const summaryTableData = [];
     let totalRow = { labelKey: "material_cost", label: "Total", inr: "", eur: "", pct: "" };

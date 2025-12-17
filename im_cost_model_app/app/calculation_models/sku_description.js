@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import {IMCostModelMapper} from "../costingModels/models";
 
 export default function SkuDescription({ allFormData }) {
     const [loading, setLoading] = useState(true);
@@ -15,13 +16,7 @@ export default function SkuDescription({ allFormData }) {
        SKU LABEL → BACKEND LABEL MAPPING
        (same pattern as conversion/material cost)
     ------------------------------------------- */
-    const SKU_LABEL_MAP = {
-        sku_description: "SKU Description",
-        sku_code: "SKU Code",
-        country: "Country",
-        currency: "Currency",
-        supplier: "Supplier",
-    };
+    const SKU_LABEL_MAP = IMCostModelMapper.sku_description;
 
     /* -------------------------------------------
        Build display data from inputData

@@ -2,23 +2,11 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DataTable from '../../components/ui/data-table';
 import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
+import { IMCostModelMapper } from "../costingModels/models";
 
-const GENERAL_SUMMARY_LABEL_MAP = {
-    material_cost: "Material",
-    conversion_cost: "Conversion",
-    margin: "Margin",
-    packaging: "Packaging",
-    freight: "Freight",
-    total: "Total",
-};
+const GENERAL_SUMMARY_LABEL_MAP = IMCostModelMapper.general_summary;
 
-const PROCESS_SUMMARY_LABEL_MAP = {
-    feedstock: "Feedstock",
-    injection: "Injection",
-    assembly: "Assembly",
-    dispatch: "Dispatch",
-    total: "Total",
-};
+const PROCESS_SUMMARY_LABEL_MAP = IMCostModelMapper.process_summary;
 
 export default function Summary({ allFormData }) {
     const [loading, setLoading] = useState(true);
@@ -342,7 +330,7 @@ export default function Summary({ allFormData }) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 p-2 border rounded shadow-lg">
             {/* Summary Table */}
             <div className="lg:col-span-1 shadow-lg rounded p-2">
-                <h3 className="font-semibold mb-3">General Summary</h3>
+                <h3 className="font-bold mb-3">General Summary</h3>
                 {loading ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
@@ -360,20 +348,29 @@ export default function Summary({ allFormData }) {
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (
                     summaryData.length > 0 ? (
-                        <div className="h-77" style={{ width: '100%', height: '320px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="w-full h-[320px]">
+                            <ResponsiveContainer width="100%" height="100%" className="print:hidden">
                                 <Treemap
                                     data={summaryData}
                                     dataKey="value"
-                                    aspectRatio={4 / 3}
-                                    fill="#8884d8"
                                     isAnimationActive={false}
                                     content={<CustomizedContent />}
                                 >
                                     <Tooltip content={<CustomTooltip />} />
                                 </Treemap>
                             </ResponsiveContainer>
+                            <div className="hidden print:block">
+                                <Treemap
+                                    width={700}
+                                    height={330}
+                                    data={summaryData}
+                                    dataKey="value"
+                                    isAnimationActive={false}
+                                    content={<CustomizedContent />}
+                                />
+                            </div>
                         </div>
+
                     ) : (
                         <div className="h-64 flex items-center justify-center text-gray-500">
                             No summary data to display
@@ -384,7 +381,7 @@ export default function Summary({ allFormData }) {
 
             {/* Process Breakdown Table (Column 3) */}
             <div className="lg:col-span-1 shadow-lg rounded p-2">
-                <h3 className="font-semibold mb-3">Process Summary</h3>
+                <h3 className="font-bold mb-3">Process Summary</h3>
                 {loading ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
@@ -402,8 +399,8 @@ export default function Summary({ allFormData }) {
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (
                     processGraphData.length > 0 ? (
-                        <div className="h-77" style={{ width: '100%', height: '320px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="w-full h-[320px]">
+                            <ResponsiveContainer width="100%" height="100%" className="print:hidden">
                                 <Treemap
                                     data={processGraphData}
                                     dataKey="value"
@@ -415,6 +412,18 @@ export default function Summary({ allFormData }) {
                                     <Tooltip content={<CustomTooltip />} />
                                 </Treemap>
                             </ResponsiveContainer>
+                            <div className="hidden print:block">
+                                <Treemap
+                                    width={700}
+                                    height={330}
+                                    data={processGraphData}
+                                    dataKey="value"
+                                    isAnimationActive={false}
+                                    content={<CustomizedContent />}
+                                >
+                                    <Tooltip content={<CustomTooltip />} />
+                                </Treemap>
+                            </div>
                         </div>
                     ) : (
                         <div className="h-64 flex items-center justify-center text-gray-500">
