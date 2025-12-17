@@ -1,5 +1,5 @@
 export const IMCostModelMapper = {
-    sku_description:{
+    sku_description: {
         sku_description: "SKU Description",
         sku_code: "SKU Code",
         country: "Country",
@@ -38,56 +38,55 @@ export const IMCostModelMapper = {
     },
 
     conversion_inputs: {
-        electricity_rate: "Electricity Rate",
+        "mould_cavitation": "Mould Cavitation",
+        "mould_cycle_time": "Mould Cycle Time",
+        "annual_volume": "Annual Volume",
 
-        skilled_labour: "Skilled Labour",
-        engineer: "Engineer",
-        production_manager: "Production Manager",
+        "electricity_rate": "Electricity Rate",
 
-        repair_maintainance: "Repair & Maintainance",
-        other_overheads: "Other Overheads",
+        "skilled_labour": "Skilled Labour",
+        "engineer": "Engineer",
+        "production_manager": "Production Manager",
 
-        depreciation_plant: "Depreciation on Plant & Machinery",
-        depreciation_building: "Depreciation on Building",
-        completed_life_of_asset: "Completed life of asset",
+        "repair_&_maintainance": "Repair & Maintainance",
+        "other_overheads": "Other Overheads",
 
-        land_cost: "Land Cost",
-        building_investment: "Building Investment",
-        lease_cost: "Lease Cost",
-        type_of_premises: "Type of Premises",
+        "depreciation_on_plant_&_machinery": "Depreciation on Plant & Machinery",
+        "depreciation_on_building": "Depreciation on Building",
+        "completed_life_of_asset": "Completed life of asset",
 
-        interest_long_term: "Interest on Long Term Loan",
-        interest_working_capital: "Interest on Working Capital",
-        margin: "Margin",
-        margin_calculation: "Margin Calculation",
+        "land_cost": "Land Cost",
+        "building_investment": "Building Investment",
+        "lease_cost": "Lease Cost",
+        "type_of_premises": "Type of Premises",
 
-        no_of_orders_per_year: "No of Orders / Year",
+        "interest_on_long_term_loan": "Interest on Long Term Loan",
+        "interest_on_working_capital": "Interest on Working Capital",
+        "margin": "Margin",
+        "margin_calculation": "Margin Calculation",
 
-        caps_per_box: "Caps Per Box",
-        boxes_per_pallet: "Boxes Per Pallet",
-        pallet_type: "Pallet Type",
-        type_of_container: "Type of Container",
-        boxes_per_container: "Boxes Per Container",
-        shipper_cost: "Shipper Cost",
-        polybag_cost: "Polybag Cost",
-        packing_cost: "Packing Cost",
-        freight_cost_per_container: "Freight cost per container",
+        "no_of_orders_/_year": "No of Orders / Year",
 
-        days_per_year: "Days per Year",
-        shifts_per_day: "Shifts per Day",
-        hours_per_day: "Hours per Day",
-        efficiency: "Efficiency",
-        available_hours_per_year: "Available hours per year",
+        "caps_per_box": "Caps Per Box",
+        "pallet_type": "Pallet Type",
+        "type_of_container": "Type of Container",
+        "boxes_per_container": "Boxes Per Container",
+        "shipper_cost": "Shipper Cost",
+        "polybag_cost": "Polybag Cost",
+        "packing_cost": "Packing Cost",
+        "freight_cost_per_container": "Freight cost per container",
 
-        eur_to_inr: "EUR to INR",
-        usd_to_inr: "USD to INR",
+        "days_per_year": "Days per Year",
+        "shifts_per_day": "Shifts per Day",
+        "hours_per_day": "Hours per Day",
+        "efficiency": "Efficiency",
+        "available_hours_per_year": "Available hours per year",
 
-        rm_payment_term: "RM Payment term",
-        fg_payment_term: "FG Payment term",
+        "eur_to_inr": "EUR to INR",
+        "usd_to_inr": "USD to INR",
 
-        mould_cavitation: "Mould Cavitation",
-        mould_cycle_time: "Mould Cycle Time",
-        annual_volume: "Annual Volume"
+        "rm_payment_term": "RM Payment term",
+        "fg_payment_term": "FG Payment term"
     },
 
     conversion_summary: {

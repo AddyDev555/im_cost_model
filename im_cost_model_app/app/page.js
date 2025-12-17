@@ -44,7 +44,13 @@ export default function page() {
       // If no recent cache, fetch new data
       try {
         console.log('Fetching new data from backend...');
-        const result = await api.get("/api/inputs/get-inputs-data");
+
+        const payload = {
+          mode: "fetch",
+          modelName: "im_cost_model"
+        };
+
+        const result = await api.post("/api/inputs/get-inputs-data", payload);
 
         if (result.success && result.inputData) {
           localStorage.setItem("inputsData", JSON.stringify(result));
@@ -178,19 +184,19 @@ export default function page() {
   const printWithFilename = () => {
 
     setTimeout(() => {
-        const originalTitle = document.title;
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        const hh = String(now.getHours()).padStart(2, '0');
-        const min = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        const filename = `${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}_IMCostModel`;
+      const originalTitle = document.title;
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const min = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const filename = `${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}_IMCostModel`;
 
-        document.title = filename;
-        window.print();
-        document.title = originalTitle;
+      document.title = filename;
+      window.print();
+      document.title = originalTitle;
 
     }, 100); // Small delay to allow state to update and components to re-render
   };
@@ -202,6 +208,8 @@ export default function page() {
 
     // ✅ Build payload in generalized structure
     const payload = {
+      mode:"update",
+      modelName: "im_cost_model",
       inputData: allFormData.inputData || []
     };
 

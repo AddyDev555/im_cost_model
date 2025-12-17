@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 import requests
 import os
 from dotenv import load_dotenv
@@ -8,23 +8,64 @@ load_dotenv()
 
 APPSCRIPT_URL = os.getenv("APPSCRIPT_GS_URL")
 
-@router.get("/get-inputs-data")
-async def get_inputs_data():
+# Map each model to its initial and update sheet IDs
+SHEET_ID_MAP = {
+    "im_cost_model": {
+        "initial": os.getenv("INITIAL_GS_ID_IM_COST_MODEL"),
+        "update": os.getenv("UPDATE_GS_ID_IM_COST_MODEL")
+    },
+    "model_2": {
+        "initial": os.getenv("GS_ID_1_MODEL_2"),
+        "update": os.getenv("GS_ID_2_MODEL_2")
+    },
+    # add more models here
+}
+
+@router.post("/get-inputs-data")
+async def get_inputs_data(request: Request):
     try:
-        res = requests.get(APPSCRIPT_URL, timeout=10)
+        payload = await request.json()
+
+        mode = payload.get("mode")  # fetch or update
+        model_name = payload.get("modelName")
+
+        if not mode or mode not in ["fetch", "update"]:
+            raise HTTPException(status_code=400, detail="mode must be 'fetch' or 'update'")
+
+        if not model_name or model_name not in SHEET_ID_MAP:
+            raise HTTPException(status_code=400, detail=f"Unknown modelName: {model_name}")
+
+        # Map mode to correct sheetId
+        sheet_id = SHEET_ID_MAP[model_name]["initial"] if mode == "fetch" else SHEET_ID_MAP[model_name]["update"]
+
+        # Inject sheetId into payload for Apps Script
+        payload["sheetId"] = sheet_id
+
+        # Optional: remove modelName before sending
+        payload.pop("modelName", None)
+
+        # Forward request to Apps Script via POST
+        res = requests.post(
+            APPSCRIPT_URL,
+            json=payload,
+            timeout=10
+        )
         res.raise_for_status()
 
-        payload = res.json()
+        apps_script_response = res.json()
 
-        # Directly return inputData as-is
+        # Return same structure to frontend
         return {
             "success": True,
-            "inputData": payload.get("inputData", []),
-            "summaryData": payload.get("summaryData", [])  
+            "inputData": apps_script_response.get("inputData", []),
+            "summaryData": apps_script_response.get("summaryData", [])
         }
 
     except requests.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Apps Script error: {e}")
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
