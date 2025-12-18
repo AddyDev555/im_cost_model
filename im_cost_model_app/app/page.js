@@ -7,198 +7,200 @@ import SkuDescription from './calculation_models/sku_description';
 import ConversionCostCalculation from './calculation_models/conversion_cost_calculation';
 import SlateEditor from '../components/ui/richTextBox';
 import PDFDownload from './calculation_models/pdf_download';
-import { NotebookPen, Download, FileText, MessageCircle } from 'lucide-react';
+import { NotebookPen, FileText } from 'lucide-react';
 import { api } from "@/utils/api";
 import { toast } from 'react-toastify';
 
-// Remove these static imports:
-// import domtoimage from "dom-to-image-more";
-// import jsPDF from "jspdf";
+/* ============================
+   SHEET NAME MAP
+============================ */
+const sheetNameMapping = {
+  im_cost_model: "IM Cost Model",
+  carton_cost_model: "Carton Cost Model",
+};
 
-export default function page() {
+/* ============================
+   CACHE HELPERS
+============================ */
+const CACHE_KEY = "inputsData";
+const CACHE_TS_KEY = "inputsDataTimestamp";
+const CACHE_SHEET_KEY = "inputsDataSheetName";
+
+export default function Page() {
   const [allFormData, setAllFormData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingSummary, setLoadingSummary] = useState(false);
+
+  const [sheetName, setSheetName] = useState(
+    Object.keys(sheetNameMapping)[0]
+  );
+
+  /* ============================
+     NOTES STATE
+  ============================ */
   const [isNotesVisible, setIsNotesVisible] = useState(false);
   const notesEditorRef = useRef(null);
   const notesButtonRef = useRef(null);
-  const chatSheetRef = useRef(null);
-  const chatButtonRef = useRef(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
   const [notes, setNotes] = useState("");
   const isInitialNotesLoad = useRef(true);
-  const [isChatVisible, setIsChatVisible] = useState(false);
 
+  /* ============================
+     FETCH INPUT DATA
+  ============================ */
+  const initializeApp = async () => {
+    setIsLoading(true);
+
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    const cachedTs = localStorage.getItem(CACHE_TS_KEY);
+    const cachedSheet = localStorage.getItem(CACHE_SHEET_KEY);
+
+    const oneDay = 24 * 60 * 60 * 1000;
+
+    const isValidCache =
+      cachedData &&
+      cachedTs &&
+      cachedSheet === sheetName &&
+      Date.now() - Number(cachedTs) < oneDay;
+
+    /* ============================
+       USE CACHE ONLY IF SAME SHEET
+    ============================ */
+    if (isValidCache) {
+      console.log(`Using cached data for ${sheetName}`);
+      setAllFormData(JSON.parse(cachedData));
+      setIsLoading(false);
+      return;
+    }
+
+    /* ============================
+       CLEAN OLD CACHE ON SHEET CHANGE
+    ============================ */
+    localStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem(CACHE_TS_KEY);
+    localStorage.removeItem(CACHE_SHEET_KEY);
+
+    try {
+      console.log(`Fetching fresh data for ${sheetName}`);
+
+      const payload = {
+        mode: "fetch",
+        modelName: sheetName,
+      };
+
+      const result = await api.post("/api/inputs/get-inputs-data", payload);
+
+      if (result?.success && result?.inputData) {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(result));
+        localStorage.setItem(CACHE_TS_KEY, Date.now().toString());
+        localStorage.setItem(CACHE_SHEET_KEY, sheetName);
+
+        setAllFormData(result);
+      } else {
+        console.error("Invalid backend response", result);
+      }
+    } catch (err) {
+      console.error("Fetch failed:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /* ============================
+     RUN ON SHEET CHANGE
+  ============================ */
   useEffect(() => {
-    const initializeApp = async () => {
-      const cachedData = localStorage.getItem("inputsData");
-      const storedDataTimestamp = localStorage.getItem('inputsDataTimestamp');
-      const oneDay = 24 * 60 * 60 * 1000; // 1 day in milliseconds
-
-      if (cachedData && storedDataTimestamp && (new Date().getTime() - parseInt(storedDataTimestamp, 10) < oneDay)) {
-        console.log('Using cached data from localStorage as it is less than 1 day old.');
-        setAllFormData(JSON.parse(cachedData));
-        setIsLoading(false);
-        return;
-      }
-
-      // If no recent cache, fetch new data
-      try {
-        console.log('Fetching new data from backend...');
-
-        const payload = {
-          mode: "fetch",
-          modelName: "im_cost_model"
-        };
-
-        const result = await api.post("/api/inputs/get-inputs-data", payload);
-
-        if (result.success && result.inputData) {
-          localStorage.setItem("inputsData", JSON.stringify(result));
-          localStorage.setItem("inputsDataTimestamp", new Date().getTime().toString());
-          setAllFormData(result);
-          console.log("Inputs data has been successfully fetched and stored in localStorage.");
-        } else {
-          console.error("Failed to get data from backend:", result.error || "Unknown error");
-        }
-      } catch (error) {
-        console.error('An error occurred while fetching inputs data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     initializeApp();
-  }, []);
+  }, [sheetName]);
 
+  /* ============================
+     NOTES FETCH
+  ============================ */
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/notes/get-notes');
-        const data = await response.json();
-        // Transform the notes data to be compatible with Slate's format.
-        if (data.notes && Array.isArray(data.notes)) {
-          const slateNotes = data.notes.map(note => ({
-            type: 'paragraph',
-            children: [{ text: note.content || '' }],
-          }));
-          setNotes(slateNotes);
-          isInitialNotesLoad.current = true; // Prevent saving on initial fetch
+        const res = await fetch('http://127.0.0.1:8000/api/notes/get-notes');
+        const data = await res.json();
+
+        if (Array.isArray(data?.notes)) {
+          setNotes(
+            data.notes.map(n => ({
+              type: 'paragraph',
+              children: [{ text: n.content || '' }],
+            }))
+          );
+          isInitialNotesLoad.current = true;
         }
-      } catch (error) {
-        console.error('Failed to fetch notes:', error);
+      } catch (err) {
+        console.error("Notes fetch error:", err);
       }
     };
 
     fetchNotes();
   }, []);
 
-  // Debounced effect to save notes to the backend
+  /* ============================
+     NOTES SAVE (DEBOUNCED)
+  ============================ */
   useEffect(() => {
-    // Don't save on the initial load when notes are first fetched.
     if (isInitialNotesLoad.current) {
       isInitialNotesLoad.current = false;
       return;
     }
 
-    // If notes is empty (e.g., after initialization), don't save.
-    if (!notes || notes === "") {
-      return;
-    }
+    if (!notes) return;
 
-    const handler = setTimeout(() => {
-      // Transform Slate's format to the simple format for the backend.
-      const notesToSave = notes.map(node => {
-        // Extract text from all children of a node (like a paragraph)
-        const content = node.children.map(child => child.text).join('');
-        return { content };
-      });
+    const timer = setTimeout(() => {
+      const payload = notes.map(n => ({
+        content: n.children.map(c => c.text).join("")
+      }));
 
       fetch('http://127.0.0.1:8000/api/notes/update-notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Send the transformed data
-        body: JSON.stringify({ notes: notesToSave }),
+        body: JSON.stringify({ notes: payload }),
       })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            toast.success('Notes saved!');
-          }
-        })
-        .catch(err => console.error("Failed to save notes:", err));
-    }, 3000); // 3-second debounce delay
+        .then(r => r.json())
+        .then(r => r.success && toast.success("Notes saved"))
+        .catch(console.error);
 
-    return () => clearTimeout(handler);
+    }, 3000);
+
+    return () => clearTimeout(timer);
   }, [notes]);
 
+  /* ============================
+     CLICK OUTSIDE NOTES
+  ============================ */
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (isNotesVisible &&
+    const handler = (e) => {
+      if (
+        isNotesVisible &&
         notesEditorRef.current &&
-        !notesEditorRef.current.contains(event.target) &&
+        !notesEditorRef.current.contains(e.target) &&
         notesButtonRef.current &&
-        !notesButtonRef.current.contains(event.target)
+        !notesButtonRef.current.contains(e.target)
       ) {
         setIsNotesVisible(false);
       }
-      if (isChatVisible &&
-        chatSheetRef.current &&
-        !chatSheetRef.current.contains(event.target) &&
-        chatButtonRef.current &&
-        !chatButtonRef.current.contains(event.target)
-      ) {
-        setIsChatVisible(false);
-      }
-    }
-
-    if (isNotesVisible || isChatVisible) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isNotesVisible, isChatVisible]);
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="flex flex-col items-center">
-          <div className="w-16 h-16 border-4 border-violet-400 border-t-transparent border-solid rounded-full animate-spin"></div>
-          <p className="mt-4 text-lg text-gray-600">Loading Data...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const handleReset = () => {
-    const cachedData = localStorage.getItem("inputsData");
-    if (cachedData) {
-      console.log('Resetting form data from localStorage.');
-      setAllFormData(JSON.parse(cachedData));
-    } else {
-      console.log('No data in localStorage to reset to.');
+    if (isNotesVisible) {
+      document.addEventListener("mousedown", handler);
     }
-  };
 
-  const printWithFilename = () => {
+    return () => document.removeEventListener("mousedown", handler);
+  }, [isNotesVisible]);
 
-    setTimeout(() => {
-      const originalTitle = document.title;
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      const hh = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      const ss = String(now.getSeconds()).padStart(2, '0');
-      const filename = `${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}_IMCostModel`;
+  /* ============================
+     ACTIONS
+  ============================ */
+  const handleReset = () => {
+    const cached = localStorage.getItem(CACHE_KEY);
+    const cachedSheet = localStorage.getItem(CACHE_SHEET_KEY);
 
-      document.title = filename;
-      window.print();
-      document.title = originalTitle;
-
-    }, 100); // Small delay to allow state to update and components to re-render
+    if (cached && cachedSheet === sheetName) {
+      setAllFormData(JSON.parse(cached));
+    }
   };
 
 
@@ -206,11 +208,10 @@ export default function page() {
     e.preventDefault();
     setLoadingSummary(true);
 
-    // ✅ Build payload in generalized structure
     const payload = {
-      mode:"update",
-      modelName: "im_cost_model",
-      inputData: allFormData.inputData || []
+      mode: "update",
+      modelName: sheetName,
+      inputData: allFormData.inputData || [],
     };
 
     fetch("http://127.0.0.1:8000/api/updates/update-inputs", {
@@ -220,94 +221,82 @@ export default function page() {
     })
       .then(res => res.json())
       .then(res => {
-        if (!res.success) {
-          throw new Error("Update failed");
-        }
+        if (!res.success) throw new Error("Update failed");
 
         setAllFormData(prev => ({
           ...prev,
-          summaryData: res.summaryData || []
+          summaryData: res.summaryData || [],
         }));
-
-        setLoadingSummary(false);
       })
-      .catch(err => {
-        console.error("Submit error:", err);
-        setLoadingSummary(false);
-      });
+      .catch(console.error)
+      .finally(() => setLoadingSummary(false));
   };
 
+  const printWithFilename = () => {
+    const originalTitle = document.title;
+    const now = new Date();
+    document.title = `${now.toISOString().replace(/[:.]/g, '-')}_${sheetName}`;
+    window.print();
+    document.title = originalTitle;
+  };
 
+  /* ============================
+     LOADING UI
+  ============================ */
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="w-16 h-16 border-4 border-violet-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
+  /* ============================
+     RENDER
+  ============================ */
   return (
     <div>
       <div className="px-4 print:hidden">
-        <div className="flex flex-col md:flex-row items-center justify-between w-full px-4 py-2 bg-white shadow-sm rounded-md">
-          <div className="flex items-center gap-2 pt-2">
-            {/* <img src="./logo-tej-teams.png" alt="logo" className="w-6 h-6" />
-            <h2 className="text-xl font-semibold tracking-tight">
-              Tej Teams
-            </h2> */}
+        <div className="flex justify-between items-center px-4 py-2 bg-white shadow rounded">
+          <SkuDescription allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} />
 
-            <SkuDescription
-              allFormData={allFormData}
-              setAllFormData={setAllFormData}
-            />
-          </div>
+          <div>
+            <div>
+              <select
+                value={sheetName}
+                onChange={(e) => setSheetName(e.target.value)}
+                className="border px-0 py-1 rounded mb-1"
+              >
+                {Object.entries(sheetNameMapping).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div className='flex gap-1'>
+              <button onClick={handleReset} className="bg-gray-500 text-white px-3 py-1 rounded">
+                Reset
+              </button>
 
-          {/* Buttons */}
-          <div className="flex items-center gap-2 mt-6">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="px-4 py-1 bg-gray-500 cursor-pointer text-white rounded text-sm font-medium 
-                 hover:bg-gray-600 transition shadow-sm"
-            >
-              Reset
-            </button>
-
-            <button
-              type="submit"
-              onClick={handleSubmit}
-              className="px-4 py-1 bg-violet-500 cursor-pointer text-white rounded text-sm font-medium 
-                 hover:bg-violet-700 transition shadow-sm"
-            >
-              Calculate
-            </button>
+              <button onClick={handleSubmit} className="bg-violet-500 text-white px-3 py-1 rounded">
+                Calculate
+              </button>
+            </div>
           </div>
         </div>
 
         <Accordion type="single" collapsible>
-          <AccordionItem value="item-1">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              Summary
-            </AccordionTrigger>
+          <AccordionItem value="summary">
+            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Summary</AccordionTrigger>
             <AccordionContent>
-              <Summary
-                allFormData={allFormData}
-                setAllFormData={setAllFormData}
-              />
+              <Summary sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} />
             </AccordionContent>
           </AccordionItem>
 
-          {/* <AccordionItem value="item-2">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              SKU Description
-            </AccordionTrigger>
-            <AccordionContent>
-              <SkuDescription
-                allFormData={allFormData}
-                setAllFormData={setAllFormData}
-              />
-            </AccordionContent>
-          </AccordionItem> */}
-
-          <AccordionItem value="item-3">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              Material Cost
-            </AccordionTrigger>
+          <AccordionItem value="material">
+            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Material Cost</AccordionTrigger>
             <AccordionContent>
               <MaterialCalculator
+                sheetName={sheetName}
                 allFormData={allFormData}
                 setAllFormData={setAllFormData}
                 loadingSummary={loadingSummary}
@@ -315,87 +304,45 @@ export default function page() {
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="item-4">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              Conversion Cost
-            </AccordionTrigger>
+          <AccordionItem value="conversion">
+            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Conversion Cost</AccordionTrigger>
             <AccordionContent>
               <ConversionCostCalculation
                 allFormData={allFormData}
                 setAllFormData={setAllFormData}
                 loadingSummary={loadingSummary}
+                sheetName={sheetName}
               />
             </AccordionContent>
           </AccordionItem>
-
-          {/* <AccordionItem value="item-5">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">
-              Machine Cost
-            </AccordionTrigger>
-            <AccordionContent>
-              <MachineCostCalculation
-                allFormData={allFormData}
-                setAllFormData={setAllFormData}
-              />
-            </AccordionContent>
-          </AccordionItem> */}
         </Accordion>
       </div>
 
-      {/* Hidden container for PDF/Print */}
       <div id="pdf-content">
         <PDFDownload
           allFormData={allFormData}
           setAllFormData={setAllFormData}
           loadingSummary={loadingSummary}
+          sheetName={sheetName}
         />
       </div>
 
-      {/* Floating Notes Editor */}
       {isNotesVisible && (
         <div ref={notesEditorRef} className="fixed bottom-20 right-8 z-50">
           <SlateEditor notes={notes} setNotes={setNotes} />
         </div>
       )}
 
-      {/* Floating Chat Component */}
-      {/* {isChatVisible && (
-        <div ref={chatSheetRef} className="fixed bottom-20 right-8 z-50">
-          <ChatWithSheet />
-        </div>
-      )} */}
-
-      {/* Floating Action Buttons */}
       <div className="fixed bottom-4 right-8 z-50 flex items-center gap-2 print:hidden">
-        <button
-          onClick={printWithFilename}
-          className="cursor-pointer px-4 py-2 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors"
-          aria-label="Download PDF"
-        >
-          {/* <Download className="w-5 h-5" /> */}
+        <button onClick={printWithFilename} className="cursor-pointer px-4 py-2 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors" aria-label="Download PDF" > {/* <Download className="w-5 h-5" /> */}
           <div className="flex align-center">
             <p className="text-sm pr-2">Save pdf</p>
-            <FileText className="w-5 h-5" />
-          </div>
+            <FileText className="w-5 h-5" /> </div>
         </button>
-        <button
-          ref={notesButtonRef}
-          onClick={() => setIsNotesVisible(!isNotesVisible)}
-          className="cursor-pointer w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors"
-          aria-label="Toggle notes editor"
-        >
+        <button ref={notesButtonRef} onClick={() => setIsNotesVisible(!isNotesVisible)} className="cursor-pointer w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors" aria-label="Toggle notes editor" >
           <NotebookPen className="w-5 h-5" />
         </button>
-        {/* <button
-          ref={chatButtonRef}
-          onClick={() => setIsChatVisible(!isChatVisible)}
-          className="cursor-pointer w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors"
-          aria-label="Toggle chat"
-        >
-          <MessageCircle className="w-5 h-5" />
-        </button> */}
       </div>
     </div>
   );
-
 }

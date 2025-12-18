@@ -6,7 +6,7 @@ import ConversionCostCalculation from './conversion_cost_calculation';
 import { saveAs } from 'file-saver';
 import { pdf } from '@react-pdf/renderer';
 
-export default function PDFDownload({ allFormData, setAllFormData, loadingSummary }) {
+export default function PDFDownload({ allFormData, setAllFormData, loadingSummary, sheetName }) {
     const formattedDateTime = new Date().toLocaleString();
     return (
         <div id="pdf-content" className="hidden print:block">
@@ -21,6 +21,7 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                     <SkuDescription
                         allFormData={allFormData}
                         setAllFormData={setAllFormData}
+                        sheetName={sheetName}
                     />
                 </div>
 
@@ -30,6 +31,7 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                         <Summary
                             allFormData={allFormData}
                             setAllFormData={setAllFormData}
+                            sheetName={sheetName}
                         />
                     </div>
                 </div>
@@ -41,6 +43,7 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                         allFormData={allFormData}
                         setAllFormData={setAllFormData}
                         loadingSummary={loadingSummary}
+                        sheetName={sheetName}
                     />
                 </div>
 
@@ -49,6 +52,7 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                     <ConversionCostCalculation
                         allFormData={allFormData}
                         setAllFormData={setAllFormData}
+                        sheetName={sheetName}
                     />
                 </div>
 

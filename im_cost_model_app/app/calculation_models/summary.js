@@ -2,15 +2,26 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DataTable from '../../components/ui/data-table';
 import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
-import { IMCostModelMapper } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
 
-const GENERAL_SUMMARY_LABEL_MAP = IMCostModelMapper.general_summary;
+const SHEET_LABEL_MAPS = {
+    im_cost_model: {
+        general: IMCostModelMapper.general_summary,
+        process: IMCostModelMapper.process_summary,
+    },
+    carton_cost_model: {
+        general: CartonCostModel.general_summary,
+        process: CartonCostModel.process_summary,
+    },
+};
 
-const PROCESS_SUMMARY_LABEL_MAP = IMCostModelMapper.process_summary;
-
-export default function Summary({ allFormData }) {
+export default function Summary({ allFormData, sheetName }) {
     const [loading, setLoading] = useState(true);
     const didRun = useRef(false);
+
+    const GENERAL_SUMMARY_LABEL_MAP = SHEET_LABEL_MAPS?.[sheetName]?.general || {};
+
+    const PROCESS_SUMMARY_LABEL_MAP = SHEET_LABEL_MAPS?.[sheetName]?.process || {};
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DD0', '#FF69B4', '#7D3C98'];
 
@@ -91,7 +102,8 @@ export default function Summary({ allFormData }) {
             return { summaryData: [], summaryTableData: [] };
         }
 
-        const order = ["material_cost", "conversion_cost", "margin", "packaging", "freight"];
+        const order = Object.keys(GENERAL_SUMMARY_LABEL_MAP)
+            .filter(key => key !== "total" && key !== "total_cost");
 
         // Map labels to last occurrence
         const labelMap = {};
@@ -155,6 +167,7 @@ export default function Summary({ allFormData }) {
                 const inrValue = inrItem ? parseFloat(inrItem.value) : 0;
 
                 return {
+                    key: item.label,
                     name: GENERAL_SUMMARY_LABEL_MAP[item.label] || item.label,
                     inr_value: `₹${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
                     eur_value: `€${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
@@ -168,6 +181,7 @@ export default function Summary({ allFormData }) {
                 const inrTotalValue = inrTotalItem ? parseFloat(inrTotalItem.value) : 0;
 
                 return {
+                    key: totalItem.label,
                     name: GENERAL_SUMMARY_LABEL_MAP[totalItem.label] || totalItem.label,
                     inr_value: `₹${(isNaN(inrTotalValue) ? 0 : inrTotalValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
                     eur_value: `€${(parseFloat(totalItem.value) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
@@ -177,20 +191,23 @@ export default function Summary({ allFormData }) {
         ].filter(Boolean);
 
         return { summaryData, summaryTableData };
-    }, [allFormData]);
+    }, [allFormData, GENERAL_SUMMARY_LABEL_MAP]);
 
 
     const processTableData = useMemo(() => {
         if (!allFormData?.summaryData) return [];
 
-        const order = ["feedstock", "injection", "assembly", "dispatch"];
+        const order = Object.keys(PROCESS_SUMMARY_LABEL_MAP)
+            .filter(key => key !== "total" && key !== "total_cost");
+
         const labelMap = {};
         allFormData.summaryData.forEach(item => labelMap[item.label] = item);
 
         const items = order.map(label => labelMap[label]).filter(Boolean);
         const totalItem = labelMap["total"];
 
-        // Calculate total from process items
+
+        // Calculate total from process items for percentage calculation
         const totalValue = items.reduce((sum, i) => {
             const val = parseFloat(i.value);
             return sum + (isNaN(val) ? 0 : val);
@@ -198,14 +215,13 @@ export default function Summary({ allFormData }) {
 
         return [
             ...items.map(item => {
-                const eur = parseFloat(item.value);
+                const eurValue = parseFloat(item.value) || 0;
                 const percent = parseFloat(item.percent);
 
-                const eurValue = isNaN(eur) ? 0 : eur;
                 // Calculate percentage based on total or use provided percent
                 const percentValue = totalValue > 0
                     ? (eurValue / totalValue * 100)
-                    : (!isNaN(percent) ? percent : 0);
+                    : (!isNaN(percent) ? percent * 100 : 0); // Assuming percent is a decimal
 
                 // Check if there's a corresponding INR value in summaryData
                 const inrItem = allFormData.summaryData.find(
@@ -214,6 +230,7 @@ export default function Summary({ allFormData }) {
                 const inrValue = inrItem ? parseFloat(inrItem.value) : 0;
 
                 return {
+                    key: item.label,
                     name: PROCESS_SUMMARY_LABEL_MAP[item.label] || item.label,
                     inr_value: `₹${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
                     eur_value: `€${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
@@ -227,6 +244,7 @@ export default function Summary({ allFormData }) {
                 const inrTotalValue = inrTotalItem ? parseFloat(inrTotalItem.value) : 0;
 
                 return {
+                    key: totalItem.label,
                     name: PROCESS_SUMMARY_LABEL_MAP[totalItem.label] || totalItem.label,
                     inr_value: `₹${(isNaN(inrTotalValue) ? 0 : inrTotalValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
                     eur_value: `€${(parseFloat(totalItem.value) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
@@ -234,18 +252,21 @@ export default function Summary({ allFormData }) {
                 };
             })() : null
         ].filter(Boolean);
-    }, [allFormData]);
+    }, [allFormData, PROCESS_SUMMARY_LABEL_MAP]);
 
 
     const summaryColumns = [
         {
             key: "name",
             title: "Details",
-            render: (row) => (
-                <div className={`text-sm text-gray-900 ${row.name === "Total" ? "font-bold" : "font-medium"}`}>
-                    {row.name}
-                </div>
-            )
+            render: (row) => {
+                const isTotal = row.key === 'total' || row.key === 'total_cost';
+                return (
+                    <div className={`text-sm text-gray-900 ${isTotal ? "font-bold" : "font-medium"}`}>
+                        {row.name}
+                    </div>
+                );
+            }
         },
         {
             key: "inr_value",
@@ -280,11 +301,14 @@ export default function Summary({ allFormData }) {
         {
             key: "name",
             title: "Details",
-            render: (row) => (
-                <div className={`text-sm text-gray-900 ${row.name === "Total" ? "font-bold" : "font-medium"}`}>
-                    {row.name}
-                </div>
-            )
+            render: (row) => {
+                const isTotal = row.key === 'total' || row.key === 'total_cost';
+                return (
+                    <div className={`text-sm text-gray-900 ${isTotal ? "font-bold" : "font-medium"}`}>
+                        {row.name}
+                    </div>
+                );
+            }
         },
         {
             key: "inr_value",
@@ -317,7 +341,7 @@ export default function Summary({ allFormData }) {
 
     const processGraphData = useMemo(() => {
         return processTableData
-            .filter(item => item.name !== "Total")
+            .filter(item => item.key !== "total" && item.key !== "total_cost")
             .map(item => ({
                 name: item.name,
                 value: parseFloat(item.per_value) || 0,
@@ -329,7 +353,7 @@ export default function Summary({ allFormData }) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 p-2 border rounded shadow-lg">
             {/* Summary Table */}
-            <div className="lg:col-span-1 shadow-lg rounded p-2">
+            <div className="lg:col-span-1 border rounded p-2 max-h-80 overflow-auto print:h-auto print:overflow-visible">
                 <h3 className="font-bold mb-3">General Summary</h3>
                 {loading ? (
                     <div className="space-y-2">
@@ -380,7 +404,7 @@ export default function Summary({ allFormData }) {
             </div>
 
             {/* Process Breakdown Table (Column 3) */}
-            <div className="lg:col-span-1 shadow-lg rounded p-2">
+            <div className="lg:col-span-1 rounded border p-2 max-h-80 overflow-auto print:h-auto print:overflow-visible">
                 <h3 className="font-bold mb-3">Process Summary</h3>
                 {loading ? (
                     <div className="space-y-2">

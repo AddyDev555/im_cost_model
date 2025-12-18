@@ -14,9 +14,9 @@ SHEET_ID_MAP = {
         "initial": os.getenv("INITIAL_GS_ID_IM_COST_MODEL"),
         "update": os.getenv("UPDATE_GS_ID_IM_COST_MODEL")
     },
-    "model_2": {
-        "initial": os.getenv("GS_ID_1_MODEL_2"),
-        "update": os.getenv("GS_ID_2_MODEL_2")
+    "carton_cost_model": {
+        "initial": os.getenv("INITIAL_GS_ID_CARTON_COST_MODEL"),
+        "update": os.getenv("UPDATE_GS_ID_CARTON_COST_MODEL")
     },
     # add more models here
 }

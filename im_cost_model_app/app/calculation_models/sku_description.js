@@ -1,8 +1,21 @@
 "use client";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import {IMCostModelMapper} from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
 
-export default function SkuDescription({ allFormData }) {
+function resolveSkuMapping(sheetName) {
+    switch (sheetName) {
+        case "im_cost_model":
+            return IMCostModelMapper.sku_description;
+
+        case "carton_cost_model":
+            return CartonCostModel.sku_description;
+
+        default:
+            return {};
+    }
+}
+
+export default function SkuDescription({ allFormData, sheetName }) {
     const [loading, setLoading] = useState(true);
     const didRun = useRef(false);
 
@@ -16,7 +29,10 @@ export default function SkuDescription({ allFormData }) {
        SKU LABEL → BACKEND LABEL MAPPING
        (same pattern as conversion/material cost)
     ------------------------------------------- */
-    const SKU_LABEL_MAP = IMCostModelMapper.sku_description;
+    const SKU_LABEL_MAP = useMemo(
+        () => resolveSkuMapping(sheetName),
+        [sheetName]
+    );
 
     /* -------------------------------------------
        Build display data from inputData
@@ -31,7 +47,7 @@ export default function SkuDescription({ allFormData }) {
                 label: SKU_LABEL_MAP[row.label],
                 value: row.value ?? "",
             }));
-    }, [allFormData]);
+    }, [allFormData, SKU_LABEL_MAP]);
 
     return (
         <div className="w-full">

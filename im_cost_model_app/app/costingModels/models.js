@@ -1,6 +1,6 @@
 export const IMCostModelMapper = {
     sku_description: {
-        sku_description: "SKU Description",
+        sku_description: "Product",
         sku_code: "SKU Code",
         country: "Country",
         currency: "Currency",
@@ -103,5 +103,119 @@ export const IMCostModelMapper = {
         distribution: "Distribution",
         packgaging: "Packgaging",
         freight: "Freight"
+    }
+}
+
+export const CartonCostModel = {
+    sku_description: {
+        product: "Product",
+        sku_code: "SKU Code",
+        country: "Country",
+        currency_symbol: "Currency",
+        supplier: "Supplier",
+    },
+    general_summary: {
+        material_cost: "Material",
+        conversion_cost: "Conversion",
+        margin: "Margin",
+        packaging: "Packaging",
+        freight: "Freight",
+        total: "Total",
+    },
+    process_summary: {
+        feedstock: "Feedstock",
+        printing: "Printing",
+        "folding_&_gluing": "Folding & Gluing",
+        lamination: "Lamination",
+        "foil_stamping_&_other_decoration": "Foil Stamping & other decoration",
+        dispatch: "Dispatch",
+        total_cost: "Total Cost",
+    },
+    material_inputs: {
+        board_rate: "Board Rate",
+        ink_rate: "Ink Rate",
+        varnish_rate: "Varnish Rate",
+        foil_rate: "Foil Rate",
+        film_rate: "Film Rate",
+        primer_rate: "Primer Rate"
+    },
+    material_summary: {
+        "300": "300",
+        "ink": "Ink",
+        "UV_varnish_(gloss)": "UV varnish (Gloss)",
+        "hot_foil": "Additive",
+        "window_carton": "Window Carton",
+        "primer": "Primer",
+        "met_pet_film_12_micron": "Met Pet Film 12 micron",
+        "other_costs": "Other Costs",
+        "wastage": "Wastage",
+        "material_cost": "Total"
+    },
+    conversion_inputs: {
+        electricity: "Electricity",
+
+        manpower_cost: "Manpower Cost",
+        skilled_labour: "Skilled Labour",
+        engineer: "Engineer",
+        production_manager: "Production Manager",
+        no_of_shifts: "No of Shifts",
+
+        overheads: "Overheads",
+        "repair_&_maintenance": "Repair & Maintenance",
+        other_overheads: "Other Overheads",
+
+        depreciation_assumption: "Depreciation Assumption",
+        depreciation: "Depreciation",
+        completed_life_of_asset: "Completed Life of Asset",
+        depreciation_on_building: "Depreciation on Building",
+
+        premises: "Premises",
+        land_cost: "Land Cost",
+        building_cost: "Building Cost",
+        lease_cost: "Lease Cost",
+        type_of_premises: "Type of Premises",
+
+        financials: "Financials",
+        interest_on_long_term_loan: "Interest on Long Term Loan",
+        interest_on_working_capital: "Interest on Working Capital",
+        margin: "Margin",
+        "lt_debt_-_equity_ratio": "LT Debt - Equity Ratio",
+
+        packing: "Packing",
+        cartons_per_box: "Cartons Per Box",
+        boxes_per_pallet: "Boxes Per Pallet",
+        boxes_per_container: "Boxes Per Container",
+
+        logistics: "Logistics",
+        container_type: "Container Type",
+        weight_per_container: "Weight per container",
+        freight_cost: "Freight Cost",
+
+        exchange_rates: "Exchange Rates",
+        euro: "Euro",
+        usd: "USD",
+
+        payment_terms: "Payment Terms",
+        rm: "RM",
+        fg: "FG",
+
+        inventory_holding: "Inventory Holding",
+        rm_inventory_holding: "RM Inventory Holding",
+        fg_inventory_holding: "FG Inventory Holding",
+    },
+    conversion_summary: {
+        electricity: "Electricity",
+        "labour-direct": "Labour-Direct",
+        "labour-indirect": "Labour-Indirect",
+        "repair_&_maintenance": "Repair & Maintenance",
+        other_overheads: "Other Overheads",
+        lease: "Lease",
+        depreciation: "Depreciation",
+        interest: "Interest",
+        margin: "Margin",
+        distribution: "Distribution",
+        packaging: "Packaging",
+        freight: "Freight",
+        conversion_cost: "Total"
     }
 }

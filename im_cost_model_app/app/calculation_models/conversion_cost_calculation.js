@@ -1,12 +1,31 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import DataTable from '../../components/ui/data-table';
-import { IMCostModelMapper } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
 
+function resolveConversionMappings(sheetName) {
+    switch (sheetName) {
+        case "im_cost_model":
+            return {
+                inputMap: IMCostModelMapper.conversion_inputs,
+                summaryMap: IMCostModelMapper.conversion_summary
+            };
+
+        case "carton_cost_model":
+            return {
+                inputMap: CartonCostModel.conversion_inputs || {},
+                summaryMap: CartonCostModel.conversion_summary || {}
+            };
+
+        default:
+            return { inputMap: {}, summaryMap: {} };
+    }
+}
 export default function ConversionCostCalculation({
     allFormData,
     setAllFormData,
-    loadingSummary
+    loadingSummary,
+    sheetName
 }) {
     const [originalInputData, setOriginalInputData] = useState([]);
 
@@ -40,11 +59,8 @@ export default function ConversionCostCalculation({
         });
     };
 
-    /* ---------------- INPUT LABEL MAP ---------------- */
-    const LABEL_MAP = IMCostModelMapper.conversion_inputs;
-
-    /* ---------------- SUMMARY LABEL MAP ---------------- */
-    const SUMMARY_LABEL_MAP = IMCostModelMapper.conversion_summary;
+    const { inputMap: LABEL_MAP, summaryMap: SUMMARY_LABEL_MAP } =
+        resolveConversionMappings(sheetName);
 
     /* ---------------- SUMMARY TABLE BUILD ---------------- */
     const summaryTableData = [];
@@ -145,47 +161,55 @@ export default function ConversionCostCalculation({
                 <div className="bg-gray-50 border rounded p-3 h-57 overflow-auto print:h-auto print:overflow-visible">
                     <h3 className="font-bold pb-3">Summary</h3>
 
-                    <DataTable
-                        columns={[
-                            {
-                                key: "label",
-                                title: "Details",
-                                render: (row) => (
-                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
-                                        {row.label}
-                                    </span>
-                                )
-                            },
-                            {
-                                key: "inr",
-                                title: "INR/T",
-                                render: (row) => (
-                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
-                                        {row.inr}
-                                    </span>
-                                )
-                            },
-                            {
-                                key: "eur",
-                                title: "EUR/T",
-                                render: (row) => (
-                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
-                                        {row.eur}
-                                    </span>
-                                )
-                            },
-                            {
-                                key: "pct",
-                                title: "%",
-                                render: (row) => (
-                                    <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
-                                        {row.pct}
-                                    </span>
-                                )
-                            }
-                        ]}
-                        data={summaryTableData}
-                    />
+                    {loadingSummary ? (
+                        <div className="space-y-2">
+                            {[0, 1, 2, 3].map(i => (
+                                <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                            ))}
+                        </div>
+                    ) : (
+                        <DataTable
+                            columns={[
+                                {
+                                    key: "label",
+                                    title: "Details",
+                                    render: (row) => (
+                                        <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                            {row.label}
+                                        </span>
+                                    )
+                                },
+                                {
+                                    key: "inr",
+                                    title: "INR/T",
+                                    render: (row) => (
+                                        <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                            {row.inr}
+                                        </span>
+                                    )
+                                },
+                                {
+                                    key: "eur",
+                                    title: "EUR/T",
+                                    render: (row) => (
+                                        <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                            {row.eur}
+                                        </span>
+                                    )
+                                },
+                                {
+                                    key: "pct",
+                                    title: "%",
+                                    render: (row) => (
+                                        <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
+                                            {row.pct}
+                                        </span>
+                                    )
+                                }
+                            ]}
+                            data={summaryTableData}
+                        />
+                    )}
                 </div>
 
             </div>

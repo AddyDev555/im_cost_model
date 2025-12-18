@@ -1,217 +1,239 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from '../../components/ui/data-table';
 import ApiDataTable from '../../components/ui/api-table';
 import { api } from "@/utils/api";
-import { IMCostModelMapper } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
 
-export default function MaterialCalculator({ allFormData, setAllFormData, loadingSummary }) {
-    const [showShot2, setShowShot2] = useState(false);
+/* ---------------------------------------------
+   SHEET → MAPPINGS
+--------------------------------------------- */
+function resolveMappings(sheetName) {
+    switch (sheetName) {
+        case "im_cost_model":
+            return {
+                inputMap: IMCostModelMapper.material_inputs,
+                summaryMap: IMCostModelMapper.material_summary
+            };
+
+        case "carton_cost_model":
+            return {
+                inputMap: CartonCostModel.material_inputs,
+                summaryMap: CartonCostModel.material_summary
+            };
+
+        default:
+            return { inputMap: {}, summaryMap: {} };
+    }
+}
+
+export default function MaterialCalculator({
+    sheetName,          // im_cost_model | carton_cost_model
+    allFormData,
+    setAllFormData,
+    loadingSummary
+}) {
     const [ppRate, setPpRate] = useState([]);
     const [originalInputData, setOriginalInputData] = useState([]);
+    const [loadingPpRate, setLoadingPpRate] = useState(false);
 
-    /* ---------------- Fetch Polymer Prices ---------------- */
+    /* ---------------------------------------------
+       DYNAMIC MAPPING
+    --------------------------------------------- */
+    const { inputMap, summaryMap } = useMemo(
+        () => resolveMappings(sheetName),
+        [sheetName]
+    );
+
+    /* ---------------------------------------------
+       POLYMER PRICES (IM only)
+    --------------------------------------------- */
     useEffect(() => {
-        async function fetchPPData() {
+        const fetchPPData = async () => {
+            setLoadingPpRate(true);
             try {
                 const json = await api.get("/api/material/pp-rate");
                 setPpRate(json.data || []);
-            } catch (err) {
-                console.error("Failed to fetch PP data:", err);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoadingPpRate(false);
             }
-        }
+        };
+
         fetchPPData();
-    }, []);
+    }, [sheetName]);
 
-    // Store the original input data on first load to preserve "Value 1"
+    /* ---------------------------------------------
+       STORE ORIGINAL VALUES (Value 1)
+    --------------------------------------------- */
     useEffect(() => {
-        if (allFormData?.inputData && originalInputData.length === 0) {
-            const materialInputs = allFormData.inputData.filter(r => LABEL_MAP[r.label]);
-            setOriginalInputData(materialInputs);
-        }
-    }, [allFormData?.inputData]);
+        if (!allFormData?.inputData || originalInputData.length) return;
 
-    /* ---------------- Input Change Handler ---------------- */
+        const filtered = allFormData.inputData.filter(
+            r => inputMap[r.label]
+        );
+
+        setOriginalInputData(filtered);
+    }, [allFormData?.inputData, inputMap]);
+
+    /* ---------------------------------------------
+       INPUT CHANGE
+    --------------------------------------------- */
     const handleInputChange = (key, value) => {
-        const cleanedValue = String(value).replace(/,/g, '');
-        const parsedValue = cleanedValue === '' ? '' : parseFloat(cleanedValue);
-        const finalValue = isNaN(parsedValue) ? '' : parsedValue;
+        const cleaned = value.replace(/,/g, '');
+        const parsed = cleaned === '' ? '' : Number(cleaned);
 
-        setAllFormData(prev => {
-            const newInputData = prev.inputData.map(item => {
-                if (item.label === key) {
-                    // Create a new object to avoid direct state mutation
-                    return { ...item, value: finalValue !== '' ? finalValue : item.value };
-                }
-                return item;
-            });
-
-            return {
-                ...prev,
-                inputData: newInputData,
-                [`${key}_value2`]: finalValue, // Keep storing value2 for the input field
-            };
-        });
+        setAllFormData(prev => ({
+            ...prev,
+            inputData: prev.inputData.map(item =>
+                item.label === key
+                    ? { ...item, value: parsed === '' ? item.value : parsed }
+                    : item
+            ),
+            [`${key}_value2`]: parsed
+        }));
     };
 
-    /* ---------------- Label Mapping (UI Friendly) ---------------- */
-    const LABEL_MAP = IMCostModelMapper.material_inputs;
+    /* ---------------------------------------------
+       SUMMARY TABLE
+    --------------------------------------------- */
+    const summaryTableData = useMemo(() => {
+        const rows = [];
+        let totalRow = {
+            labelKey: "material_cost",
+            label: summaryMap.material_cost || "Total",
+            inr: "",
+            eur: "",
+            pct: ""
+        };
 
-    /* ---------------- Summary Label Mapping ---------------- */
-    const SUMMARY_LABEL_MAP = IMCostModelMapper.material_summary;
+        (allFormData?.summaryData || []).forEach(item => {
+            if (!summaryMap[item.label]) return;
 
-    const summaryTableData = [];
-    let totalRow = { labelKey: "material_cost", label: "Total", inr: "", eur: "", pct: "" };
+            if (item.label === "material_cost") {
+                if (item.currency === "INR") totalRow.inr = `₹${Number(item.value || 0).toFixed(0)}`;
+                if (item.currency === "EUR") totalRow.eur = `€${Number(item.value || 0).toFixed(0)}`;
+                if (item.percent) totalRow.pct = `${(item.percent * 100).toFixed(0)}%`;
+                return;
+            }
 
-    (allFormData?.summaryData || []).forEach(curr => {
-        if (!SUMMARY_LABEL_MAP[curr.label]) return;
+            let row = rows.find(r => r.labelKey === item.label);
+            if (!row) {
+                row = {
+                    labelKey: item.label,
+                    label: summaryMap[item.label],
+                    inr: "",
+                    eur: "",
+                    pct: ""
+                };
+                rows.push(row);
+            }
 
-        if (curr.label === "material_cost") {
-            // assign currencies to total row
-            if (curr.currency === "INR") totalRow.inr = `₹${Number(curr.value || 0).toFixed(0)}`;
-            if (curr.currency === "EUR") totalRow.eur = `€${Number(curr.value || 0).toFixed(0)}`;
-            if (curr.percent) totalRow.pct = `${(Number(curr.percent) * 100).toFixed(0)}%`;
-            return;
-        }
+            if (item.currency === "INR") {
+                row.inr = `₹${Number(item.value || 0).toFixed(0)}`;
+                if (item.percent) row.pct = `${(item.percent * 100).toFixed(0)}%`;
+            }
 
-        let existing = summaryTableData.find(r => r.labelKey === curr.label);
-        if (!existing) {
-            existing = {
-                labelKey: curr.label,
-                label: SUMMARY_LABEL_MAP[curr.label],
-                inr: "",
-                eur: "",
-                pct: ""
-            };
-            summaryTableData.push(existing);
-        }
+            if (item.currency === "EUR") {
+                row.eur = `€${Number(item.value || 0).toFixed(0)}`;
+            }
+        });
 
-        if (curr.currency === "INR") {
-            existing.inr = `₹${Number(curr.value || 0).toFixed(0)}`;
-            existing.pct = curr.percent ? `${(Number(curr.percent) * 100).toFixed(0)}%` : "";
-        } else if (curr.currency === "EUR") {
-            existing.eur = `€${Number(curr.value || 0).toFixed(0)}`;
-        }
-    });
+        rows.push(totalRow);
+        return rows;
+    }, [allFormData?.summaryData, summaryMap]);
 
-    // push total at the end
-    summaryTableData.push(totalRow);
-
-
-
+    /* ---------------------------------------------
+       RENDER
+    --------------------------------------------- */
     return (
-        <div className="w-full px-1">
-            <div className="bg-white rounded-lg shadow-lg border overflow-hidden">
-                <form className="overflow-x-auto">
-                    <div className={`grid gap-0 ${showShot2 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-                        <div className={`pb-2 sm:px-2 py-0 border-b ${showShot2 ? 'lg:border-r' : ''}`}>
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 border shadow-lg p-2">
 
-                                {/* ---------------- Inputs ---------------- */}
-                                <div className="bg-gray-50 border rounded p-3 h-57 overflow-auto print:h-auto print:overflow-visible">
-                                    <h3 className='font-bold pb-3'>Inputs</h3>
-                                    <DataTable
-                                        columns={[
-                                            { key: 'label', title: 'Label', render: (row) => <div className="text-sm">{row.label}</div> },
-                                            { key: 'unit', title: 'Unit', render: (row) => <div className="text-sm">{row.unit}</div> },
-                                            {
-                                                key: 'value',
-                                                title: 'Value 1',
-                                                render: (row) => (
-                                                    <input
-                                                        type="text"
-                                                        value={row.value ?? ""}
-                                                        readOnly
-                                                        className="w-full bg-gray-100 px-2 py-0.5 text-sm border border-gray-300"
-                                                    />
-                                                )
-                                            },
-                                            {
-                                                key: 'value2',
-                                                title: 'Value 2',
-                                                render: (row) => <input
-                                                    type="text"
-                                                    value={allFormData[`${row.key}_value2`] || ''}
-                                                    onChange={(e) => handleInputChange(row.key, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" />
-                                            },
-                                        ]}
-                                        data={
-                                            (originalInputData || [])
-                                                .map(r => ({
-                                                    key: r.label,
-                                                    label: LABEL_MAP[r.label],
-                                                    unit: r.unit,
-                                                    value: r.value
-                                                }))
-                                        }
-                                    />
+            {/* INPUTS */}
+            <div className="bg-gray-50 border rounded p-3 h-59 overflow-auto print:h-auto print:overflow-visible">
+                <h3 className="font-bold pb-3">Inputs</h3>
 
-                                </div>
+                <DataTable
+                    columns={[
+                        { key: 'label', title: 'Label' },
+                        { key: 'unit', title: 'Unit' },
+                        {
+                            key: 'value',
+                            title: 'Value 1',
+                            render: r => (
+                                <input
+                                    readOnly
+                                    value={r.value ?? ""}
+                                    className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
+                                />
+                            )
+                        },
+                        {
+                            key: 'value2',
+                            title: 'Value 2',
+                            render: r => (
+                                <input
+                                    value={allFormData[`${r.key}_value2`] || ''}
+                                    onChange={e => handleInputChange(r.key, e.target.value)}
+                                    className="w-full border px-2 py-0.5 text-sm"
+                                />
+                            )
+                        }
+                    ]}
+                    data={originalInputData.map(r => ({
+                        key: r.label,
+                        label: inputMap[r.label],
+                        unit: r.unit,
+                        value: r.value
+                    }))}
+                />
+            </div>
 
-                                {/* ---------------- Summary ---------------- */}
-                                <div>
-                                    <div className="bg-gray-50 border rounded h-57 p-3 print:h-auto print:overflow-visible">
-                                        <h3 className='font-bold pb-3'>Summary</h3>
+            {/* SUMMARY */}
+            <div className="bg-gray-50 border rounded p-3 h-59 overflow-auto print:h-auto print:overflow-visible">
+                <h3 className="font-bold pb-3">Summary</h3>
 
-                                        <DataTable
-                                            columns={[
-                                                {
-                                                    key: "label",
-                                                    title: "Material",
-                                                    render: (row) => (
-                                                        <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>
-                                                            {row.label}
-                                                        </span>
-                                                    )
-                                                },
-                                                {
-                                                    key: "inr",
-                                                    title: "INR/T",
-                                                    render: (row) => (
-                                                        <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>
-                                                            {row.inr}
-                                                        </span>
-                                                    )
-                                                },
-                                                {
-                                                    key: "eur",
-                                                    title: "EUR/T",
-                                                    render: (row) => (
-                                                        <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>
-                                                            {row.eur}
-                                                        </span>
-                                                    )
-                                                },
-                                                {
-                                                    key: "pct",
-                                                    title: "%",
-                                                    render: (row) => (
-                                                        <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>
-                                                            {row.pct}
-                                                        </span>
-                                                    )
-                                                }
-                                            ]}
-                                            data={summaryTableData}
-                                        />
-
-
-                                    </div>
-                                </div>
-
-                                {/* ---------------- Polymer Prices ---------------- */}
-                                <div>
-                                    <div className="bg-gray-50 border rounded h-57 p-3 text-sm print:h-auto print:overflow-visible">
-                                        <h3 className='font-bold pb-3'>Polymer Prices</h3>
-                                        <ApiDataTable data={ppRate} />
-                                    </div>
-                                </div>
-
-                            </div>
-                        </div>
+                {loadingSummary ? (
+                    <div className="space-y-2">
+                        {[0, 1, 2, 3].map(i => (
+                            <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                        ))}
                     </div>
-                </form>
+                ) : (
+                    <DataTable
+                        columns={[
+                            {
+                                key: "label",
+                                title: "Material",
+                                render: (row) => (
+                                    <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>
+                                        {row.label}
+                                    </span>
+                                )
+                            },
+                            { key: "inr", title: "INR/T", render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.inr}</span> },
+                            { key: "eur", title: "EUR/T", render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.eur}</span> },
+                            { key: "pct", title: "%", render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.pct}</span> }
+                        ]}
+                        data={summaryTableData}
+                    />
+                )}
+
+            </div>
+
+            {/* POLYMER PRICE */}
+            <div className="bg-gray-50 border rounded p-3 text-sm">
+                <h3 className="font-bold pb-3">Polymer Prices</h3>
+                {loadingPpRate ? (
+                    <div className="space-y-2">
+                        {[0, 1, 2, 3, 4].map(i => (
+                            <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                        ))}
+                    </div>
+                ) : (
+                    ppRate.length > 0 && <ApiDataTable data={ppRate} />
+                )}
             </div>
         </div>
     );
