@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import DataTable from '../../components/ui/data-table';
-import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel} from "../costingModels/models";
 
 function resolveConversionMappings(sheetName) {
     switch (sheetName) {
@@ -15,6 +15,30 @@ function resolveConversionMappings(sheetName) {
             return {
                 inputMap: CartonCostModel.conversion_inputs || {},
                 summaryMap: CartonCostModel.conversion_summary || {}
+            };
+
+        case "corrugate_cost_model":
+            return {
+                inputMap: CorrugateCostModel.conversion_inputs || {},
+                summaryMap: CorrugateCostModel.conversion_summary || {},
+            };
+
+        case "rigid_ebm_cost_model":
+            return {
+                inputMap: RigidEBMCostModel.conversion_inputs || {},
+                summaryMap: RigidEBMCostModel.conversion_summary || {},
+            };
+
+        case "rigid_isbm1_cost_model":
+            return {
+                inputMap: RigidISBM1CostModel.conversion_inputs || {},
+                summaryMap: RigidISBM1CostModel.conversion_summary || {},
+            };
+
+        case "rigid_isbm2_cost_model":
+            return {
+                inputMap: RigidISBM2CostModel.conversion_inputs || {},
+                summaryMap: RigidISBM2CostModel.conversion_summary || {},
             };
 
         default:

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
 
 function resolveSkuMapping(sheetName) {
     switch (sheetName) {
@@ -9,6 +9,18 @@ function resolveSkuMapping(sheetName) {
 
         case "carton_cost_model":
             return CartonCostModel.sku_description;
+        
+        case "corrugate_cost_model":
+            return CorrugateCostModel.sku_description;
+
+        case "rigid_ebm_cost_model":
+            return RigidEBMCostModel.sku_description;
+
+        case "rigid_isbm1_cost_model":
+            return RigidISBM1CostModel.sku_description;
+
+        case "rigid_isbm2_cost_model":
+            return RigidISBM2CostModel.sku_description;
 
         default:
             return {};
@@ -62,7 +74,7 @@ export default function SkuDescription({ allFormData, sheetName }) {
                         ))}
                     </div>
                 ) : (
-                    <div className="flex flex-wrap gap-x-4 gap-y-4">
+                    <div className="flex flex-wrap gap-x-2 gap-y-4">
                         {skuData.map(item => (
                             <div key={item.key} className="flex flex-col">
                                 <label className="text-sm font-medium text-gray-600">

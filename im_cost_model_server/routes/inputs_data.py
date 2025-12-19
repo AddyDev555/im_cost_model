@@ -18,6 +18,22 @@ SHEET_ID_MAP = {
         "initial": os.getenv("INITIAL_GS_ID_CARTON_COST_MODEL"),
         "update": os.getenv("UPDATE_GS_ID_CARTON_COST_MODEL")
     },
+    "corrugate_cost_model":{
+        "initial": os.getenv("INITIAL_GS_ID_CORRUGATE_COST_MODEL"),
+        "update": os.getenv("UPDATE_GS_ID_CORRUGATE_COST_MODEL")
+    },
+    "rigid_ebm_cost_model":{
+        "initial": os.getenv("INITIAL_GS_ID_RIGIDS_EBD_COST_MODEL"),
+        "update": os.getenv("UPDATE_GS_ID_RIGIDS_EBM_COST_MODEL")
+    },
+    "rigid_isbm1_cost_model":{
+        "initial": os.getenv("INITIAL_GS_ID_RIGIDS_ISBM1_COST_MODEL"),
+        "update": os.getenv("UPDATE_GS_ID_RIGIDS_ISBM1_COST_MODEL")
+    },
+    "rigid_isbm2_cost_model":{
+        "initial": os.getenv("INITIAL_GS_ID_RIGIDS_ISBM2_COST_MODEL"),
+        "update": os.getenv("UPDATE_GS_ID_RIGIDS_ISBM2_COST_MODEL")
+    }
     # add more models here
 }
 

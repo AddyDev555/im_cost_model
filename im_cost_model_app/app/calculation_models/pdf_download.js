@@ -17,7 +17,7 @@ export default function PDFDownload({ allFormData, setAllFormData, loadingSummar
                 </div>
 
                 <div className="mb-4">
-                    <h2 className="text-xl font-semibold border-b pb-2 mb-2">SKU Description</h2>
+                    {/* <h2 className="text-xl font-semibold border-b pb-2 mb-2">SKU Description</h2> */}
                     <SkuDescription
                         allFormData={allFormData}
                         setAllFormData={setAllFormData}

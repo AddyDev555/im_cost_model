@@ -17,6 +17,10 @@ import { toast } from 'react-toastify';
 const sheetNameMapping = {
   im_cost_model: "IM Cost Model",
   carton_cost_model: "Carton Cost Model",
+  corrugate_cost_model:"Corrugate Cost Model",
+  rigid_ebm_cost_model:"Rigid EBM Cost Model",
+  rigid_isbm1_cost_model:"Rigid ISBM1 Cost Model",
+  rigid_isbm2_cost_model:"Rigid ISBM2 Cost Model"
 };
 
 /* ============================
@@ -273,11 +277,11 @@ export default function Page() {
               </select>
             </div>
             <div className='flex gap-1'>
-              <button onClick={handleReset} className="bg-gray-500 text-white px-3 py-1 rounded">
+              <button onClick={handleReset} className="bg-gray-500 hover:bg-gray-600 cursor-pointer text-white px-5.5 py-1 rounded">
                 Reset
               </button>
 
-              <button onClick={handleSubmit} className="bg-violet-500 text-white px-3 py-1 rounded">
+              <button onClick={handleSubmit} className="bg-violet-500 hover:bg-violet-600 cursor-pointer text-white px-5.5 py-1 rounded">
                 Calculate
               </button>
             </div>

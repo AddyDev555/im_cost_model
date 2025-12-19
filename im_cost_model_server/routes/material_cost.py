@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Request
 from google_sheets_con import open_google_spreadsheet
-from scrapper.api_call import get_more_price
 from scrapper.scrap import get_html, extract_html_table
 import requests
 from dotenv import load_dotenv

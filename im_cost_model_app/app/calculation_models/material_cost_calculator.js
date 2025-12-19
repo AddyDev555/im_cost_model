@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from '../../components/ui/data-table';
 import ApiDataTable from '../../components/ui/api-table';
 import { api } from "@/utils/api";
-import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
 
 /* ---------------------------------------------
    SHEET → MAPPINGS
@@ -20,6 +20,30 @@ function resolveMappings(sheetName) {
             return {
                 inputMap: CartonCostModel.material_inputs,
                 summaryMap: CartonCostModel.material_summary
+            };
+        
+        case "corrugate_cost_model":
+            return {
+                inputMap: CorrugateCostModel.material_inputs,
+                summaryMap: CorrugateCostModel.material_summary,
+            };
+
+        case "rigid_ebm_cost_model":
+            return {
+                inputMap: RigidEBMCostModel.material_inputs,
+                summaryMap: RigidEBMCostModel.material_summary,
+            };
+
+        case "rigid_isbm1_cost_model":
+            return {
+                inputMap: RigidISBM1CostModel.material_inputs,
+                summaryMap: RigidISBM1CostModel.material_summary,
+            };
+
+        case "rigid_isbm2_cost_model":
+            return {
+                inputMap: RigidISBM2CostModel.material_inputs,
+                summaryMap: RigidISBM2CostModel.material_summary,
             };
 
         default:

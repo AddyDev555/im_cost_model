@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DataTable from '../../components/ui/data-table';
 import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
-import { IMCostModelMapper, CartonCostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
 
 const SHEET_LABEL_MAPS = {
     im_cost_model: {
@@ -12,6 +12,22 @@ const SHEET_LABEL_MAPS = {
     carton_cost_model: {
         general: CartonCostModel.general_summary,
         process: CartonCostModel.process_summary,
+    },
+    corrugate_cost_model: {
+        general: CorrugateCostModel.general_summary,
+        process: CorrugateCostModel.process_summary,
+    },
+    rigid_ebm_cost_model: {
+        general: RigidEBMCostModel.general_summary,
+        process: RigidEBMCostModel.process_summary,
+    },
+    rigid_isbm1_cost_model: {
+        general: RigidISBM1CostModel.general_summary,
+        process: RigidISBM1CostModel.process_summary,
+    },
+    rigid_isbm2_cost_model: {
+        general: RigidISBM2CostModel.general_summary,
+        process: RigidISBM2CostModel.process_summary,
     },
 };
 
