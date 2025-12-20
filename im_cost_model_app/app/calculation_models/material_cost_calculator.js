@@ -233,7 +233,7 @@ export default function MaterialCalculator({
                     data={staticData.map(r => ({
                         key: r.label,
                         label: inputMap[r.label],
-                        unit: r.unit,
+                        unit: r.unit || "-",
                         value: r.value
                     }))}
                 />

@@ -32,7 +32,6 @@ const SHEET_LABEL_MAPS = {
 };
 
 export default function Summary({ allFormData, sheetName, loadingSummary}) {
-    const [loading, setLoading] = useState(true);
     const didRun = useRef(false);
 
     const GENERAL_SUMMARY_LABEL_MAP = SHEET_LABEL_MAPS?.[sheetName]?.general || {};
@@ -110,7 +109,6 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
     useEffect(() => {
         if (didRun.current) return;
         didRun.current = true;
-        setLoading(false);
     }, []);
 
     const { summaryData, summaryTableData } = useMemo(() => {
@@ -371,7 +369,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
             {/* Summary Table */}
             <div className="lg:col-span-1 border rounded p-2 max-h-80 overflow-auto print:h-auto print:overflow-visible">
                 <h3 className="font-bold mb-3">General Summary</h3>
-                {loading ? (
+                {loadingSummary ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
@@ -384,7 +382,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
 
             {/* General Summary Chart */}
             <div className="lg:col-span-1">
-                {loading ? (
+                {loadingSummary ? (
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (
                     summaryData.length > 0 ? (
@@ -422,7 +420,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
             {/* Process Breakdown Table (Column 3) */}
             <div className="lg:col-span-1 rounded border p-2 max-h-80 overflow-auto print:h-auto print:overflow-visible">
                 <h3 className="font-bold mb-3">Process Summary</h3>
-                {loading ? (
+                {loadingSummary ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
@@ -435,7 +433,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
 
             {/* Processing Cost Graph (Column 4) */}
             <div className="lg:col-span-1">
-                {loading ? (
+                {loadingSummary ? (
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (
                     processGraphData.length > 0 ? (

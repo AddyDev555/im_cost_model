@@ -287,7 +287,7 @@ export default function Page() {
               <select
                 value={sheetName}
                 onChange={(e) => setSheetName(e.target.value)}
-                className="border px-0 py-1 rounded mb-1"
+                className="border px-1 py-1 rounded mb-1"
               >
                 {Object.entries(sheetNameMapping).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
@@ -295,11 +295,11 @@ export default function Page() {
               </select>
             </div>
             <div className='flex gap-1'>
-              <button onClick={handleReset} className="bg-gray-500 hover:bg-gray-600 cursor-pointer text-white px-5.5 py-1 rounded">
+              <button onClick={handleReset} className="bg-gray-500 hover:bg-gray-600 cursor-pointer text-white px-6 py-1 rounded">
                 Reset
               </button>
 
-              <button onClick={handleSubmit} className="bg-violet-500 hover:bg-violet-600 cursor-pointer text-white px-5.5 py-1 rounded">
+              <button onClick={handleSubmit} className="bg-violet-500 hover:bg-violet-600 cursor-pointer text-white px-6 py-1 rounded">
                 Calculate
               </button>
             </div>
