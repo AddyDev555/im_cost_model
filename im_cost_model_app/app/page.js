@@ -17,10 +17,10 @@ import { toast } from 'react-toastify';
 const sheetNameMapping = {
   im_cost_model: "IM Cost Model",
   carton_cost_model: "Carton Cost Model",
-  corrugate_cost_model:"Corrugate Cost Model",
-  rigid_ebm_cost_model:"Rigid EBM Cost Model",
-  rigid_isbm1_cost_model:"Rigid ISBM1 Cost Model",
-  rigid_isbm2_cost_model:"Rigid ISBM2 Cost Model"
+  corrugate_cost_model: "Corrugate Cost Model",
+  rigid_ebm_cost_model: "Rigid EBM Cost Model",
+  rigid_isbm1_cost_model: "Rigid ISBM1 Cost Model",
+  rigid_isbm2_cost_model: "Rigid ISBM2 Cost Model"
 };
 
 /* ============================
@@ -204,9 +204,27 @@ export default function Page() {
 
     if (cached && cachedSheet === sheetName) {
       setAllFormData(JSON.parse(cached));
-    }
-  };
 
+      const payload = {
+        mode: "update",
+        modelName: sheetName,
+        inputData: JSON.parse(cached).inputData || [],
+      };
+
+      fetch("http://127.0.0.1:8000/api/updates/update-inputs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+        .then(res => res.json())
+        .then(res => {
+          if (!res.success) throw new Error("Update failed");
+          console.log("Reset Done from backend as well!");
+        })
+        .catch(console.error)
+        .finally(() => setLoadingSummary(false));
+    };
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -292,7 +310,7 @@ export default function Page() {
           <AccordionItem value="summary">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Summary</AccordionTrigger>
             <AccordionContent>
-              <Summary sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} />
+              <Summary sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} loadingSummary={loadingSummary} />
             </AccordionContent>
           </AccordionItem>
 

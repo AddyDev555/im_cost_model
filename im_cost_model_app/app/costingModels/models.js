@@ -90,7 +90,7 @@ export const IMCostModelMapper = {
     },
 
     conversion_summary: {
-        conversion_cost: "Conversion Cost",
+        conversion_cost: "Total",
         electricity: "Electricity",
         "labour-direct": "Labour-Direct",
         "labour-indirect": "Labour-Indirect",
@@ -129,7 +129,7 @@ export const CartonCostModel = {
         lamination: "Lamination",
         "foil_stamping_&_other_decoration": "Foil Stamping & other decoration",
         dispatch: "Dispatch",
-        total_cost: "Total Cost",
+        total_cost: "Total",
     },
     material_inputs: {
         board_rate: "Board Rate",
@@ -240,7 +240,7 @@ export const CorrugateCostModel = {
         feedstock: "Feedstock",
         dispatch: "Dispatch",
         corrugating: "Corrugating",
-        total_cost: "Total Cost",
+        total_cost: "Total",
     },
     material_inputs: {
         paper_rate: "Paper Rate",
@@ -309,7 +309,7 @@ export const CorrugateCostModel = {
         "fg_payment_term": "FG Payment term"
     },
     conversion_summary: {
-        "conversion_cost": "Conversion Cost",
+        "conversion_cost": "Total",
 
         "electricity": "Electricity",
         "labour_direct": "Labour-Direct",
@@ -420,7 +420,7 @@ export const RigidEBMCostModel = {
     },
 
     conversion_summary: {
-        conversion_cost: "Conversion Cost",
+        conversion_cost: "Total",
         electricity: "Electricity",
         "labour-direct": "Labour-Direct",
         "labour-indirect": "Labour-Indirect",
@@ -529,7 +529,7 @@ export const RigidISBM1CostModel = {
     },
 
     conversion_summary: {
-        conversion_cost: "Conversion Cost",
+        conversion_cost: "Total",
         electricity: "Electricity",
         "labour-direct": "Labour-Direct",
         "labour-indirect": "Labour-Indirect",
@@ -638,7 +638,7 @@ export const RigidISBM2CostModel = {
     },
 
     conversion_summary: {
-        conversion_cost: "Conversion Cost",
+        conversion_cost: "Total",
         electricity: "Electricity",
         "labour-direct": "Labour-Direct",
         "labour-indirect": "Labour-Indirect",

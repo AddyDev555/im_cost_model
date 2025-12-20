@@ -21,7 +21,7 @@ function resolveMappings(sheetName) {
                 inputMap: CartonCostModel.material_inputs,
                 summaryMap: CartonCostModel.material_summary
             };
-        
+
         case "corrugate_cost_model":
             return {
                 inputMap: CorrugateCostModel.material_inputs,
@@ -59,7 +59,9 @@ export default function MaterialCalculator({
 }) {
     const [ppRate, setPpRate] = useState([]);
     const [originalInputData, setOriginalInputData] = useState([]);
+    const [staticData, setStaticData] = useState([]);
     const [loadingPpRate, setLoadingPpRate] = useState(false);
+    const inputData = allFormData?.inputData || [];
 
     /* ---------------------------------------------
        DYNAMIC MAPPING
@@ -87,6 +89,29 @@ export default function MaterialCalculator({
 
         fetchPPData();
     }, [sheetName]);
+
+    useEffect(() => {
+        if (!inputData.length) return;
+
+        let snapshot;
+
+        const stored = localStorage.getItem("inputsData");
+        if (!stored) {
+            snapshot = inputData;
+            localStorage.setItem(
+                "inputsData",
+                JSON.stringify({ inputData: snapshot })
+            );
+        } else {
+            snapshot = JSON.parse(stored).inputData || [];
+        }
+
+        const filtered = snapshot.filter(item => inputMap[item.label]);
+        setStaticData(filtered);
+
+    }, [inputData, inputMap]);
+
+
 
     /* ---------------------------------------------
        STORE ORIGINAL VALUES (Value 1)
@@ -205,7 +230,7 @@ export default function MaterialCalculator({
                             )
                         }
                     ]}
-                    data={originalInputData.map(r => ({
+                    data={staticData.map(r => ({
                         key: r.label,
                         label: inputMap[r.label],
                         unit: r.unit,

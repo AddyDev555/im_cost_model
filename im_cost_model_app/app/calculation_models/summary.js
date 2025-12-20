@@ -31,7 +31,7 @@ const SHEET_LABEL_MAPS = {
     },
 };
 
-export default function Summary({ allFormData, sheetName }) {
+export default function Summary({ allFormData, sheetName, loadingSummary}) {
     const [loading, setLoading] = useState(true);
     const didRun = useRef(false);
 

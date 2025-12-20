@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import DataTable from '../../components/ui/data-table';
-import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel} from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
 
 function resolveConversionMappings(sheetName) {
     switch (sheetName) {
@@ -52,6 +52,8 @@ export default function ConversionCostCalculation({
     sheetName
 }) {
     const [originalInputData, setOriginalInputData] = useState([]);
+    const [staticData, setStaticData] = useState([]);
+    const inputData = allFormData?.inputData || [];
 
     // Store the original input data on first load to preserve "Value 1"
     useEffect(() => {
@@ -135,8 +137,29 @@ export default function ConversionCostCalculation({
 
     summaryTableData.push(totalRow);
 
+    useEffect(() => {
+        if (!inputData.length) return;
+
+        let snapshot;
+
+        const stored = localStorage.getItem("inputsData");
+        if (!stored) {
+            snapshot = inputData;
+            localStorage.setItem(
+                "inputsData",
+                JSON.stringify({ inputData: snapshot })
+            );
+        } else {
+            snapshot = JSON.parse(stored).inputData || [];
+        }
+
+        const filtered = snapshot.filter(item => LABEL_MAP[item.label]);
+        setStaticData(filtered);
+
+    }, [inputData, LABEL_MAP]);
+
     return (
-        <div className="bg-white rounded-lg shadow-lg border p-2">
+        <div className="bg-white rounded shadow-lg border p-2">
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
 
@@ -170,7 +193,7 @@ export default function ConversionCostCalculation({
                             },
                         ]}
                         data={
-                            (originalInputData || [])
+                            (staticData || [])
                                 .map(r => ({
                                     key: r.label,
                                     label: LABEL_MAP[r.label],

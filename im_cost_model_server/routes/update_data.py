@@ -40,7 +40,6 @@ SHEET_ID_MAP = {
 @router.post("/update-inputs")
 async def update_inputs(request: Request):
     try:
-        # 1️⃣ Read payload from frontend
         incoming = await request.json()
 
         mode = incoming.get("mode")
@@ -52,14 +51,21 @@ async def update_inputs(request: Request):
         if not model_name or model_name not in SHEET_ID_MAP:
             raise HTTPException(status_code=400, detail=f"Unknown modelName: {model_name}")
 
-        # Map mode to correct sheetId
         sheet_id = SHEET_ID_MAP[model_name]["initial"] if mode == "fetch" else SHEET_ID_MAP[model_name]["update"]
 
-        # Inject sheetId into payload
         incoming["sheetId"] = sheet_id
-        incoming.pop("modelName", None)  # Optional: remove modelName
+        incoming.pop("modelName", None)
 
-        # 2️⃣ Forward payload to Apps Script
+        # 🔁 CONVERT % → RATIO BEFORE UPDATE
+        if mode == "update":
+            input_data = incoming.get("inputData", [])
+            for item in input_data:
+                try:
+                    if item.get("unit") == "%" and item.get("value") not in [None, ""]:
+                        item["value"] = float(item["value"]) / 100
+                except (ValueError, TypeError):
+                    pass
+
         res = requests.post(
             APPSCRIPT_URL_POST,
             json=incoming,

@@ -37,6 +37,22 @@ SHEET_ID_MAP = {
     # add more models here
 }
 
+def convert_percentage_units(data):
+    for item in data:
+        unit = item.get("unit")
+        value = item.get("value")
+
+        if unit == "%":
+            try:
+                # Convert string/number ratio → percentage
+                numeric_value = float(value)
+                item["value"] = numeric_value * 100
+            except (ValueError, TypeError):
+                # Skip non-numeric values safely
+                pass
+
+    return data
+
 @router.post("/get-inputs-data")
 async def get_inputs_data(request: Request):
     try:
@@ -70,11 +86,15 @@ async def get_inputs_data(request: Request):
 
         apps_script_response = res.json()
 
+        input_data = convert_percentage_units(apps_script_response.get("inputData", []))
+        summary_data = convert_percentage_units(apps_script_response.get("summaryData", []))
+
+
         # Return same structure to frontend
         return {
             "success": True,
-            "inputData": apps_script_response.get("inputData", []),
-            "summaryData": apps_script_response.get("summaryData", [])
+            "inputData": input_data,
+            "summaryData": summary_data 
         }
 
     except requests.RequestException as e:
