@@ -24,6 +24,7 @@ export const IMCostModelMapper = {
     material_inputs: {
         weight: "Weight",
         shot_1_ratio: "Ratio",
+        shot_1_polymer_type: "Polymer Type",
         shot_1_polymer_rate: "Polymer Rate",
         shot_1_masterbatch_dosage: "Masterbatch Dosage",
         shot_1_masterbatch_rate: "Masterbatch Rate",

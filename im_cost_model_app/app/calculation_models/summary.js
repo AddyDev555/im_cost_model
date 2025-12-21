@@ -367,7 +367,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 p-2 border rounded shadow-lg">
             {/* Summary Table */}
-            <div className="lg:col-span-1 border rounded p-2 max-h-80 overflow-auto print:h-auto print:overflow-visible">
+            <div className="lg:col-span-1 border rounded p-2">
                 <h3 className="font-bold mb-3">General Summary</h3>
                 {loadingSummary ? (
                     <div className="space-y-2">
@@ -418,7 +418,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
             </div>
 
             {/* Process Breakdown Table (Column 3) */}
-            <div className="lg:col-span-1 rounded border p-2 max-h-80 overflow-auto print:h-auto print:overflow-visible">
+            <div className="lg:col-span-1 rounded border p-2">
                 <h3 className="font-bold mb-3">Process Summary</h3>
                 {loadingSummary ? (
                     <div className="space-y-2">

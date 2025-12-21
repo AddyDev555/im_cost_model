@@ -66,24 +66,25 @@ export default function ConversionCostCalculation({
 
     /* ---------------- Input Change Handler ---------------- */
     const handleInputChange = (key, value) => {
-        const cleanedValue = String(value).replace(/,/g, '');
-        const parsedValue = cleanedValue === '' ? '' : parseFloat(cleanedValue);
-        const finalValue = isNaN(parsedValue) ? '' : parsedValue;
+        const raw = String(value).trim();
 
-        setAllFormData(prev => {
-            const newInputData = prev.inputData.map(item => {
-                if (item.label === key) {
-                    return { ...item, value: finalValue !== '' ? finalValue : item.value };
-                }
-                return item;
-            });
-            return {
-                ...prev,
-                inputData: newInputData,
-                [`${key}_value2`]: finalValue,
-            };
-        });
+        // Try numeric conversion
+        const numeric = raw.replace(/,/g, '');
+        const parsed = numeric !== '' && !isNaN(numeric) ? Number(numeric) : null;
+
+        const finalValue = parsed !== null ? parsed : raw;
+
+        setAllFormData(prev => ({
+            ...prev,
+            inputData: prev.inputData.map(item =>
+                item.label === key
+                    ? { ...item, value: finalValue }
+                    : item
+            ),
+            [`${key}_value2`]: finalValue
+        }));
     };
+
 
     const { inputMap: LABEL_MAP, summaryMap: SUMMARY_LABEL_MAP } =
         resolveConversionMappings(sheetName);
@@ -164,48 +165,66 @@ export default function ConversionCostCalculation({
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
 
                 {/* ---------------- INPUTS ---------------- */}
-                <div className="bg-gray-50 border rounded p-3 h-57 overflow-auto print:h-auto print:overflow-visible">
+                <div className="bg-gray-50 border rounded p-3">
                     <h3 className="font-bold pb-3">Inputs</h3>
 
                     <DataTable
                         columns={[
-                            { key: 'label', title: 'Label', render: (row) => <div className="text-sm">{row.label}</div> },
-                            { key: 'unit', title: 'Unit', render: (row) => <div className="text-sm">{row.unit}</div> },
+                            { key: 'label', title: 'Details' },
+                            { key: 'unit', title: 'Unit' },
                             {
                                 key: 'value',
-                                title: 'Value 1',
-                                render: (row) => (
+                                title: 'Suggested',
+                                render: r => (
                                     <input
-                                        type="text"
-                                        value={row.value ?? ""}
                                         readOnly
-                                        className="w-full bg-gray-100 px-2 py-0.5 text-sm border border-gray-300"
+                                        value={r.value ?? ""}
+                                        className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
                                     />
                                 )
                             },
                             {
                                 key: 'value2',
                                 title: 'Value 2',
-                                render: (row) => <input
-                                    type="text"
-                                    value={allFormData[`${row.key}_value2`] || ''}
-                                    onChange={(e) => handleInputChange(row.key, e.target.value)} className="w-full px-2 py-0.5 text-sm border border-gray-300" />
-                            },
+                                render: r => {
+                                    const hasDropdown =
+                                        Array.isArray(r.dropdownValues) && r.dropdownValues.length > 0;
+
+                                    return hasDropdown ? (
+                                        <select
+                                            value={allFormData[`${r.key}_value2`] ?? r.value ?? ""}
+                                            onChange={e => handleInputChange(r.key, e.target.value)}
+                                            className="w-full border px-2 py-0.5 text-sm"
+                                        >
+                                            {r.dropdownValues.map(opt => (
+                                                <option key={opt} value={opt}>
+                                                    {opt}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            value={allFormData[`${r.key}_value2`] || ''}
+                                            onChange={e => handleInputChange(r.key, e.target.value)}
+                                            className="w-full border px-2 py-0.5 text-sm"
+                                        />
+                                    );
+                                }
+                            }
                         ]}
-                        data={
-                            (staticData || [])
-                                .map(r => ({
-                                    key: r.label,
-                                    label: LABEL_MAP[r.label],
-                                    unit: r.unit || "-",
-                                    value: r.value
-                                }))
-                        }
+                        data={staticData.map(r => ({
+                            key: r.label,
+                            label: LABEL_MAP[r.label],
+                            unit: r.unit || "-",
+                            value: r.value,
+                            dropdownValues: r.dropdownValues || []
+                        }))}
                     />
+
                 </div>
 
                 {/* ---------------- SUMMARY ---------------- */}
-                <div className="bg-gray-50 border rounded p-3 h-57 overflow-auto print:h-auto print:overflow-visible">
+                <div className="bg-gray-50 border rounded p-3">
                     <h3 className="font-bold pb-3">Summary</h3>
 
                     {loadingSummary ? (

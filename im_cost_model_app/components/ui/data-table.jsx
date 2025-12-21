@@ -3,7 +3,7 @@ import React from 'react';
 // Simple shadcn-style DataTable fallback component
 export default function DataTable({ columns, data, hideHeader = false }) {
     return (
-        <div className="w-full overflow-auto">
+        <div className="w-full h-62.5 overflow-auto overflow-x-hidden print:h-auto print:overflow-visible">
             <table className="w-full text-sm border-collapse h-full">
                 {!hideHeader && (
                     <thead>

@@ -130,19 +130,25 @@ export default function MaterialCalculator({
        INPUT CHANGE
     --------------------------------------------- */
     const handleInputChange = (key, value) => {
-        const cleaned = value.replace(/,/g, '');
-        const parsed = cleaned === '' ? '' : Number(cleaned);
+        const raw = String(value).trim();
+
+        // Try numeric conversion
+        const numeric = raw.replace(/,/g, '');
+        const parsed = numeric !== '' && !isNaN(numeric) ? Number(numeric) : null;
+
+        const finalValue = parsed !== null ? parsed : raw;
 
         setAllFormData(prev => ({
             ...prev,
             inputData: prev.inputData.map(item =>
                 item.label === key
-                    ? { ...item, value: parsed === '' ? item.value : parsed }
+                    ? { ...item, value: finalValue }
                     : item
             ),
-            [`${key}_value2`]: parsed
+            [`${key}_value2`]: finalValue
         }));
     };
+
 
     /* ---------------------------------------------
        SUMMARY TABLE
@@ -200,16 +206,16 @@ export default function MaterialCalculator({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 border shadow-lg p-2">
 
             {/* INPUTS */}
-            <div className="bg-gray-50 border rounded p-3 h-59 overflow-auto print:h-auto print:overflow-visible">
+            <div className="bg-gray-50 border rounded p-3">
                 <h3 className="font-bold pb-3">Inputs</h3>
 
                 <DataTable
                     columns={[
-                        { key: 'label', title: 'Label' },
+                        { key: 'label', title: 'Details' },
                         { key: 'unit', title: 'Unit' },
                         {
                             key: 'value',
-                            title: 'Value 1',
+                            title: 'Suggested',
                             render: r => (
                                 <input
                                     readOnly
@@ -221,28 +227,45 @@ export default function MaterialCalculator({
                         {
                             key: 'value2',
                             title: 'Value 2',
-                            render: r => (
-                                <input
-                                    value={allFormData[`${r.key}_value2`] || ''}
-                                    onChange={e => handleInputChange(r.key, e.target.value)}
-                                    className="w-full border px-2 py-0.5 text-sm"
-                                />
-                            )
+                            render: r => {
+                                const hasDropdown =
+                                    Array.isArray(r.dropdownValues) && r.dropdownValues.length > 0;
+
+                                return hasDropdown ? (
+                                    <select
+                                        value={allFormData[`${r.key}_value2`] ?? r.value ?? ""}
+                                        onChange={e => handleInputChange(r.key, e.target.value)}
+                                        className="w-full border px-2 py-0.5 text-sm"
+                                    >
+                                        {r.dropdownValues.map(opt => (
+                                            <option key={opt} value={opt}>
+                                                {opt}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        value={allFormData[`${r.key}_value2`] || ''}
+                                        onChange={e => handleInputChange(r.key, e.target.value)}
+                                        className="w-full border px-2 py-0.5 text-sm"
+                                    />
+                                );
+                            }
                         }
                     ]}
                     data={staticData.map(r => ({
                         key: r.label,
                         label: inputMap[r.label],
                         unit: r.unit || "-",
-                        value: r.value
+                        value: r.value,
+                        dropdownValues: r.dropdownValues || []
                     }))}
                 />
             </div>
 
             {/* SUMMARY */}
-            <div className="bg-gray-50 border rounded p-3 h-59 overflow-auto print:h-auto print:overflow-visible">
+            <div className="bg-gray-50 border rounded p-3">
                 <h3 className="font-bold pb-3">Summary</h3>
-
                 {loadingSummary ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (

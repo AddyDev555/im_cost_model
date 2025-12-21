@@ -22,7 +22,7 @@ export default function DataTable({ data }) {
     const visibleKeys = ["Grade", "Date", "Price", "Company", "State"];
 
     return (
-        <div className="w-full overflow-auto h-42">
+        <div className="w-full overflow-auto h-63 overflow-x-hidden">
             <table className="w-full text-sm border-collapse">
                 <thead>
                     <tr>
