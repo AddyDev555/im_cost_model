@@ -174,7 +174,7 @@ export default function ConversionCostCalculation({
                             { key: 'unit', title: 'Unit' },
                             {
                                 key: 'value',
-                                title: 'Suggested',
+                                title: 'Recommended',
                                 render: r => (
                                     <input
                                         readOnly
@@ -185,7 +185,7 @@ export default function ConversionCostCalculation({
                             },
                             {
                                 key: 'value2',
-                                title: 'Value 2',
+                                title: 'Actual',
                                 render: r => {
                                     const hasDropdown =
                                         Array.isArray(r.dropdownValues) && r.dropdownValues.length > 0;
