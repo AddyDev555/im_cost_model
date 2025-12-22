@@ -4,7 +4,7 @@ export const IMCostModelMapper = {
         sku_code: "SKU Code",
         country: "Country",
         currency: "Currency",
-        supplier: "Supplier",
+        
     },
     general_summary: {
         material_cost: "Material",
@@ -113,7 +113,7 @@ export const CartonCostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        supplier: "Supplier",
+        
     },
     general_summary: {
         material_cost: "Material",
@@ -227,7 +227,7 @@ export const CorrugateCostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        supplier: "Supplier",
+        
     },
     general_summary: {
         material_cost: "Material",
@@ -335,7 +335,7 @@ export const RigidEBMCostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        supplier: "Supplier",
+        
     },
     general_summary: {
         material_cost: "Material",
@@ -443,7 +443,7 @@ export const RigidISBM1CostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        supplier: "Supplier",
+        
     },
     general_summary: {
         material_cost: "Material",
@@ -552,7 +552,7 @@ export const RigidISBM2CostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        supplier: "Supplier",
+        
     },
     general_summary: {
         material_cost: "Material",

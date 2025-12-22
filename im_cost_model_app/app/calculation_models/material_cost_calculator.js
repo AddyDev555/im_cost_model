@@ -216,13 +216,38 @@ export default function MaterialCalculator({
                         {
                             key: 'value',
                             title: 'Recommended Value',
-                            render: r => (
-                                <input
-                                    readOnly
-                                    value={r.value ?? ""}
-                                    className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
-                                />
-                            )
+                            render: r => {
+                                let formattedValue = "";
+
+                                if (r.value !== null && r.value !== undefined) {
+                                    const num = Number(r.value);
+
+                                    if (!isNaN(num) && typeof r.value !== "string") {
+                                        // numeric (actual number type)
+                                        formattedValue = Number.isInteger(num)
+                                            ? num.toString()
+                                            : num.toFixed(2);
+                                    }
+                                    else if (!isNaN(num) && typeof r.value === "string" && r.value.trim() !== "") {
+                                        // numeric string
+                                        formattedValue = Number.isInteger(num)
+                                            ? num.toString()
+                                            : num.toFixed(2);
+                                    }
+                                    else {
+                                        // pure text
+                                        formattedValue = String(r.value);
+                                    }
+                                }
+
+                                return (
+                                    <input
+                                        readOnly
+                                        value={formattedValue}
+                                        className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
+                                    />
+                                );
+                            }
                         },
                         {
                             key: 'value2',

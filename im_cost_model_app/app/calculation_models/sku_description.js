@@ -9,7 +9,7 @@ function resolveSkuMapping(sheetName) {
 
         case "carton_cost_model":
             return CartonCostModel.sku_description;
-        
+
         case "corrugate_cost_model":
             return CorrugateCostModel.sku_description;
 
@@ -27,7 +27,7 @@ function resolveSkuMapping(sheetName) {
     }
 }
 
-export default function SkuDescription({ allFormData, sheetName }) {
+export default function SkuDescription({ allFormData, setAllFormData, sheetName }) {
     const [loading, setLoading] = useState(true);
     const didRun = useRef(false);
 
@@ -37,18 +37,11 @@ export default function SkuDescription({ allFormData, sheetName }) {
         setLoading(false);
     }, []);
 
-    /* -------------------------------------------
-       SKU LABEL → BACKEND LABEL MAPPING
-       (same pattern as conversion/material cost)
-    ------------------------------------------- */
     const SKU_LABEL_MAP = useMemo(
         () => resolveSkuMapping(sheetName),
         [sheetName]
     );
 
-    /* -------------------------------------------
-       Build display data from inputData
-    ------------------------------------------- */
     const skuData = useMemo(() => {
         if (!allFormData?.inputData) return [];
 
@@ -58,8 +51,26 @@ export default function SkuDescription({ allFormData, sheetName }) {
                 key: row.label,
                 label: SKU_LABEL_MAP[row.label],
                 value: row.value ?? "",
+                dropdownValues: row.dropdownValues ?? [],
             }));
     }, [allFormData, SKU_LABEL_MAP]);
+
+    const handleChange = (label, newValue) => {
+        setAllFormData(prev => {
+            if (!Array.isArray(prev?.inputData)) return prev;
+
+            return {
+                ...prev,
+                inputData: prev.inputData.map(row =>
+                    row.label === label
+                        ? { ...row, value: newValue }
+                        : row
+                )
+            };
+        });
+    };
+
+
 
     return (
         <div className="w-full">
@@ -80,12 +91,28 @@ export default function SkuDescription({ allFormData, sheetName }) {
                                 <label className="text-sm font-medium text-gray-600">
                                     {item.label}
                                 </label>
-                                <input
-                                    type="text"
-                                    value={item.value}
-                                    readOnly
-                                    className="p-1 px-2 border rounded bg-gray-100 mt-1 text-sm w-33"
-                                />
+
+                                {item.dropdownValues.length > 0 ? (
+                                    <select
+                                        value={item.value}
+                                        className="p-1 px-2 border rounded bg-white mt-1 text-sm w-33"
+                                        onChange={(e) => handleChange(item.key, e.target.value)}
+                                    >
+                                        <option value="">Select</option>
+                                        {item.dropdownValues.map(opt => (
+                                            <option key={opt} value={opt}>
+                                                {opt}
+                                            </option>
+                                        ))}
+                                    </select>
+                                ) : (
+                                    <input
+                                        type="text"
+                                        value={item.value}
+                                        readOnly
+                                        className="p-1 px-2 border rounded bg-gray-100 mt-1 text-sm w-33"
+                                    />
+                                )}
                             </div>
                         ))}
                     </div>
