@@ -267,8 +267,9 @@ export default function Page() {
   ============================ */
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex flex-col items-center justify-center h-screen">
         <div className="w-16 h-16 border-4 border-violet-400 border-t-transparent rounded-full animate-spin" />
+        <h1 className="text-slate-500 text-center p-2 pl-3 align-center">Loading...</h1>
       </div>
     );
   }
