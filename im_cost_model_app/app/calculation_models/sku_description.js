@@ -84,7 +84,7 @@ export default function SkuDescription({ allFormData, sheetName }) {
                                     type="text"
                                     value={item.value}
                                     readOnly
-                                    className="p-1 px-2 border rounded bg-gray-100 mt-1 text-sm w-48"
+                                    className="p-1 px-2 border rounded bg-gray-100 mt-1 text-sm w-33"
                                 />
                             </div>
                         ))}

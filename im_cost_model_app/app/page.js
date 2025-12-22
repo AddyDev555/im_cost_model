@@ -280,7 +280,7 @@ export default function Page() {
   return (
     <div>
       <div className="px-4 print:hidden">
-        <div className="flex justify-between items-center px-4 py-2 bg-white shadow rounded">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
           <SkuDescription allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} />
 
           <div>
@@ -288,7 +288,7 @@ export default function Page() {
               <select
                 value={sheetName}
                 onChange={(e) => setSheetName(e.target.value)}
-                className="border px-1 py-1 rounded mb-1"
+                className="text-sm border px-1 py-1 rounded mb-1"
               >
                 {Object.entries(sheetNameMapping).map(([k, v]) => (
                   <option key={k} value={k}>{v}</option>
@@ -296,11 +296,11 @@ export default function Page() {
               </select>
             </div>
             <div className='flex gap-1'>
-              <button onClick={handleReset} className="bg-gray-500 hover:bg-gray-600 cursor-pointer text-white px-6 py-1 rounded">
+              <button onClick={handleReset} className="text-sm bg-gray-500 hover:bg-gray-600 cursor-pointer text-white px-5.5 py-1 rounded">
                 Reset
               </button>
 
-              <button onClick={handleSubmit} className="bg-violet-500 hover:bg-violet-600 cursor-pointer text-white px-6 py-1 rounded">
+              <button onClick={handleSubmit} className="text-sm bg-violet-500 hover:bg-violet-600 cursor-pointer text-white px-5.5 py-1 rounded">
                 Calculate
               </button>
             </div>
@@ -347,6 +347,7 @@ export default function Page() {
           setAllFormData={setAllFormData}
           loadingSummary={loadingSummary}
           sheetName={sheetName}
+          sheetNameMapping={sheetNameMapping}
         />
       </div>
 

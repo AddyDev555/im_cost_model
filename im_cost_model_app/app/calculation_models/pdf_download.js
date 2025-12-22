@@ -6,14 +6,14 @@ import ConversionCostCalculation from './conversion_cost_calculation';
 import { saveAs } from 'file-saver';
 import { pdf } from '@react-pdf/renderer';
 
-export default function PDFDownload({ allFormData, setAllFormData, loadingSummary, sheetName }) {
+export default function PDFDownload({ allFormData, setAllFormData, loadingSummary, sheetName, sheetNameMapping }) {
     const formattedDateTime = new Date().toLocaleString();
     return (
         <div id="pdf-content" className="hidden print:block">
             <div className="p-4">
                 <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">Cost Model Report</h1>
-                    <p className="text-md">{formattedDateTime}</p>
+                    <h1 className="text-2xl font-bold">{sheetNameMapping[sheetName] ?? sheetName} Report</h1>
+                    <p className="text-sm">{formattedDateTime}</p>
                 </div>
 
                 <div className="mb-4">
