@@ -1,6 +1,6 @@
 export const IMCostModelMapper = {
     sku_description: {
-        sku_description: "Product",
+        product: "Product",
         sku_code: "SKU Code",
         country: "Country",
         currency: "Currency",

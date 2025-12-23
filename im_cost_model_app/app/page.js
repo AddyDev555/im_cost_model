@@ -10,6 +10,7 @@ import PDFDownload from './calculation_models/pdf_download';
 import { NotebookPen, FileText } from 'lucide-react';
 import { api } from "@/utils/api";
 import { toast } from 'react-toastify';
+import SaveExcelButton from './calculation_models/download_excel';
 
 /* ============================
    SHEET NAME MAP
@@ -34,10 +35,15 @@ export default function Page() {
   const [allFormData, setAllFormData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(false);
+  const [countryName, setCountryName] = useState("India");
 
   const [sheetName, setSheetName] = useState(
     Object.keys(sheetNameMapping)[0]
   );
+
+  useEffect(()=>{
+    console.log(countryName);
+  },[countryName])
 
   /* ============================
      NOTES STATE
@@ -49,8 +55,8 @@ export default function Page() {
   const isInitialNotesLoad = useRef(true);
 
   /* ============================
-     FETCH INPUT DATA
-  ============================ */
+   FETCH INPUT DATA
+============================ */
   const initializeApp = async () => {
     setIsLoading(true);
 
@@ -69,12 +75,12 @@ export default function Page() {
     /* ============================
        USE CACHE ONLY IF SAME SHEET
     ============================ */
-    if (isValidCache) {
-      console.log(`Using cached data for ${sheetName}`);
-      setAllFormData(JSON.parse(cachedData));
-      setIsLoading(false);
-      return;
-    }
+    // if (isValidCache) {
+    //   console.log(`Using cached data for ${sheetName}`);
+    //   setAllFormData(JSON.parse(cachedData));
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     /* ============================
        CLEAN OLD CACHE ON SHEET CHANGE
@@ -89,6 +95,7 @@ export default function Page() {
       const payload = {
         mode: "fetch",
         modelName: sheetName,
+        countryName: countryName
       };
 
       const result = await api.post("/api/inputs/get-inputs-data", payload);
@@ -114,7 +121,7 @@ export default function Page() {
   ============================ */
   useEffect(() => {
     initializeApp();
-  }, [sheetName]);
+  }, [sheetName, countryName]);
 
   /* ============================
      NOTES FETCH
@@ -281,7 +288,7 @@ export default function Page() {
     <div>
       <div className="px-4 print:hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
-          <SkuDescription allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} />
+          <SkuDescription allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName}/>
 
           <div>
             <div>
@@ -358,6 +365,9 @@ export default function Page() {
       )}
 
       <div className="fixed bottom-4 right-8 z-50 flex items-center gap-2 print:hidden">
+        <div>
+          <SaveExcelButton sheetName={sheetName} mode="update" />
+        </div>
         <button onClick={printWithFilename} className="cursor-pointer px-4 py-2 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors" aria-label="Download PDF" > {/* <Download className="w-5 h-5" /> */}
           <div className="flex align-center">
             <p className="text-sm pr-2">Save pdf</p>
