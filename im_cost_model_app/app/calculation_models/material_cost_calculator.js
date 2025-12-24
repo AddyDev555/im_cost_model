@@ -93,8 +93,6 @@ export default function MaterialCalculator({
 
     }, [inputData, inputMap]);
 
-
-
     /* ---------------------------------------------
        STORE ORIGINAL VALUES (Value 1)
     --------------------------------------------- */
@@ -291,7 +289,7 @@ export default function MaterialCalculator({
                         columns={[
                             {
                                 key: "label",
-                                title: "Material",
+                                title: "Details",
                                 render: (row) => (
                                     <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>
                                         {row.label}

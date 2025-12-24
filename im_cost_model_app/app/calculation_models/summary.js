@@ -156,13 +156,13 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
 
                 return {
                     name: GENERAL_SUMMARY_LABEL_MAP[item.label] || item.label,
-                    value: +percentValue.toFixed(1),
+                    value: +percentValue.toFixed(0),
                     eur_value: eur,
                     inr_value: inrValue
                 };
             })
             .filter(Boolean);
-
+        
         // TABLE data
         const summaryTableData = [
             ...items.map(item => {
@@ -185,7 +185,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                     name: GENERAL_SUMMARY_LABEL_MAP[item.label] || item.label,
                     inr_value: `₹${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
                     eur_value: `€${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    cost_ratio: `${percentValue.toFixed(1)}%`
+                    cost_ratio: `${percentValue.toFixed(0)}%`
                 };
             }),
             totalItem ? (() => {
@@ -248,7 +248,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                     name: PROCESS_SUMMARY_LABEL_MAP[item.label] || item.label,
                     inr_value: `₹${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
                     eur_value: `€${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    per_value: `${percentValue.toFixed(1)}%`
+                    per_value: `${percentValue.toFixed(0)}%`
                 };
             }),
             totalItem ? (() => {

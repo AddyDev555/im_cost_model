@@ -4,7 +4,7 @@ export const IMCostModelMapper = {
         sku_code: "SKU Code",
         country: "Country",
         currency: "Currency",
-        
+
     },
     general_summary: {
         material_cost: "Material",
@@ -25,6 +25,7 @@ export const IMCostModelMapper = {
         weight: "Weight",
         shot_1_ratio: "Ratio",
         shot_1_polymer_type: "Polymer Type",
+        shot_1_polymer_grade: "Polymer Grade",
         shot_1_polymer_rate: "Polymer Rate",
         shot_1_masterbatch_dosage: "Masterbatch Dosage",
         shot_1_masterbatch_rate: "Masterbatch Rate",
@@ -113,7 +114,7 @@ export const CartonCostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        
+
     },
     general_summary: {
         material_cost: "Material",
@@ -138,7 +139,52 @@ export const CartonCostModel = {
         varnish_rate: "Varnish Rate",
         foil_rate: "Foil Rate",
         film_rate: "Film Rate",
-        primer_rate: "Primer Rate"
+        primer_rate: "Primer Rate",
+        board_rate: "Board Rate",
+        ink_rate: "Ink Rate",
+        varnish_rate: "Varnish Rate",
+        foil_rate: "Foil Rate",
+        film_rate: "File Rate",
+        primer_rate: "Primer Rate",
+        no_of_colours: "No of Colours",
+        common_colours: "Common Colours",
+        no_of_designs: "No of Designs",
+        "no_of_print_runs_/_year": "No of Print Runs / year",
+        "no_of_designs/run": "No of Designs/Run",
+        length_1: "Length 1",
+        length_2: "Length 2",
+        width_1: "Width 1",
+        width_2: "Width 2",
+        height: "Height",
+        max_flap: "Max Flap",
+        gluing_area: "Gluing Area",
+        machine_size: "Machine Size",
+        grain_direction: "Grain Direction",
+        board_type: "Board Type",
+        board_gsm: "Board GSM",
+        interlock: "Interlock",
+        interlock_value: "Interlock Value",
+
+        // Decoration
+        spot_varnish: "Spot Varnish",
+        hot_foiling: "Hot Foiling",
+        lamination: "Lamination",
+        window_carton: "Window Carton",
+
+        // Decoration Details
+        varnish_type: "Varnish Type",
+        spot_varnish_type: "Spot Varnish Type",
+        "spot_varnish_area_(%_of_total_sqm)": "Spot Varnish Area (% of Total SQM)",
+        foil_length: "Foil Length",
+        foil_width: "Foil Width",
+        film_type: "Film Type",
+        film_micron: "Film micron",
+        film_gsm: "Film GSM",
+        primer: "Primer",
+        "window_-_width": "Window - Width",
+        "window_-_length": "Window - Length",
+        window_film_micron: "Window Film micron",
+        window_film_gsm: "Window Film GSM"
     },
     material_summary: {
         "300": "300",
@@ -153,6 +199,14 @@ export const CartonCostModel = {
         "material_cost": "Total"
     },
     conversion_inputs: {
+        printing_machine: "Printing Machine",
+        spot_varnish_machine: "Spot Varnish Machine",
+        hot_foiling_machine: "Hot Foiling Machine",
+        lamination_machine: "Lamination Machine",
+        creasing_and_blanking_machine: "Creasing & Blanking Machine",
+        "folder_-_gluer_machine": "Folder - Gluer Machine",
+        window_patching_machine: "Window Patching Machine",
+
         electricity: "Electricity",
 
         manpower_cost: "Manpower Cost",
@@ -227,7 +281,7 @@ export const CorrugateCostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        
+
     },
     general_summary: {
         material_cost: "Material",
@@ -246,13 +300,45 @@ export const CorrugateCostModel = {
     material_inputs: {
         paper_rate: "Paper Rate",
         "115": "115",
-        "180": "180"
+        "180": "180",
+        length: "Length",
+        width: "Width",
+        height: "Height",
+
+        no_of_ply: "No of Ply",
+        flute_1: "Flute 1",
+        flute_2: "Flute 2",
+
+        construction: "Construction",
+        k1: "K1",
+        k1_type: "K1 Type",
+        m1: "M1",
+        m1_type: "M1 Type",
+        k2: "K2",
+        k2_type: "K2 Type",
+        m2: "M2",
+        m2_type: "M2 Type",
+        k3: "K3",
+        k3_type: "K3 Type",
+
+        outer_dimensions_add_length: "Add Length",
+        outer_dimensions_add_width: "Add Width",
+
+        printing_method: "Printing Method",
+        no_of_colours: "No of Colours",
+        type_of_die_cutting: "Type of Die Cutting"
     },
     material_summary: {
         paper: "Paper",
         "material_cost": "Total"
     },
     conversion_inputs: {
+        corrugation_line: "Corrugation Line",
+        printing_machine: "Printing Machine",
+        rotary_die_cutter: "Rotary Die Cutter",
+        flat_bed_die_cutter: "Flat Bed Die Cutter",
+        "former_&_gluer": "Former & Gluer",
+        "no_of_set_ups/year": "No of Set Ups/Year",
         "electricity_rate": "Electricity Rate",
 
         "manpower_cost": "Manpower Cost",
@@ -335,7 +421,7 @@ export const RigidEBMCostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        
+
     },
     general_summary: {
         material_cost: "Material",
@@ -355,6 +441,8 @@ export const RigidEBMCostModel = {
     material_inputs: {
         weight: "Weight",
         layer_1_ratio: "Ratio",
+        layer_1_polymer_type: "Polymer Type",
+        layer_1_polymer_grade: "Polymer Grade",
         layer_1_polymer_rate: "Polymer Rate",
         layer_1_masterbatch_dosage: "Masterbatch Dosage",
         layer_1_masterbatch_rate: "Masterbatch Rate",
@@ -371,6 +459,9 @@ export const RigidEBMCostModel = {
     conversion_inputs: {
         "mould_cavitation": "Mould Cavitation",
         "mould_cycle_time": "Mould Cycle Time",
+        "machine_model_&_tonnage": "Machine Model & Tonnage",
+        "no_of_set_up_/_year": "No of Set Up / Year",
+        "no_of_ramp_ups/year": "No of Ramp Ups/Year",
         "annual_volume": "Annual Volume",
 
         "electricity_rate": "Electricity Rate",
@@ -443,7 +534,7 @@ export const RigidISBM1CostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        
+
     },
     general_summary: {
         material_cost: "Material",
@@ -463,11 +554,13 @@ export const RigidISBM1CostModel = {
     material_inputs: {
         weight: "Weight",
         layer_1_ratio: "Ratio",
+        layer_1_polymer_type: "Polymer Type",
+        layer_1_polymer_grade: "Polymer Grade",
         layer_1_polymer_rate: "Polymer Rate",
         layer_1_masterbatch_dosage: "Masterbatch Dosage",
         layer_1_masterbatch_rate: "Masterbatch Rate",
         layer_1_uv_additive_dosage: "Additive Dosage",
-        layer_1_uv_additive_rate: "Additive Rate"
+        layer_1_uv_additive_rate: "Additive Rate",
     },
     material_summary: {
         resin: "Resin",
@@ -480,6 +573,9 @@ export const RigidISBM1CostModel = {
     conversion_inputs: {
         "mould_cavitation": "Mould Cavitation",
         "mould_cycle_time": "Mould Cycle Time",
+        "machine_model_&_tonnage": "Machine Model & Tonnage",
+        "no_of_set_up_/_year": "No of Set Up / Year",
+        "no_of_ramp_ups/year": "No of Ramp Ups/Year",
         "annual_volume": "Annual Volume",
 
         "electricity_rate": "Electricity Rate",
@@ -552,7 +648,7 @@ export const RigidISBM2CostModel = {
         sku_code: "SKU Code",
         country: "Country",
         currency_symbol: "Currency",
-        
+
     },
     general_summary: {
         material_cost: "Material",
@@ -572,6 +668,8 @@ export const RigidISBM2CostModel = {
     material_inputs: {
         weight: "Weight",
         layer_1_ratio: "Ratio",
+        layer_1_polymer_type: "Polymer Type",
+        layer_1_polymer_grade: "Polymer Grade",
         layer_1_polymer_rate: "Polymer Rate",
         layer_1_masterbatch_dosage: "Masterbatch Dosage",
         layer_1_masterbatch_rate: "Masterbatch Rate",

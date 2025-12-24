@@ -71,6 +71,16 @@ export default function Page() {
       Date.now() - Number(cachedTs) < oneDay;
 
     /* ============================
+    USE CACHE IF VALID
+  ============================ */
+    if (cachedData.inputsData==allFormData.inputData && isValidCache) {
+      console.log(`Using cached data for ${sheetName}`);
+      setAllFormData(JSON.parse(cachedData));
+      setIsLoading(false);
+      return;
+    }
+
+    /* ============================
        CLEAN OLD CACHE ON SHEET CHANGE
     ============================ */
     localStorage.removeItem(CACHE_KEY);
