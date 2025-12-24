@@ -36,14 +36,12 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [countryName, setCountryName] = useState("India");
+  const [ppRate, setPpRate] = useState([]);
+  const [loadingPpRate, setLoadingPpRate] = useState(false);
 
   const [sheetName, setSheetName] = useState(
     Object.keys(sheetNameMapping)[0]
   );
-
-  useEffect(()=>{
-    console.log(countryName);
-  },[countryName])
 
   /* ============================
      NOTES STATE
@@ -71,16 +69,6 @@ export default function Page() {
       cachedTs &&
       cachedSheet === sheetName &&
       Date.now() - Number(cachedTs) < oneDay;
-
-    /* ============================
-       USE CACHE ONLY IF SAME SHEET
-    ============================ */
-    // if (isValidCache) {
-    //   console.log(`Using cached data for ${sheetName}`);
-    //   setAllFormData(JSON.parse(cachedData));
-    //   setIsLoading(false);
-    //   return;
-    // }
 
     /* ============================
        CLEAN OLD CACHE ON SHEET CHANGE
@@ -272,14 +260,33 @@ export default function Page() {
   /* ============================
      LOADING UI
   ============================ */
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <div className="w-16 h-16 border-4 border-violet-400 border-t-transparent rounded-full animate-spin" />
-        <h1 className="text-slate-500 text-center p-2 pl-3 align-center">Loading...</h1>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex flex-col items-center justify-center h-screen">
+  //       <div className="w-16 h-16 border-4 border-violet-400 border-t-transparent rounded-full animate-spin" />
+  //       <h1 className="text-slate-500 text-center p-2 pl-3 align-center">Loading...</h1>
+  //     </div>
+  //   );
+  // }
+
+  /* ---------------------------------------------
+         POLYMER PRICES (IM only)
+      --------------------------------------------- */
+  useEffect(() => {
+    const fetchPPData = async () => {
+      setLoadingPpRate(true);
+      try {
+        const json = await api.get("/api/material/pp-rate");
+        setPpRate(json.data || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoadingPpRate(false);
+      }
+    };
+
+    fetchPPData();
+  }, [sheetName]);
 
   /* ============================
      RENDER
@@ -288,7 +295,7 @@ export default function Page() {
     <div>
       <div className="px-4 print:hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
-          <SkuDescription allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName}/>
+          <SkuDescription isLoading={isLoading} allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName} />
 
           <div>
             <div>
@@ -318,7 +325,7 @@ export default function Page() {
           <AccordionItem value="summary">
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Summary</AccordionTrigger>
             <AccordionContent>
-              <Summary sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} loadingSummary={loadingSummary} />
+              <Summary isLoading={isLoading} sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} loadingSummary={loadingSummary} />
             </AccordionContent>
           </AccordionItem>
 
@@ -326,6 +333,9 @@ export default function Page() {
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Material Cost</AccordionTrigger>
             <AccordionContent>
               <MaterialCalculator
+                ppRate={ppRate}
+                loadingPpRate={loadingPpRate}
+                isLoading={isLoading}
                 sheetName={sheetName}
                 allFormData={allFormData}
                 setAllFormData={setAllFormData}
@@ -338,6 +348,7 @@ export default function Page() {
             <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Conversion Cost</AccordionTrigger>
             <AccordionContent>
               <ConversionCostCalculation
+                isLoading={isLoading}
                 allFormData={allFormData}
                 setAllFormData={setAllFormData}
                 loadingSummary={loadingSummary}
@@ -350,6 +361,9 @@ export default function Page() {
 
       <div id="pdf-content">
         <PDFDownload
+          loadingPpRate={loadingPpRate}
+          ppRate={ppRate}
+          isLoading={isLoading}
           allFormData={allFormData}
           setAllFormData={setAllFormData}
           loadingSummary={loadingSummary}

@@ -52,15 +52,16 @@ function resolveMappings(sheetName) {
 }
 
 export default function MaterialCalculator({
+    loadingPpRate,
+    ppRate = [],
+    isLoading,
     sheetName,          // im_cost_model | carton_cost_model
     allFormData,
     setAllFormData,
     loadingSummary
 }) {
-    const [ppRate, setPpRate] = useState([]);
     const [originalInputData, setOriginalInputData] = useState([]);
     const [staticData, setStaticData] = useState([]);
-    const [loadingPpRate, setLoadingPpRate] = useState(false);
     const inputData = allFormData?.inputData || [];
 
     /* ---------------------------------------------
@@ -70,25 +71,6 @@ export default function MaterialCalculator({
         () => resolveMappings(sheetName),
         [sheetName]
     );
-
-    /* ---------------------------------------------
-       POLYMER PRICES (IM only)
-    --------------------------------------------- */
-    useEffect(() => {
-        const fetchPPData = async () => {
-            setLoadingPpRate(true);
-            try {
-                const json = await api.get("/api/material/pp-rate");
-                setPpRate(json.data || []);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                setLoadingPpRate(false);
-            }
-        };
-
-        fetchPPData();
-    }, [sheetName]);
 
     useEffect(() => {
         if (!inputData.length) return;
@@ -208,90 +190,97 @@ export default function MaterialCalculator({
             {/* INPUTS */}
             <div className="bg-gray-50 border rounded p-3">
                 <h3 className="font-bold pb-3">Inputs</h3>
+                {isLoading ? (
+                    <div className="space-y-2">
+                        {[0, 1, 2, 3].map(i => (
+                            <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                        ))}
+                    </div>
+                ) : (
+                    <DataTable
+                        columns={[
+                            { key: 'label', title: 'Details' },
+                            { key: 'unit', title: 'Unit' },
+                            {
+                                key: 'value',
+                                title: 'Recommended Value',
+                                render: r => {
+                                    let formattedValue = "";
 
-                <DataTable
-                    columns={[
-                        { key: 'label', title: 'Details' },
-                        { key: 'unit', title: 'Unit' },
-                        {
-                            key: 'value',
-                            title: 'Recommended Value',
-                            render: r => {
-                                let formattedValue = "";
+                                    if (r.value !== null && r.value !== undefined) {
+                                        const num = Number(r.value);
 
-                                if (r.value !== null && r.value !== undefined) {
-                                    const num = Number(r.value);
+                                        if (!isNaN(num) && typeof r.value !== "string") {
+                                            // numeric (actual number type)
+                                            formattedValue = Number.isInteger(num)
+                                                ? num.toString()
+                                                : num.toFixed(2);
+                                        }
+                                        else if (!isNaN(num) && typeof r.value === "string" && r.value.trim() !== "") {
+                                            // numeric string
+                                            formattedValue = Number.isInteger(num)
+                                                ? num.toString()
+                                                : num.toFixed(2);
+                                        }
+                                        else {
+                                            // pure text
+                                            formattedValue = String(r.value);
+                                        }
+                                    }
 
-                                    if (!isNaN(num) && typeof r.value !== "string") {
-                                        // numeric (actual number type)
-                                        formattedValue = Number.isInteger(num)
-                                            ? num.toString()
-                                            : num.toFixed(2);
-                                    }
-                                    else if (!isNaN(num) && typeof r.value === "string" && r.value.trim() !== "") {
-                                        // numeric string
-                                        formattedValue = Number.isInteger(num)
-                                            ? num.toString()
-                                            : num.toFixed(2);
-                                    }
-                                    else {
-                                        // pure text
-                                        formattedValue = String(r.value);
-                                    }
+                                    return (
+                                        <input
+                                            readOnly
+                                            value={formattedValue}
+                                            className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
+                                        />
+                                    );
                                 }
+                            },
+                            {
+                                key: 'value2',
+                                title: 'Actual Value',
+                                render: r => {
+                                    const hasDropdown =
+                                        Array.isArray(r.dropdownValues) && r.dropdownValues.length > 0;
 
-                                return (
-                                    <input
-                                        readOnly
-                                        value={formattedValue}
-                                        className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
-                                    />
-                                );
+                                    return hasDropdown ? (
+                                        <select
+                                            value={allFormData[`${r.key}_value2`] ?? r.value ?? ""}
+                                            onChange={e => handleInputChange(r.key, e.target.value)}
+                                            className="w-full border px-2 py-0.5 text-sm"
+                                        >
+                                            {r.dropdownValues.map(opt => (
+                                                <option key={opt} value={opt}>
+                                                    {opt}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            value={allFormData[`${r.key}_value2`] || ''}
+                                            onChange={e => handleInputChange(r.key, e.target.value)}
+                                            className="w-full border px-2 py-0.5 text-sm"
+                                        />
+                                    );
+                                }
                             }
-                        },
-                        {
-                            key: 'value2',
-                            title: 'Actual Value',
-                            render: r => {
-                                const hasDropdown =
-                                    Array.isArray(r.dropdownValues) && r.dropdownValues.length > 0;
-
-                                return hasDropdown ? (
-                                    <select
-                                        value={allFormData[`${r.key}_value2`] ?? r.value ?? ""}
-                                        onChange={e => handleInputChange(r.key, e.target.value)}
-                                        className="w-full border px-2 py-0.5 text-sm"
-                                    >
-                                        {r.dropdownValues.map(opt => (
-                                            <option key={opt} value={opt}>
-                                                {opt}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <input
-                                        value={allFormData[`${r.key}_value2`] || ''}
-                                        onChange={e => handleInputChange(r.key, e.target.value)}
-                                        className="w-full border px-2 py-0.5 text-sm"
-                                    />
-                                );
-                            }
-                        }
-                    ]}
-                    data={staticData.map(r => ({
-                        key: r.label,
-                        label: inputMap[r.label],
-                        unit: r.unit || "-",
-                        value: r.value,
-                        dropdownValues: r.dropdownValues || []
-                    }))}
-                />
+                        ]}
+                        data={staticData.map(r => ({
+                            key: r.label,
+                            label: inputMap[r.label],
+                            unit: r.unit || "-",
+                            value: r.value,
+                            dropdownValues: r.dropdownValues || []
+                        }))}
+                    />
+                )}
             </div>
 
             {/* SUMMARY */}
             <div className="bg-gray-50 border rounded p-3">
                 <h3 className="font-bold pb-3">Summary</h3>
-                {loadingSummary ? (
+                {loadingSummary || isLoading ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />

@@ -31,7 +31,7 @@ const SHEET_LABEL_MAPS = {
     },
 };
 
-export default function Summary({ allFormData, sheetName, loadingSummary}) {
+export default function Summary({ isLoading, allFormData, sheetName, loadingSummary}) {
     const didRun = useRef(false);
 
     const GENERAL_SUMMARY_LABEL_MAP = SHEET_LABEL_MAPS?.[sheetName]?.general || {};
@@ -369,7 +369,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
             {/* Summary Table */}
             <div className="lg:col-span-1 border rounded p-2">
                 <h3 className="font-bold mb-3">General Summary</h3>
-                {loadingSummary ? (
+                {loadingSummary || isLoading ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
@@ -382,7 +382,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
 
             {/* General Summary Chart */}
             <div className="lg:col-span-1">
-                {loadingSummary ? (
+                {loadingSummary || isLoading ? (
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (
                     summaryData.length > 0 ? (
@@ -420,7 +420,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
             {/* Process Breakdown Table (Column 3) */}
             <div className="lg:col-span-1 rounded border p-2">
                 <h3 className="font-bold mb-3">Process Summary</h3>
-                {loadingSummary ? (
+                {loadingSummary || isLoading ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
                             <div key={i} className="h-12 bg-gray-200 rounded animate-pulse" />
@@ -433,7 +433,7 @@ export default function Summary({ allFormData, sheetName, loadingSummary}) {
 
             {/* Processing Cost Graph (Column 4) */}
             <div className="lg:col-span-1">
-                {loadingSummary ? (
+                {loadingSummary || isLoading ? (
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (
                     processGraphData.length > 0 ? (

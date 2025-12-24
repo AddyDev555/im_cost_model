@@ -27,8 +27,7 @@ function resolveSkuMapping(sheetName) {
     }
 }
 
-export default function SkuDescription({ allFormData, setAllFormData, sheetName, setCountryName }) {
-    const [loading, setLoading] = useState(true);
+export default function SkuDescription({isLoading, allFormData, setAllFormData, sheetName, setCountryName }) {
     const [localValues, setLocalValues] = useState({});
 
     const SKU_LABEL_MAP = useMemo(
@@ -37,24 +36,17 @@ export default function SkuDescription({ allFormData, setAllFormData, sheetName,
     );
 
     useEffect(() => {
-        if (allFormData?.inputData) {
-            const initialValues = allFormData.inputData
-                .filter(row => SKU_LABEL_MAP[row.label])
-                .reduce((acc, row) => {
-                    // Add all fields into localValues
-                    acc[row.label] = row.value ?? "";
+        if (!allFormData?.inputData) return;
+        const initialValues = allFormData.inputData
+            .filter(row => SKU_LABEL_MAP[row.label])
+            .reduce((acc, row) => {
+                acc[row.label] = row.value ?? "";
+                return acc;
+            }, {});
+        
+        setLocalValues(initialValues);
+    }, [allFormData?.inputData, SKU_LABEL_MAP]);
 
-                    // Make sure sku_code and product are included
-                    if (row.label.toLowerCase() === "sku_code" || row.label.toLowerCase() === "product") {
-                        acc[row.label] = row.value ?? "";
-                    }
-
-                    return acc;
-                }, {});
-            setLocalValues(initialValues);
-        }
-        setLoading(false);
-    }, []);
 
     const skuData = useMemo(() => {
         if (!allFormData?.inputData) return [];
@@ -95,7 +87,7 @@ export default function SkuDescription({ allFormData, setAllFormData, sheetName,
     return (
         <div className="w-full">
             <div className="overflow-auto print:overflow-visible">
-                {loading ? (
+                {isLoading ? (
                     <div className="flex flex-wrap gap-4">
                         {[0, 1, 2, 3, 4].map(i => (
                             <div key={i} className="flex flex-col">

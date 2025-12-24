@@ -46,6 +46,7 @@ function resolveConversionMappings(sheetName) {
     }
 }
 export default function ConversionCostCalculation({
+    isLoading,
     allFormData,
     setAllFormData,
     loadingSummary,
@@ -167,7 +168,13 @@ export default function ConversionCostCalculation({
                 {/* ---------------- INPUTS ---------------- */}
                 <div className="bg-gray-50 border rounded p-3">
                     <h3 className="font-bold pb-3">Inputs</h3>
-
+                    {isLoading ? (
+                        <div className="space-y-2">
+                            {[0, 1, 2, 3].map(i => (
+                                <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                            ))}
+                        </div>
+                    ):(
                     <DataTable
                         columns={[
                             { key: 'label', title: 'Details' },
@@ -245,14 +252,14 @@ export default function ConversionCostCalculation({
                             dropdownValues: r.dropdownValues || []
                         }))}
                     />
-
+                    )}
                 </div>
 
                 {/* ---------------- SUMMARY ---------------- */}
                 <div className="bg-gray-50 border rounded p-3">
                     <h3 className="font-bold pb-3">Summary</h3>
 
-                    {loadingSummary ? (
+                    {loadingSummary || isLoading ? (
                         <div className="space-y-2">
                             {[0, 1, 2, 3].map(i => (
                                 <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
