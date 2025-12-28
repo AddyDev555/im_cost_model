@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import DataTable from '../../components/ui/data-table';
 import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
 
@@ -160,6 +160,20 @@ export default function ConversionCostCalculation({
 
     }, [inputData, LABEL_MAP]);
 
+    const { inrHeader, eurHeader, percentHeader } = useMemo(() => {
+        const defaultHeaders = { inrHeader: "INR/T", eurHeader: "EUR/T", percentHeader: "%" };
+        if (!allFormData?.summaryData) return defaultHeaders;
+
+        const detailsInr = allFormData.summaryData.find(item => item.label === 'details' && item.currency === 'INR');
+        const detailsEur = allFormData.summaryData.find(item => item.label === 'details' && item.currency === 'EUR');
+
+        return {
+            inrHeader: detailsInr?.value || defaultHeaders.inrHeader,
+            eurHeader: detailsEur?.value || defaultHeaders.eurHeader,
+            percentHeader: detailsInr?.percent || defaultHeaders.percentHeader
+        };
+    }, [allFormData?.summaryData]);
+
     return (
         <div className="bg-white rounded shadow-lg border p-2">
 
@@ -174,84 +188,84 @@ export default function ConversionCostCalculation({
                                 <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
                             ))}
                         </div>
-                    ):(
-                    <DataTable
-                        columns={[
-                            { key: 'label', title: 'Details' },
-                            { key: 'unit', title: 'Unit' },
-                            {
-                                key: 'value',
-                                title: 'Recommended Value',
-                                render: r => {
-                                    let formattedValue = "";
+                    ) : (
+                        <DataTable
+                            columns={[
+                                { key: 'label', title: 'Details' },
+                                { key: 'unit', title: 'Unit' },
+                                {
+                                    key: 'value',
+                                    title: 'Recommended Value',
+                                    render: r => {
+                                        let formattedValue = "";
 
-                                    if (r.value !== null && r.value !== undefined) {
-                                        const num = Number(r.value);
+                                        if (r.value !== null && r.value !== undefined) {
+                                            const num = Number(r.value);
 
-                                        if (!isNaN(num) && typeof r.value !== "string") {
-                                            // numeric (actual number type)
-                                            formattedValue = Number.isInteger(num)
-                                                ? num.toString()
-                                                : num.toFixed(2);
+                                            if (!isNaN(num) && typeof r.value !== "string") {
+                                                // numeric (actual number type)
+                                                formattedValue = Number.isInteger(num)
+                                                    ? num.toString()
+                                                    : num.toFixed(2);
+                                            }
+                                            else if (!isNaN(num) && typeof r.value === "string" && r.value.trim() !== "") {
+                                                // numeric string
+                                                formattedValue = Number.isInteger(num)
+                                                    ? num.toString()
+                                                    : num.toFixed(2);
+                                            }
+                                            else {
+                                                // pure text
+                                                formattedValue = String(r.value);
+                                            }
                                         }
-                                        else if (!isNaN(num) && typeof r.value === "string" && r.value.trim() !== "") {
-                                            // numeric string
-                                            formattedValue = Number.isInteger(num)
-                                                ? num.toString()
-                                                : num.toFixed(2);
-                                        }
-                                        else {
-                                            // pure text
-                                            formattedValue = String(r.value);
-                                        }
+
+                                        return (
+                                            <input
+                                                readOnly
+                                                value={formattedValue}
+                                                className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
+                                            />
+                                        );
                                     }
+                                },
+                                {
+                                    key: 'value2',
+                                    title: 'Actual Value',
+                                    render: r => {
+                                        const hasDropdown =
+                                            Array.isArray(r.dropdownValues) && r.dropdownValues.length > 0;
 
-                                    return (
-                                        <input
-                                            readOnly
-                                            value={formattedValue}
-                                            className="w-full bg-gray-100 border px-2 py-0.5 text-sm"
-                                        />
-                                    );
+                                        return hasDropdown ? (
+                                            <select
+                                                value={allFormData[`${r.key}_value2`] ?? r.value ?? ""}
+                                                onChange={e => handleInputChange(r.key, e.target.value)}
+                                                className="w-full border px-2 py-0.5 text-sm"
+                                            >
+                                                {r.dropdownValues.map(opt => (
+                                                    <option key={opt} value={opt}>
+                                                        {opt}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                value={allFormData[`${r.key}_value2`] || ''}
+                                                onChange={e => handleInputChange(r.key, e.target.value)}
+                                                className="w-full border px-2 py-0.5 text-sm"
+                                            />
+                                        );
+                                    }
                                 }
-                            },
-                            {
-                                key: 'value2',
-                                title: 'Actual Value',
-                                render: r => {
-                                    const hasDropdown =
-                                        Array.isArray(r.dropdownValues) && r.dropdownValues.length > 0;
-
-                                    return hasDropdown ? (
-                                        <select
-                                            value={allFormData[`${r.key}_value2`] ?? r.value ?? ""}
-                                            onChange={e => handleInputChange(r.key, e.target.value)}
-                                            className="w-full border px-2 py-0.5 text-sm"
-                                        >
-                                            {r.dropdownValues.map(opt => (
-                                                <option key={opt} value={opt}>
-                                                    {opt}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        <input
-                                            value={allFormData[`${r.key}_value2`] || ''}
-                                            onChange={e => handleInputChange(r.key, e.target.value)}
-                                            className="w-full border px-2 py-0.5 text-sm"
-                                        />
-                                    );
-                                }
-                            }
-                        ]}
-                        data={staticData.map(r => ({
-                            key: r.label,
-                            label: LABEL_MAP[r.label],
-                            unit: r.unit || "-",
-                            value: r.value,
-                            dropdownValues: r.dropdownValues || []
-                        }))}
-                    />
+                            ]}
+                            data={staticData.map(r => ({
+                                key: r.label,
+                                label: LABEL_MAP[r.label],
+                                unit: r.unit || "-",
+                                value: r.value,
+                                dropdownValues: r.dropdownValues || []
+                            }))}
+                        />
                     )}
                 </div>
 
@@ -279,7 +293,7 @@ export default function ConversionCostCalculation({
                                 },
                                 {
                                     key: "inr",
-                                    title: "INR/T",
+                                    title: inrHeader,
                                     render: (row) => (
                                         <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
                                             {row.inr}
@@ -288,7 +302,7 @@ export default function ConversionCostCalculation({
                                 },
                                 {
                                     key: "eur",
-                                    title: "EUR/T",
+                                    title: eurHeader,
                                     render: (row) => (
                                         <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
                                             {row.eur}
@@ -297,7 +311,7 @@ export default function ConversionCostCalculation({
                                 },
                                 {
                                     key: "pct",
-                                    title: "%",
+                                    title: percentHeader,
                                     render: (row) => (
                                         <span className={row.labelKey === "conversion_cost" ? "font-bold" : ""}>
                                             {row.pct}

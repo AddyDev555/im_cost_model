@@ -31,7 +31,7 @@ const SHEET_LABEL_MAPS = {
     },
 };
 
-export default function Summary({ isLoading, allFormData, sheetName, loadingSummary}) {
+export default function Summary({ isLoading, allFormData, sheetName, loadingSummary }) {
     const didRun = useRef(false);
 
     const GENERAL_SUMMARY_LABEL_MAP = SHEET_LABEL_MAPS?.[sheetName]?.general || {};
@@ -162,7 +162,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                 };
             })
             .filter(Boolean);
-        
+
         // TABLE data
         const summaryTableData = [
             ...items.map(item => {
@@ -269,6 +269,20 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
     }, [allFormData, PROCESS_SUMMARY_LABEL_MAP]);
 
 
+    const { inrHeader, eurHeader, percentHeader } = useMemo(() => {
+        const defaultHeaders = { inrHeader: "INR/T", eurHeader: "EUR/T", percentHeader: "%" };
+        if (!allFormData?.summaryData) return defaultHeaders;
+
+        const detailsInr = allFormData.summaryData.find(item => item.label === 'details' && item.currency === 'INR');
+        const detailsEur = allFormData.summaryData.find(item => item.label === 'details' && item.currency === 'EUR');
+
+        return {
+            inrHeader: detailsInr?.value || defaultHeaders.inrHeader,
+            eurHeader: detailsEur?.value || defaultHeaders.eurHeader,
+            percentHeader: detailsInr?.percent || defaultHeaders.percentHeader
+        };
+    }, [allFormData?.summaryData]);
+
     const summaryColumns = [
         {
             key: "name",
@@ -276,7 +290,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
             render: (row) => {
                 const isTotal = row.key === 'total' || row.key === 'total_cost';
                 return (
-                    <div className={`text-sm text-gray-900 ${isTotal ? "font-bold" : "font-medium"}`}>
+                    <div className={`text-xs text-gray-900 break-words whitespace-normal ${isTotal ? "font-bold" : "font-medium"}`}>
                         {row.name}
                     </div>
                 );
@@ -284,27 +298,27 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
         },
         {
             key: "inr_value",
-            title: "INR/T",
+            title: inrHeader,
             render: (row) => (
-                <div className={`text-sm text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
+                <div className={`text-xs text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
                     {row.inr_value}
                 </div>
             )
         },
         {
             key: "eur_value",
-            title: "EUR/T",
+            title: eurHeader,
             render: (row) => (
-                <div className={`text-sm text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
+                <div className={`text-xs text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
                     {row.eur_value}
                 </div>
             )
         },
         {
             key: "cost_ratio",
-            title: "%",
+            title: percentHeader,
             render: (row) => (
-                <div className={`text-sm text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
+                <div className={`text-xs text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
                     {row.cost_ratio}
                 </div>
             )
@@ -318,7 +332,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
             render: (row) => {
                 const isTotal = row.key === 'total' || row.key === 'total_cost';
                 return (
-                    <div className={`text-sm text-gray-900 ${isTotal ? "font-bold" : "font-medium"}`}>
+                    <div className={`text-xs text-gray-900 break-words whitespace-normal ${isTotal ? "font-bold" : "font-medium"}`}>
                         {row.name}
                     </div>
                 );
@@ -326,27 +340,27 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
         },
         {
             key: "inr_value",
-            title: "INR/T",
+            title: inrHeader,
             render: (row) => (
-                <div className={`text-sm text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
+                <div className={`text-xs text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
                     {row.inr_value}
                 </div>
             )
         },
         {
             key: "eur_value",
-            title: "EUR/T",
+            title: eurHeader,
             render: (row) => (
-                <div className={`text-sm text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
+                <div className={`text-xs text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
                     {row.eur_value}
                 </div>
             )
         },
         {
             key: "per_value",
-            title: "%",
+            title: percentHeader,
             render: (row) => (
-                <div className={`text-sm text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
+                <div className={`text-xs text-gray-700 text-right ${row.name === "Total" ? "font-bold" : ""}`}>
                     {row.per_value}
                 </div>
             )
@@ -365,10 +379,10 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
     }, [processTableData]);
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 p-2 border rounded shadow-lg">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 p-2 border rounded shadow-lg">
             {/* Summary Table */}
-            <div className="lg:col-span-1 border rounded p-2">
-                <h3 className="font-bold mb-3">General Summary</h3>
+            <div className="border rounded p-2">
+                <h3 className="font-bold mb-2">General Summary</h3>
                 {loadingSummary || isLoading ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
@@ -381,7 +395,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
             </div>
 
             {/* General Summary Chart */}
-            <div className="lg:col-span-1">
+            <div>
                 {loadingSummary || isLoading ? (
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (
@@ -418,8 +432,8 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
             </div>
 
             {/* Process Breakdown Table (Column 3) */}
-            <div className="lg:col-span-1 rounded border p-2">
-                <h3 className="font-bold mb-3">Process Summary</h3>
+            <div className="rounded border p-2">
+                <h3 className="font-bold mb-2">Process Summary</h3>
                 {loadingSummary || isLoading ? (
                     <div className="space-y-2">
                         {[0, 1, 2, 3].map(i => (
@@ -432,7 +446,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
             </div>
 
             {/* Processing Cost Graph (Column 4) */}
-            <div className="lg:col-span-1">
+            <div>
                 {loadingSummary || isLoading ? (
                     <div className="h-64 bg-gray-200 rounded animate-pulse" />
                 ) : (

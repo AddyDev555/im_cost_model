@@ -179,6 +179,20 @@ export default function MaterialCalculator({
         return rows;
     }, [allFormData?.summaryData, summaryMap]);
 
+    const { inrHeader, eurHeader, percentHeader } = useMemo(() => {
+        const defaultHeaders = { inrHeader: "INR/T", eurHeader: "EUR/T", percentHeader: "%" };
+        if (!allFormData?.summaryData) return defaultHeaders;
+
+        const detailsInr = allFormData.summaryData.find(item => item.label === 'details' && item.currency === 'INR');
+        const detailsEur = allFormData.summaryData.find(item => item.label === 'details' && item.currency === 'EUR');
+
+        return {
+            inrHeader: detailsInr?.value || defaultHeaders.inrHeader,
+            eurHeader: detailsEur?.value || defaultHeaders.eurHeader,
+            percentHeader: detailsInr?.percent || defaultHeaders.percentHeader
+        };
+    }, [allFormData?.summaryData]);
+
     /* ---------------------------------------------
        RENDER
     --------------------------------------------- */
@@ -296,9 +310,9 @@ export default function MaterialCalculator({
                                     </span>
                                 )
                             },
-                            { key: "inr", title: "INR/T", render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.inr}</span> },
-                            { key: "eur", title: "EUR/T", render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.eur}</span> },
-                            { key: "pct", title: "%", render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.pct}</span> }
+                            { key: "inr", title: inrHeader, render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.inr}</span> },
+                            { key: "eur", title: eurHeader, render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.eur}</span> },
+                            { key: "pct", title: percentHeader, render: (row) => <span className={row.labelKey === "material_cost" ? "font-bold" : ""}>{row.pct}</span> }
                         ]}
                         data={summaryTableData}
                     />
