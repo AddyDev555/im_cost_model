@@ -42,6 +42,9 @@ export const IMCostModelMapper = {
         "mould_cavitation": "Mould Cavitation",
         "mould_cycle_time": "Mould Cycle Time",
         "annual_volume": "Annual Volume",
+        "machine_model_&_tonnage": "Machine Model & Tonnage",
+        "no_of_set_up_/_year":"No of Set Up / Year",
+        "no_of_ramp_ups/year":"No of Ramp Up / Year",
 
         "electricity_rate": "Electricity Rate",
 
