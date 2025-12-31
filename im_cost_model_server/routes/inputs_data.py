@@ -75,7 +75,8 @@ async def get_inputs_data(request: Request):
 
         # Optional: remove modelName before sending
         payload.pop("modelName", None)
-
+        
+        print(payload)
         # Forward request to Apps Script via POST
         res = requests.post(
             APPSCRIPT_URL,
@@ -85,6 +86,8 @@ async def get_inputs_data(request: Request):
         res.raise_for_status()
 
         apps_script_response = res.json()
+        print(apps_script_response)
+
 
         input_data = convert_percentage_units(apps_script_response.get("inputData", []))
         summary_data = convert_percentage_units(apps_script_response.get("summaryData", []))

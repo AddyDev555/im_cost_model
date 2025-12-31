@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from .update_data import SHEET_ID_MAP
+from .inputs_data import SHEET_ID_MAP
 
 router = APIRouter()
 

@@ -11,6 +11,7 @@ import { NotebookPen, FileText } from 'lucide-react';
 import { api } from "@/utils/api";
 import { toast } from 'react-toastify';
 import SaveExcelButton from './calculation_models/download_excel';
+import MagicLinkDialog from '../components/ui/userVerification';
 
 /* ============================
    SHEET NAME MAP
@@ -58,7 +59,8 @@ export default function Page() {
   const initializeApp = async () => {
     setIsLoading(true);
 
-    const cachedData = localStorage.getItem(CACHE_KEY);
+    const cachedDataRaw = localStorage.getItem(CACHE_KEY);
+    const cachedData = cachedDataRaw ? JSON.parse(cachedDataRaw) : null;
     const cachedTs = localStorage.getItem(CACHE_TS_KEY);
     const cachedSheet = localStorage.getItem(CACHE_SHEET_KEY);
 
@@ -70,12 +72,10 @@ export default function Page() {
       cachedSheet === sheetName &&
       Date.now() - Number(cachedTs) < oneDay;
 
-    /* ============================
-    USE CACHE IF VALID
-  ============================ */
-    if (cachedData.inputsData==allFormData.inputData && isValidCache) {
+    /* USE CACHE IF VALID */
+    if (cachedData?.inputsData === allFormData.inputData && isValidCache) {
       console.log(`Using cached data for ${sheetName}`);
-      setAllFormData(JSON.parse(cachedData));
+      setAllFormData(cachedData);
       setIsLoading(false);
       return;
     }
@@ -210,34 +210,43 @@ export default function Page() {
     if (cached && cachedSheet === sheetName) {
       setAllFormData(JSON.parse(cached));
 
-      const payload = {
-        mode: "update",
-        modelName: sheetName,
-        inputData: JSON.parse(cached).inputData || [],
-      };
+      //   const payload = {
+      //     mode: "update",
+      //     modelName: sheetName,
+      //     inputData: JSON.parse(cached).inputData || [],
+      //   };
 
-      fetch("http://127.0.0.1:8000/api/updates/update-inputs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      })
-        .then(res => res.json())
-        .then(res => {
-          if (!res.success) throw new Error("Update failed");
-          console.log("Reset Done from backend as well!");
-        })
-        .catch(console.error)
-        .finally(() => setLoadingSummary(false));
+      //   fetch("http://127.0.0.1:8000/api/updates/update-inputs", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(payload),
+      //   })
+      //     .then(res => res.json())
+      //     .then(res => {
+      //       if (!res.success) throw new Error("Update failed");
+      //       console.log("Reset Done from backend as well!");
+      //     })
+      //     .catch(console.error)
+      //     .finally(() => setLoadingSummary(false));
+      // };
     };
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const userCred = localStorage.getItem("user_cred");
+    if (!userCred) {
+      toast.warning("Please Login to Calculate!");
+      return;
+    }
+
     setLoadingSummary(true);
 
     const payload = {
       mode: "update",
       modelName: sheetName,
+      email: JSON.parse(userCred).email,
       inputData: allFormData.inputData || [],
     };
 
@@ -249,7 +258,10 @@ export default function Page() {
       .then(res => res.json())
       .then(res => {
         if (!res.success) throw new Error("Update failed");
-
+        if (res.status === 401) {
+          toast.warning(res.detail || "Login required to calculate");
+          return;
+        }
         setAllFormData(prev => ({
           ...prev,
           summaryData: res.summaryData || [],
@@ -308,7 +320,7 @@ export default function Page() {
           <SkuDescription isLoading={isLoading} allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName} />
 
           <div>
-            <div>
+            <div className="flex items-center gap-3">
               <select
                 value={sheetName}
                 onChange={(e) => setSheetName(e.target.value)}
@@ -318,15 +330,18 @@ export default function Page() {
                   <option key={k} value={k}>{v}</option>
                 ))}
               </select>
+
+              <MagicLinkDialog />
             </div>
             <div className='flex gap-1'>
               <button onClick={handleReset} className="text-sm bg-gray-500 hover:bg-gray-600 cursor-pointer text-white px-5.5 py-1 rounded">
                 Reset
               </button>
 
-              <button onClick={handleSubmit} className="text-sm bg-violet-500 hover:bg-violet-600 cursor-pointer text-white px-5.5 py-1 rounded">
+              <button onClick={handleSubmit} className="text-sm bg-white hover:bg-slate-50 cursor-pointer border border-violet-500 px-5.5 py-1 rounded">
                 Calculate
               </button>
+
             </div>
           </div>
         </div>
