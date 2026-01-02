@@ -12,6 +12,7 @@ import { api } from "@/utils/api";
 import { toast } from 'react-toastify';
 import SaveExcelButton from './calculation_models/download_excel';
 import MagicLinkDialog from '../components/ui/userVerification';
+import { markupToNotes, notesToMarkup } from "../components/ui/richTextBox"; // Import both helpers
 
 /* ============================
    SHEET NAME MAP
@@ -50,7 +51,7 @@ export default function Page() {
   const [isNotesVisible, setIsNotesVisible] = useState(false);
   const notesEditorRef = useRef(null);
   const notesButtonRef = useRef(null);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState('');
   const isInitialNotesLoad = useRef(true);
 
   /* ============================
@@ -127,26 +128,44 @@ export default function Page() {
   useEffect(() => {
     const fetchNotes = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/notes/get-notes');
-        const data = await res.json();
+        const user = localStorage.getItem("user_cred");
+        if (!user) return;
 
-        if (Array.isArray(data?.notes)) {
-          setNotes(
-            data.notes.map(n => ({
-              type: 'paragraph',
-              children: [{ text: n.content || '' }],
-            }))
-          );
+        const email = JSON.parse(user).email;
+
+        const data = await api.get(
+          `/api/notes/get-notes?username=${encodeURIComponent(email)}`
+        );
+
+        if (Array.isArray(data?.notes) && data.notes.length > 0) {
+          const combinedMarkup = data.notes
+            .map(n => n.content || "")
+            .filter(Boolean)
+            .join("\n\n");
+
+          if (combinedMarkup) {
+            const slateContent = markupToNotes(combinedMarkup);
+            setNotes(slateContent);
+          } else {
+            setNotes([{ type: "paragraph", children: [{ text: "" }] }]);
+          }
+
+          isInitialNotesLoad.current = true;
+        } else {
+          setNotes([{ type: "paragraph", children: [{ text: "" }] }]);
           isInitialNotesLoad.current = true;
         }
       } catch (err) {
         console.error("Notes fetch error:", err);
+        setNotes([{ type: 'paragraph', children: [{ text: '' }] }]);
       }
     };
-
     fetchNotes();
   }, []);
 
+  /* ============================
+     NOTES SAVE (DEBOUNCED)
+  ============================ */
   /* ============================
      NOTES SAVE (DEBOUNCED)
   ============================ */
@@ -158,20 +177,28 @@ export default function Page() {
 
     if (!notes) return;
 
-    const timer = setTimeout(() => {
-      const payload = notes.map(n => ({
-        content: n.children.map(c => c.text).join("")
-      }));
+    const timer = setTimeout(async () => {
+      try {
+        const user = localStorage.getItem("user_cred");
+        if (!user) return;
 
-      fetch('http://127.0.0.1:8000/api/notes/update-notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notes: payload }),
-      })
-        .then(r => r.json())
-        .then(r => r.success && toast.success("Notes saved"))
-        .catch(console.error);
+        const email = JSON.parse(user).email;
 
+        // Notes is already a markup string from SlateEditor's onChange
+        // Just send it directly
+        const result = await api.post("/api/notes/update-notes", {
+          email,
+          notes: [{ content: notes }], // notes is markup string
+        });
+
+        if (result.success) {
+          toast.success("Notes saved");
+        } else {
+          console.error("Save failed:", result);
+        }
+      } catch (err) {
+        console.error("Save error:", err);
+      }
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -250,18 +277,15 @@ export default function Page() {
       inputData: allFormData.inputData || [],
     };
 
-    fetch("http://127.0.0.1:8000/api/updates/update-inputs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then(res => res.json())
+    api.post("/api/updates/update-inputs", payload)
       .then(res => {
         if (!res.success) throw new Error("Update failed");
+
         if (res.status === 401) {
           toast.warning(res.detail || "Login required to calculate");
           return;
         }
+
         setAllFormData(prev => ({
           ...prev,
           summaryData: res.summaryData || [],
@@ -398,22 +422,22 @@ export default function Page() {
       </div>
 
       {isNotesVisible && (
-        <div ref={notesEditorRef} className="fixed bottom-20 right-8 z-50">
+        <div ref={notesEditorRef} className="fixed bottom-15 right-8 z-50">
           <SlateEditor notes={notes} setNotes={setNotes} />
         </div>
       )}
 
       <div className="fixed bottom-4 right-8 z-50 flex items-center gap-2 print:hidden">
-        <div>
+        {/* <div>
           <SaveExcelButton sheetName={sheetName} mode="update" />
-        </div>
-        <button onClick={printWithFilename} className="cursor-pointer px-4 py-2 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors" aria-label="Download PDF" > {/* <Download className="w-5 h-5" /> */}
+        </div> */}
+        <button onClick={printWithFilename} className="cursor-pointer px-3 py-1.5 bg-white border border-red-400 font-semibold rounded flex items-center justify-center shadow-lg hover:bg-red-400 hover:text-white transition-colors" aria-label="Download PDF" > {/* <Download className="w-5 h-5" /> */}
           <div className="flex align-center">
             <p className="text-sm pr-2">Save pdf</p>
             <FileText className="w-5 h-5" /> </div>
         </button>
-        <button ref={notesButtonRef} onClick={() => setIsNotesVisible(!isNotesVisible)} className="cursor-pointer w-10 h-10 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors" aria-label="Toggle notes editor" >
-          <NotebookPen className="w-5 h-5" />
+        <button ref={notesButtonRef} onClick={() => setIsNotesVisible(!isNotesVisible)} className="cursor-pointer w-9 h-9 bg-violet-500 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-violet-600 transition-colors" aria-label="Toggle notes editor" >
+          <NotebookPen className="w-4.5 h-4.5" />
         </button>
       </div>
     </div>

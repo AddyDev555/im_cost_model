@@ -93,7 +93,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                     {inrValue > 0 && (
                         <>
                             <p className="text-sm text-gray-600">
-                                {`Cost in INR: ₹${inrValue.toLocaleString(undefined, {
+                                {`Cost in INR: ${inrValue.toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}`}
@@ -183,9 +183,9 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                 return {
                     key: item.label,
                     name: GENERAL_SUMMARY_LABEL_MAP[item.label] || item.label,
-                    inr_value: `₹${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    eur_value: `€${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    cost_ratio: `${percentValue.toFixed(0)}%`
+                    inr_value: `${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    eur_value: `${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    cost_ratio: `${percentValue.toFixed(0)}`
                 };
             }),
             totalItem ? (() => {
@@ -197,9 +197,9 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                 return {
                     key: totalItem.label,
                     name: GENERAL_SUMMARY_LABEL_MAP[totalItem.label] || totalItem.label,
-                    inr_value: `₹${(isNaN(inrTotalValue) ? 0 : inrTotalValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    eur_value: `€${(parseFloat(totalItem.value) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    cost_ratio: `100.0%`
+                    inr_value: `${(isNaN(inrTotalValue) ? 0 : inrTotalValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    eur_value: `${(parseFloat(totalItem.value) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    cost_ratio: `100.0`
                 };
             })() : null
         ].filter(Boolean);
@@ -246,9 +246,9 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                 return {
                     key: item.label,
                     name: PROCESS_SUMMARY_LABEL_MAP[item.label] || item.label,
-                    inr_value: `₹${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    eur_value: `€${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    per_value: `${percentValue.toFixed(0)}%`
+                    inr_value: `${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    eur_value: `${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    per_value: `${percentValue.toFixed(0)}`
                 };
             }),
             totalItem ? (() => {
@@ -260,9 +260,9 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                 return {
                     key: totalItem.label,
                     name: PROCESS_SUMMARY_LABEL_MAP[totalItem.label] || totalItem.label,
-                    inr_value: `₹${(isNaN(inrTotalValue) ? 0 : inrTotalValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    eur_value: `€${(parseFloat(totalItem.value) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    per_value: `100.0%`
+                    inr_value: `${(isNaN(inrTotalValue) ? 0 : inrTotalValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    eur_value: `${(parseFloat(totalItem.value) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    per_value: `100.0`
                 };
             })() : null
         ].filter(Boolean);

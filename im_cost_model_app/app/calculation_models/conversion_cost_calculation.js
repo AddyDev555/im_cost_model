@@ -105,11 +105,11 @@ export default function ConversionCostCalculation({
 
         if (curr.label === "conversion_cost") {
             if (curr.currency === "INR")
-                totalRow.inr = `₹${Number(curr.value || 0).toFixed(0)}`;
+                totalRow.inr = `${Number(curr.value || 0).toFixed(0)}`;
             if (curr.currency === "EUR")
-                totalRow.eur = `€${Number(curr.value || 0).toFixed(0)}`;
+                totalRow.eur = `${Number(curr.value || 0).toFixed(0)}`;
             if (curr.percent)
-                totalRow.pct = `${(Number(curr.percent) * 100).toFixed(0)}%`;
+                totalRow.pct = `${(Number(curr.percent) * 100).toFixed(0)}`;
             return;
         }
 
@@ -126,14 +126,14 @@ export default function ConversionCostCalculation({
         }
 
         if (curr.currency === "INR") {
-            existing.inr = `₹${Number(curr.value || 0).toFixed(0)}`;
+            existing.inr = `${Number(curr.value || 0).toFixed(0)}`;
             existing.pct = curr.percent
-                ? `${(Number(curr.percent) * 100).toFixed(0)}%`
+                ? `${(Number(curr.percent) * 100).toFixed(0)}`
                 : "";
         }
 
         if (curr.currency === "EUR") {
-            existing.eur = `€${Number(curr.value || 0).toFixed(0)}`;
+            existing.eur = `${Number(curr.value || 0).toFixed(0)}`;
         }
     });
 

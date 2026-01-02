@@ -5,6 +5,13 @@ import ApiDataTable from '../../components/ui/api-table';
 import { api } from "@/utils/api";
 import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
 
+
+const SHOW_POLYMER_SHEETS = new Set([
+    "im_cost_model",
+    "rigid_ebm_cost_model",
+    "rigid_isbm1_cost_model",
+    "rigid_isbm2_cost_model",
+]);
 /* ---------------------------------------------
    SHEET → MAPPINGS
 --------------------------------------------- */
@@ -63,6 +70,8 @@ export default function MaterialCalculator({
     const [originalInputData, setOriginalInputData] = useState([]);
     const [staticData, setStaticData] = useState([]);
     const inputData = allFormData?.inputData || [];
+    const showPolymerPrices = SHOW_POLYMER_SHEETS.has(sheetName);
+
 
     /* ---------------------------------------------
        DYNAMIC MAPPING
@@ -147,9 +156,9 @@ export default function MaterialCalculator({
             if (!summaryMap[item.label]) return;
 
             if (item.label === "material_cost") {
-                if (item.currency === "INR") totalRow.inr = `₹${Number(item.value || 0).toFixed(0)}`;
-                if (item.currency === "EUR") totalRow.eur = `€${Number(item.value || 0).toFixed(0)}`;
-                if (item.percent) totalRow.pct = `${(item.percent * 100).toFixed(0)}%`;
+                if (item.currency === "INR") totalRow.inr = `${Number(item.value || 0).toFixed(0)}`;
+                if (item.currency === "EUR") totalRow.eur = `${Number(item.value || 0).toFixed(0)}`;
+                if (item.percent) totalRow.pct = `${(item.percent * 100).toFixed(0)}`;
                 return;
             }
 
@@ -166,12 +175,12 @@ export default function MaterialCalculator({
             }
 
             if (item.currency === "INR") {
-                row.inr = `₹${Number(item.value || 0).toFixed(0)}`;
-                if (item.percent) row.pct = `${(item.percent * 100).toFixed(0)}%`;
+                row.inr = `${Number(item.value || 0).toFixed(0)}`;
+                if (item.percent) row.pct = `${(item.percent * 100).toFixed(0)}`;
             }
 
             if (item.currency === "EUR") {
-                row.eur = `€${Number(item.value || 0).toFixed(0)}`;
+                row.eur = `${Number(item.value || 0).toFixed(0)}`;
             }
         });
 
@@ -197,7 +206,10 @@ export default function MaterialCalculator({
        RENDER
     --------------------------------------------- */
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 border shadow-lg p-2">
+        <div
+            className={`grid grid-cols-1 ${showPolymerPrices ? "lg:grid-cols-3" : "lg:grid-cols-2"
+                } gap-2 border shadow-lg p-2`}
+        >
 
             {/* INPUTS */}
             <div className="bg-gray-50 border rounded p-3">
@@ -321,18 +333,22 @@ export default function MaterialCalculator({
             </div>
 
             {/* POLYMER PRICE */}
-            <div className="bg-gray-50 border rounded p-3 text-sm">
-                <h3 className="font-bold pb-3">Polymer Prices</h3>
-                {loadingPpRate ? (
-                    <div className="space-y-2">
-                        {[0, 1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
-                        ))}
-                    </div>
-                ) : (
-                    ppRate.length > 0 && <ApiDataTable data={ppRate} />
-                )}
-            </div>
+            {showPolymerPrices && (
+                <div className="bg-gray-50 border rounded p-3 text-sm">
+                    <h3 className="font-bold pb-3">Polymer Prices</h3>
+
+                    {loadingPpRate ? (
+                        <div className="space-y-2">
+                            {[0, 1, 2, 3, 4].map(i => (
+                                <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                            ))}
+                        </div>
+                    ) : (
+                        ppRate.length > 0 && <ApiDataTable data={ppRate} />
+                    )}
+                </div>
+            )}
+
         </div>
     );
 }

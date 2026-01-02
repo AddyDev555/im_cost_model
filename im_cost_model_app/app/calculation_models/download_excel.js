@@ -51,7 +51,7 @@ const SaveExcelButton = ({ sheetName, mode = "update" }) => {
             <button
                 onClick={handleDownload}
                 disabled={loading}
-                className="py-1.5 bg-white px-4 border shadow-lg font-semibold cursor-pointer hover:bg-green-700 hover:text-white border-green-600 text-sm rounded"
+                className="py-1 bg-white px-3 border shadow-lg font-semibold cursor-pointer hover:bg-green-700 hover:text-white border-green-600 text-sm rounded"
             >
                 {loading ? (
                     "Preparing..."

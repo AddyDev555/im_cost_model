@@ -18,16 +18,160 @@ import {
     Redo
 } from 'lucide-react';
 
-export default function SlateEditor({notes, setNotes}) {
+// Serialize Slate content to markup string
+const serializeToMarkup = (nodes) => {
+    if (!nodes || !Array.isArray(nodes)) return '';
+    return nodes.map(n => serializeNode(n)).join('\n');
+};
+
+const serializeNode = (node) => {
+    if (Text.isText(node)) {
+        let text = node.text;
+        if (node.bold) text = `**${text}**`;
+        if (node.italic) text = `*${text}*`;
+        if (node.underline) text = `__${text}__`;
+        if (node.strikethrough) text = `~~${text}~~`;
+        return text;
+    }
+
+    const children = node.children.map(n => serializeNode(n)).join('');
+
+    switch (node.type) {
+        case 'paragraph':
+            let alignPrefix = '';
+            if (node.align === 'center') alignPrefix = '[center]';
+            if (node.align === 'right') alignPrefix = '[right]';
+            if (node.align === 'justify') alignPrefix = '[justify]';
+            return alignPrefix + children;
+        case 'bulleted-list':
+            return children;
+        case 'list-item':
+            return `- ${children}`;
+        default:
+            return children;
+    }
+};
+
+// Deserialize markup string back to Slate content
+const deserializeFromMarkup = (markup) => {
+    if (!markup || typeof markup !== 'string') {
+        return [{ type: 'paragraph', children: [{ text: '' }] }];
+    }
+
+    const lines = markup.split('\n');
+    return lines.map(line => {
+        let align = undefined;
+        let content = line;
+
+        // Check for alignment
+        if (line.startsWith('[center]')) {
+            align = 'center';
+            content = line.substring(8);
+        } else if (line.startsWith('[right]')) {
+            align = 'right';
+            content = line.substring(7);
+        } else if (line.startsWith('[justify]')) {
+            align = 'justify';
+            content = line.substring(9);
+        }
+
+        const children = parseInlineStyles(content);
+
+        return {
+            type: 'paragraph',
+            align,
+            children: children.length > 0 ? children : [{ text: '' }]
+        };
+    });
+};
+
+const parseInlineStyles = (text) => {
+    const children = [];
+
+    // Regex to match styled text: **bold**, *italic*, __underline__, ~~strikethrough~~
+    const regex = /(\*\*.*?\*\*|\*.*?\*|__.*?__|~~.*?~~)/g;
+    let match;
+    let lastIndex = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+        // Add plain text before the match
+        if (match.index > lastIndex) {
+            const plainText = text.substring(lastIndex, match.index);
+            if (plainText) {
+                children.push({ text: plainText });
+            }
+        }
+
+        const matched = match[0];
+        let content = matched;
+        const marks = {};
+
+        // Parse bold
+        if (matched.startsWith('**') && matched.endsWith('**')) {
+            content = matched.slice(2, -2);
+            marks.bold = true;
+        }
+        // Parse italic
+        else if (matched.startsWith('*') && matched.endsWith('*')) {
+            content = matched.slice(1, -1);
+            marks.italic = true;
+        }
+        // Parse underline
+        else if (matched.startsWith('__') && matched.endsWith('__')) {
+            content = matched.slice(2, -2);
+            marks.underline = true;
+        }
+        // Parse strikethrough
+        else if (matched.startsWith('~~') && matched.endsWith('~~')) {
+            content = matched.slice(2, -2);
+            marks.strikethrough = true;
+        }
+
+        children.push({ text: content, ...marks });
+        lastIndex = regex.lastIndex;
+    }
+
+    // Add remaining plain text
+    if (lastIndex < text.length) {
+        const plainText = text.substring(lastIndex);
+        if (plainText) {
+            children.push({ text: plainText });
+        }
+    }
+
+    return children.length > 0 ? children : [{ text: '' }];
+};
+
+// Export helper functions for use in parent component
+export const notesToMarkup = (notes) => {
+    if (typeof notes === 'string') return notes;
+    if (Array.isArray(notes)) return serializeToMarkup(notes);
+    return '';
+};
+
+export const markupToNotes = (markup) => {
+    if (Array.isArray(markup)) return markup;
+    if (typeof markup === 'string') return deserializeFromMarkup(markup);
+    return [{ type: 'paragraph', children: [{ text: '' }] }];
+};
+
+export default function SlateEditor({ notes, setNotes }) {
     const editor = useMemo(() => withHistory(withReact(createEditor())), []);
-    
+
     const initialValue = useMemo(() => {
-        if (notes && Array.isArray(notes) && notes.length > 0) {
-            return notes;
+        if (notes) {
+            // If notes is a string (markup), deserialize it
+            if (typeof notes === 'string') {
+                return deserializeFromMarkup(notes);
+            }
+            // If notes is already an array (Slate format), use it
+            if (Array.isArray(notes) && notes.length > 0) {
+                return notes;
+            }
         }
         return [{ type: 'paragraph', children: [{ text: '' }] }];
-    }, [notes]);
-    
+    }, []);
+
     const renderLeaf = useCallback(props => <Leaf {...props} />, []);
 
     // Helpers
@@ -121,14 +265,18 @@ export default function SlateEditor({notes, setNotes}) {
         }
     }, [editor]);
 
+    // Convert Slate content to markup string when saving
+    const handleChange = useCallback((newValue) => {
+        const markupString = serializeToMarkup(newValue);
+        setNotes(markupString);
+    }, [setNotes]);
+
     return (
         <div className="border rounded shadow-md bg-white">
             <Slate
                 editor={editor}
                 initialValue={initialValue}
-                onChange={newValue => {
-                    setNotes(newValue);
-                }}
+                onChange={handleChange}
             >
                 <Toolbar toggleMark={toggleMark} isMarkActive={isMarkActive} toggleBlock={toggleBlock} isBlockActive={isBlockActive} />
                 <Editable
@@ -181,8 +329,6 @@ const Toolbar = ({ toggleMark, isMarkActive, toggleBlock, isBlockActive }) => {
             <BlockButton format="center" icon={<AlignCenter className="w-4 h-4" />} toggleBlock={toggleBlock} active={isBlockActive(editor, 'center', 'align')} />
             <BlockButton format="right" icon={<AlignRight className="w-4 h-4" />} toggleBlock={toggleBlock} active={isBlockActive(editor, 'right', 'align')} />
             <BlockButton format="justify" icon={<AlignJustify className="w-4 h-4" />} toggleBlock={toggleBlock} active={isBlockActive(editor, 'justify', 'align')} />
-            {/* <div className="w-[1px] h-6 bg-gray-300 mx-1" /> */}
-            {/* <BlockButton format="bulleted-list" icon={<List className="w-4 h-4" />} toggleBlock={toggleBlock} active={isBlockActive(editor, 'bulleted-list', 'type')} /> */}
         </div>
     );
 };
