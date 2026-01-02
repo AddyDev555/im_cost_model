@@ -1,4 +1,5 @@
 'use client';
+export const dynamic = "force-dynamic";
 import React, { useEffect, useState, useRef } from 'react'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import MaterialCalculator from './calculation_models/material_cost_calculator';
