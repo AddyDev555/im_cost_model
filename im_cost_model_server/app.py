@@ -19,7 +19,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000", # Example for a local React frontend
-        "http://127.0.0.1:3000",
+        "https://tt-cost-model.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],          # Allows all methods
