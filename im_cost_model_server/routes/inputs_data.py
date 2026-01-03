@@ -11,28 +11,22 @@ APPSCRIPT_URL = os.getenv("APPSCRIPT_GS_URL")
 # Map each model to its initial and update sheet IDs
 SHEET_ID_MAP = {
     "im_cost_model": {
-        "initial": os.getenv("INITIAL_GS_ID_IM_COST_MODEL"),
-        "update": os.getenv("UPDATE_GS_ID_IM_COST_MODEL")
+        "sheetId": os.getenv("INITIAL_GS_ID_IM_COST_MODEL"),
     },
     "carton_cost_model": {
-        "initial": os.getenv("INITIAL_GS_ID_CARTON_COST_MODEL"),
-        "update": os.getenv("UPDATE_GS_ID_CARTON_COST_MODEL")
+        "sheetId": os.getenv("INITIAL_GS_ID_CARTON_COST_MODEL"),
     },
     "corrugate_cost_model":{
-        "initial": os.getenv("INITIAL_GS_ID_CORRUGATE_COST_MODEL"),
-        "update": os.getenv("UPDATE_GS_ID_CORRUGATE_COST_MODEL")
+        "sheetId": os.getenv("INITIAL_GS_ID_CORRUGATE_COST_MODEL"),
     },
     "rigid_ebm_cost_model":{
-        "initial": os.getenv("INITIAL_GS_ID_RIGIDS_EBM_COST_MODEL"),
-        "update": os.getenv("UPDATE_GS_ID_RIGIDS_EBM_COST_MODEL")
+        "sheetId": os.getenv("INITIAL_GS_ID_RIGIDS_EBM_COST_MODEL"),
     },
     "rigid_isbm1_cost_model":{
-        "initial": os.getenv("INITIAL_GS_ID_RIGIDS_ISBM1_COST_MODEL"),
-        "update": os.getenv("UPDATE_GS_ID_RIGIDS_ISBM1_COST_MODEL")
+        "sheetId": os.getenv("INITIAL_GS_ID_RIGIDS_ISBM1_COST_MODEL"),
     },
     "rigid_isbm2_cost_model":{
-        "initial": os.getenv("INITIAL_GS_ID_RIGIDS_ISBM2_COST_MODEL"),
-        "update": os.getenv("UPDATE_GS_ID_RIGIDS_ISBM2_COST_MODEL")
+        "sheetId": os.getenv("INITIAL_GS_ID_RIGIDS_ISBM2_COST_MODEL"),
     }
     # add more models here
 }
@@ -68,7 +62,7 @@ async def get_inputs_data(request: Request):
             raise HTTPException(status_code=400, detail=f"Unknown modelName: {model_name}")
 
         # Map mode to correct sheetId
-        sheet_id = SHEET_ID_MAP[model_name]["initial"] if mode == "fetch" else SHEET_ID_MAP[model_name]["update"]
+        sheet_id = SHEET_ID_MAP[model_name]["sheetId"] if mode == "fetch" else None
 
         # Inject sheetId into payload for Apps Script
         payload["sheetId"] = sheet_id
@@ -76,7 +70,6 @@ async def get_inputs_data(request: Request):
         # Optional: remove modelName before sending
         payload.pop("modelName", None)
         
-        print(payload)
         # Forward request to Apps Script via POST
         res = requests.post(
             APPSCRIPT_URL,
@@ -87,7 +80,6 @@ async def get_inputs_data(request: Request):
 
         apps_script_response = res.json()
         print(apps_script_response)
-
 
         input_data = convert_percentage_units(apps_script_response.get("inputData", []))
         summary_data = convert_percentage_units(apps_script_response.get("summaryData", []))

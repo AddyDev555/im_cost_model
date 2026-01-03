@@ -9,7 +9,7 @@ export default function VerifyClient() {
     const router = useRouter();
     const token = params.get("token");
 
-    const [status, setStatus] = useState("verifying");
+    const [status, setStatus] = useState < "verifying" | "success" | "error" > ("verifying");
     const [email, setEmail] = useState("");
 
     useEffect(() => {
@@ -46,10 +46,36 @@ export default function VerifyClient() {
     }, [token, router]);
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-            {status === "verifying" && <p>Verifying magic link…</p>}
-            {status === "error" && <p>❌ Invalid or expired link</p>}
-            {status === "success" && <p>✅ Welcome {email}</p>}
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+            {status === "verifying" && (
+                <>
+                    {/* Loader */}
+                    <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900" />
+
+                    {/* Message */}
+                    <p className="text-lg font-medium">Verifying your account…</p>
+                    <p className="mt-2 text-sm text-gray-600">
+                        Please don’t close this tab or window.
+                    </p>
+                </>
+            )}
+
+            {status === "error" && (
+                <p className="text-red-600 text-lg">
+                    ❌ Invalid or expired link
+                </p>
+            )}
+
+            {status === "success" && (
+                <>
+                    <p className="text-lg font-medium">
+                        ✅ Welcome {email}
+                    </p>
+                    <p className="mt-2 text-sm text-gray-600">
+                        Setting things up for you…
+                    </p>
+                </>
+            )}
         </div>
     );
 }
