@@ -76,7 +76,6 @@ export default function Page() {
 
     /* USE CACHE IF VALID */
     if (cachedData?.inputsData === allFormData.inputData && isValidCache) {
-      console.log(`Using cached data for ${sheetName}`);
       setAllFormData(cachedData);
       setIsLoading(false);
       return;
@@ -90,8 +89,6 @@ export default function Page() {
     localStorage.removeItem(CACHE_SHEET_KEY);
 
     try {
-      console.log(`Fetching fresh data for ${sheetName}`);
-
       const payload = {
         mode: "fetch",
         modelName: sheetName,
@@ -107,10 +104,10 @@ export default function Page() {
 
         setAllFormData(result);
       } else {
-        console.error("Invalid backend response", result);
+        toast.error("Invalid backend response");
       }
     } catch (err) {
-      console.error("Fetch failed:", err);
+      toast.error("Backend data fetch failed");
     } finally {
       setIsLoading(false);
     }
@@ -157,7 +154,7 @@ export default function Page() {
           isInitialNotesLoad.current = true;
         }
       } catch (err) {
-        console.error("Notes fetch error:", err);
+        toast.error("Notes backend fetch failed");
         setNotes([{ type: 'paragraph', children: [{ text: '' }] }]);
       }
     };
@@ -195,10 +192,10 @@ export default function Page() {
         if (result.success) {
           toast.success("Notes saved");
         } else {
-          console.error("Save failed:", result);
+          toast.error("Notes failed to saved");
         }
       } catch (err) {
-        console.error("Save error:", err);
+        toast.error("Server didn't saved the Notes");
       }
     }, 3000);
 
@@ -326,7 +323,7 @@ export default function Page() {
         const json = await api.get("/api/material/pp-rate");
         setPpRate(json.data || []);
       } catch (e) {
-        console.error(e);
+        toast.error("Failed to fetch PP rate");
       } finally {
         setLoadingPpRate(false);
       }

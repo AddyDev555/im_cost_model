@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { api } from "@/utils/api";
+import { toast } from "react-toastify";
 
 export default function VerifyClient() {
     const params = useSearchParams();
     const router = useRouter();
     const token = params.get("token");
 
-    const [status, setStatus] = useState < "verifying" | "success" | "error" > ("verifying");
+    const [status, setStatus] = useState("verifying");
     const [email, setEmail] = useState("");
 
     useEffect(() => {
@@ -23,7 +24,6 @@ export default function VerifyClient() {
                 const res = await api.post("/api/auth/verify", { token });
 
                 setEmail(res.email);
-                setStatus("success");
 
                 localStorage.setItem(
                     "user_cred",
@@ -35,9 +35,11 @@ export default function VerifyClient() {
                     email: res.email,
                 });
 
+                setStatus("success");
+
                 setTimeout(() => router.push("/"), 1500);
             } catch (err) {
-                console.error(err);
+                toast.error("Invalid or expired verification link");
                 setStatus("error");
             }
         };
@@ -73,6 +75,9 @@ export default function VerifyClient() {
                     </p>
                     <p className="mt-2 text-sm text-gray-600">
                         Setting things up for you…
+                    </p>
+                    <p className="mt-2 text-sm text-gray-600">
+                        Please don’t close this tab or window.
                     </p>
                 </>
             )}
