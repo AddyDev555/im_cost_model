@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import DataTable from '../../components/ui/data-table';
-import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel, TubeCostModelMapper } from "../costingModels/models";
 
 function resolveConversionMappings(sheetName) {
     switch (sheetName) {
@@ -39,6 +39,12 @@ function resolveConversionMappings(sheetName) {
             return {
                 inputMap: RigidISBM2CostModel.conversion_inputs || {},
                 summaryMap: RigidISBM2CostModel.conversion_summary || {},
+            };
+        
+        case "tube_cost_model":
+            return {
+                inputMap: TubeCostModelMapper.conversion_inputs || {},
+                summaryMap: TubeCostModelMapper.conversion_summary || {},
             };
 
         default:

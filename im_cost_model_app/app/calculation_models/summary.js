@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import DataTable from '../../components/ui/data-table';
 import { Treemap, Tooltip, ResponsiveContainer } from 'recharts';
-import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel, TubeCostModelMapper } from "../costingModels/models";
 
 const SHEET_LABEL_MAPS = {
     im_cost_model: {
@@ -28,6 +28,10 @@ const SHEET_LABEL_MAPS = {
     rigid_isbm2_cost_model: {
         general: RigidISBM2CostModel.general_summary,
         process: RigidISBM2CostModel.process_summary,
+    },
+    tube_cost_model: {
+        general: TubeCostModelMapper.general_summary,
+        process: TubeCostModelMapper.process_summary,
     },
 };
 
@@ -93,7 +97,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                     {inrValue > 0 && (
                         <>
                             <p className="text-sm text-gray-600">
-                                {`Cost in INR: ${inrValue.toLocaleString(undefined, {
+                                {`${inrValue.toLocaleString(undefined, {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                 })}`}

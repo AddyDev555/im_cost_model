@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from '../../components/ui/data-table';
 import ApiDataTable from '../../components/ui/api-table';
 import { api } from "@/utils/api";
-import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel, TubeCostModelMapper } from "../costingModels/models";
 
 
 const SHOW_POLYMER_SHEETS = new Set([
@@ -51,6 +51,11 @@ function resolveMappings(sheetName) {
             return {
                 inputMap: RigidISBM2CostModel.material_inputs,
                 summaryMap: RigidISBM2CostModel.material_summary,
+            };
+        case "tube_cost_model":
+            return {
+                inputMap: TubeCostModelMapper.material_inputs,
+                summaryMap: TubeCostModelMapper.material_summary,
             };
 
         default:

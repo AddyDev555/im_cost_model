@@ -27,6 +27,9 @@ SHEET_ID_MAP = {
     },
     "rigid_isbm2_cost_model":{
         "sheetId": os.getenv("INITIAL_GS_ID_RIGIDS_ISBM2_COST_MODEL"),
+    },
+    "tube_cost_model":{
+        "sheetId": os.getenv("INITIAL_GS_ID_TUBE_COST_MODEL"),
     }
     # add more models here
 }

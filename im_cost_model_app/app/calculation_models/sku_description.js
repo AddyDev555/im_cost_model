@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
-import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel } from "../costingModels/models";
+import { IMCostModelMapper, CartonCostModel, CorrugateCostModel, RigidEBMCostModel, RigidISBM1CostModel, RigidISBM2CostModel, TubeCostModelMapper } from "../costingModels/models";
 
 function resolveSkuMapping(sheetName) {
     switch (sheetName) {
@@ -21,6 +21,9 @@ function resolveSkuMapping(sheetName) {
 
         case "rigid_isbm2_cost_model":
             return RigidISBM2CostModel.sku_description;
+        
+        case "tube_cost_model":
+            return TubeCostModelMapper.sku_description;
 
         default:
             return {};

@@ -24,7 +24,8 @@ const sheetNameMapping = {
   corrugate_cost_model: "Corrugate Cost Model",
   rigid_ebm_cost_model: "Rigid EBM Cost Model",
   rigid_isbm1_cost_model: "Rigid ISBM1 Cost Model",
-  rigid_isbm2_cost_model: "Rigid ISBM2 Cost Model"
+  rigid_isbm2_cost_model: "Rigid ISBM2 Cost Model",
+  tube_cost_model: "Tube Cost Model",
 };
 
 /* ============================
