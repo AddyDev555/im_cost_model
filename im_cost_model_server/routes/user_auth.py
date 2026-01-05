@@ -4,8 +4,14 @@ from utils.verifyMagicToken import generate_magic_token, verify_magic_token
 from utils.database import SessionLocal
 from utils.models import User
 from sqlalchemy.orm import Session
+import os
+from dotenv import load_dotenv
+
 
 router = APIRouter()
+load_dotenv()
+
+SHEETS_VERSION = os.getenv("VERSION")
 
 def get_db():
     db = SessionLocal()
@@ -37,15 +43,18 @@ def verify(
 
         user = db.query(User).filter(User.email == email).first()
         if not user:
-            user = User(email=email)
+            user = User(email=email, version=1)
             db.add(user)
             db.commit()
             db.refresh(user)
 
+        print(f"Verified user: {email}")
+        
         return {
             "success": True,
             "email": email
         }
 
     except Exception:
+        print("Invalid or expired token")
         raise HTTPException(status_code=400, detail="Invalid or expired link")
