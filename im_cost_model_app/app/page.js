@@ -43,7 +43,7 @@ export default function Page() {
   const [ppRate, setPpRate] = useState([]);
   const [loadingPpRate, setLoadingPpRate] = useState(false);
   const [updateVersionMessage, setUpdateVersionMessage] = useState("");
-  const [userCred, setUserCred] = useState(null);
+  const [userCred, setUserCred] = useState("");
 
   const [sheetName, setSheetName] = useState(
     Object.keys(sheetNameMapping)[0]
@@ -336,7 +336,13 @@ export default function Page() {
 
   useEffect(() => {
     const cred = localStorage.getItem("user_cred");
-    setUserCred(cred);
+
+    if(!cred){
+      return;
+    }
+    else{
+      setUserCred(cred);
+    }
     async function versionCheck() {
       const payload = {
         email: JSON.parse(cred).email,
