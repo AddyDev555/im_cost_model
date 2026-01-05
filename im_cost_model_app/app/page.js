@@ -278,7 +278,7 @@ export default function Page() {
 
     api.post("/api/updates/update-inputs", payload)
       .then(res => {
-        if (!res.success) throw new Error("Update failed");
+        if (!res.success) toast.error(res.message  || "Server Issue Calculation Failed");
 
         if (res.status === 401) {
           toast.warning(res.detail || "Login required to calculate");

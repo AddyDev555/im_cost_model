@@ -23,6 +23,12 @@ export default function VerifyClient() {
             try {
                 const res = await api.post("/api/auth/verify", { token });
 
+                if(!res.success) {
+                    toast.error(res.message  || "Server Issue Verification Failed");
+                    setStatus("error");
+                    return;
+                }
+
                 setEmail(res.email);
 
                 localStorage.setItem(
@@ -34,6 +40,12 @@ export default function VerifyClient() {
                     mode: "init",
                     email: res.email,
                 });
+
+                if(!api.success) {
+                    toast.error(api.message  || "Server Issue Sheet Loading Failed");
+                    setStatus("error");
+                    return;
+                }
 
                 setStatus("success");
 
