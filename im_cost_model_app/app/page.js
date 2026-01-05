@@ -8,7 +8,7 @@ import SkuDescription from './calculation_models/sku_description';
 import ConversionCostCalculation from './calculation_models/conversion_cost_calculation';
 import SlateEditor from '../components/ui/richTextBox';
 import PDFDownload from './calculation_models/pdf_download';
-import { NotebookPen, FileText } from 'lucide-react';
+import { NotebookPen, FileText, TriangleAlert } from 'lucide-react';
 import { api } from "@/utils/api";
 import { toast } from 'react-toastify';
 import SaveExcelButton from './calculation_models/download_excel';
@@ -369,7 +369,10 @@ export default function Page() {
   ============================ */
   return (
     <div>
-      <p className='w-full bg-red-200 text-black text-sm py-2 px-4 font-semibold'>{updateVersionMessage}</p>
+      <div className="w-full flex align-center justify-center gap-2 print:hidden">
+        <TriangleAlert />
+        <p className='bg-red-200 text-black text-sm py-2 px-4 font-semibold'>{updateVersionMessage}</p>
+      </div>
       <div className="px-4 print:hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
           <SkuDescription isLoading={isLoading} allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName} />
