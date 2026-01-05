@@ -192,8 +192,6 @@ async def update_material_cost_inputs(request: Request):
         # Extract appscript response
         data = full.get("data", {})
         
-        print("AppScript Response: ", full)
-
         return {
             "success": True,
             "data": data
@@ -209,8 +207,6 @@ def get_sheet_data():
         res = requests.get(APPSCRIPT_URL)
         full = res.json()
         data = full.get('data', {})
-
-        print(full)
         
         return {
             "success": True,

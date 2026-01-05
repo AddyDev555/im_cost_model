@@ -1,9 +1,9 @@
 export const IMCostModelMapper = {
     sku_description: {
-        product: "Product",
+        sku_description: "Product",
         sku_code: "SKU Code",
         country: "Country",
-        currency: "Currency",
+        currency_symbol: "Currency",
     },
     general_summary: {
         material_cost: "Material",
