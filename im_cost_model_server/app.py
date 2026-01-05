@@ -8,6 +8,7 @@ from routes.note import router as note_router
 from routes.download_excel import router as download_excel_router
 from routes.user_auth import router as user_auth_router
 from routes.init_user_sheets import router as init_user_sheets_router
+from routes.version_check import router as version_check_router
 from utils.database import engine
 from utils.models import Base
 
@@ -33,6 +34,7 @@ app.include_router(note_router, prefix="/api/notes", tags=["Notes"])
 app.include_router(download_excel_router, prefix="/api/download", tags=["Download Excel"])
 app.include_router(user_auth_router, prefix="/api/auth", tags=["User Auth"])
 app.include_router(init_user_sheets_router, prefix="/api/init", tags=["Init User Sheets"])
+app.include_router(version_check_router, prefix="/api/version", tags=["Version Check"])
 
 # The uvicorn.run() is great for development.
 # For production, consider using a process manager like Gunicorn:

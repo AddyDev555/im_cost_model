@@ -42,6 +42,8 @@ export default function Page() {
   const [countryName, setCountryName] = useState("India");
   const [ppRate, setPpRate] = useState([]);
   const [loadingPpRate, setLoadingPpRate] = useState(false);
+  const [updateVersionMessage, setUpdateVersionMessage] = useState("");
+  const [userCred, setUserCred] = useState(null);
 
   const [sheetName, setSheetName] = useState(
     Object.keys(sheetNameMapping)[0]
@@ -261,7 +263,6 @@ export default function Page() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const userCred = localStorage.getItem("user_cred");
     if (!userCred) {
       toast.warning("Please Login to Calculate!");
       return;
@@ -278,7 +279,7 @@ export default function Page() {
 
     api.post("/api/updates/update-inputs", payload)
       .then(res => {
-        if (!res.success) toast.error(res.message  || "Server Issue Calculation Failed");
+        if (!res.success) toast.error(res.message || "Server Issue Calculation Failed");
 
         if (res.status === 401) {
           toast.warning(res.detail || "Login required to calculate");
@@ -333,12 +334,37 @@ export default function Page() {
     fetchPPData();
   }, [sheetName]);
 
+  useEffect(() => {
+    const cred = localStorage.getItem("user_cred");
+    setUserCred(cred);
+    async function versionCheck() {
+      const payload = {
+        email: JSON.parse(cred).email,
+      };
+      try {
+        const response = await api.post(
+          "/api/version/version-check",
+          payload
+        );
+
+        console.log("Version check response:", response);
+        setUpdateVersionMessage(response.message || "");
+      } catch (error) {
+        console.error("Version check failed:", error.message);
+        throw error;
+      }
+    }
+
+    versionCheck(JSON.parse(localStorage.getItem("user_cred"))?.email);
+  }, []);
+
   /* ============================
      RENDER
   ============================ */
   return (
     <div>
       <div className="px-4 print:hidden">
+        <p className='w-full bg-green-200 text-black text-lg'>{updateVersionMessage}</p>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
           <SkuDescription isLoading={isLoading} allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName} />
 

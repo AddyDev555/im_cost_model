@@ -300,7 +300,6 @@ export const CorrugateCostModel = {
         total_cost: "Total",
     },
     material_inputs: {
-        paper_rate: "Paper Rate",
         "115": "115",
         "180": "180",
         length: "Length",
