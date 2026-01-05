@@ -76,7 +76,7 @@ export default function MagicLinkDialog() {
                             onClick={handleLogout}
                             className="cursor-pointer flex items-center gap-2 w-full text-left px-3 py-2 hover:bg-red-400"
                         >
-                            <LogOut/> 
+                            <LogOut />
                             <p className="text-sm font-semibold">Logout</p>
                         </button>
                     </div>
@@ -106,37 +106,42 @@ export default function MagicLinkDialog() {
                     </div>
                 ) : (
                     <>
-                        <div className="space-y-2">
-                            <Input
-                                type="email"
-                                placeholder="you@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                disabled={loading}
-                            />
-
-                            {error && (
-                                <p className="text-sm text-red-500">{error}</p>
-                            )}
-                        </div>
-
-                        <Button
-                            onClick={sendMagicLink}
-                            disabled={loading}
-                            className="w-full mt-4 bg-violet-500 hover:bg-violet-600 cursor-pointer"
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault()
+                                sendMagicLink()
+                            }}
                         >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Sending...
-                                </>
-                            ) : (
-                                <>
-                                    <Mail className="mr-2 h-4 w-4" />
-                                    Send Magic Link
-                                </>
-                            )}
-                        </Button>
+                            <div className="space-y-2">
+                                <Input
+                                    type="email"
+                                    placeholder="you@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    disabled={loading}
+                                />
+
+                                {error && <p className="text-sm text-red-500">{error}</p>}
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full mt-4 bg-violet-500 hover:bg-violet-600 cursor-pointer"
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Mail className="mr-2 h-4 w-4" />
+                                        Send Magic Link
+                                    </>
+                                )}
+                            </Button>
+                        </form>
                     </>
                 )}
             </DialogContent>

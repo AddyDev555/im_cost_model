@@ -34,6 +34,8 @@ async def init_sheets(request: Request):
             headers={"Content-Type": "application/json"},
             timeout=20
         )
+        
+        print(res.json())
 
         return res.json()
 
