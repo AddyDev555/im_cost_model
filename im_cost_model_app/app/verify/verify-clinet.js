@@ -41,12 +41,6 @@ export default function VerifyClient() {
                     email: res.email,
                 });
 
-                if(!api.success) {
-                    toast.error(api.message  || "Server Issue Sheet Loading Failed");
-                    setStatus("error");
-                    return;
-                }
-
                 setStatus("success");
 
                 setTimeout(() => router.push("/"), 1500);
