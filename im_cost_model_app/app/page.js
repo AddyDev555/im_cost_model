@@ -370,7 +370,6 @@ export default function Page() {
   return (
     <div>
       <div className="w-full bg-red-200 text-black text-sm flex align-center justify-center gap-1 print:hidden">
-        <TriangleAlert />
         <p className='py-2 px-4 font-semibold'>{updateVersionMessage}</p>
       </div>
       <div className="px-4 print:hidden">
