@@ -323,8 +323,8 @@ export const CorrugateCostModel = {
         k3: "K3",
         k3_type: "K3 Type",
 
-        outer_dimensions_add_length: "Add Length",
-        outer_dimensions_add_width: "Add Width",
+        add_length: "Add Length",
+        add_width: "Add Width",
 
         printing_method: "Printing Method",
         no_of_colours: "No of Colours",
