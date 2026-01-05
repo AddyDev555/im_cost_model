@@ -369,8 +369,8 @@ export default function Page() {
   ============================ */
   return (
     <div>
+      <p className='w-full bg-red-200 text-black text-sm p-2'>{updateVersionMessage}</p>
       <div className="px-4 print:hidden">
-        <p className='w-full bg-green-200 text-black text-lg'>{updateVersionMessage}</p>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
           <SkuDescription isLoading={isLoading} allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName} />
 
