@@ -369,9 +369,9 @@ export default function Page() {
   ============================ */
   return (
     <div>
-      <div className="w-full flex align-center justify-center gap-2 print:hidden">
-        <TriangleAlert />
-        <p className='bg-red-200 text-black text-sm py-2 px-4 font-semibold'>{updateVersionMessage}</p>
+      <div className="w-full bg-red-200 text-black text-sm  flex align-center justify-center gap-2 print:hidden">
+        <TriangleAlert width={5} height={5} className="pt-1"/>
+        <p className='py-2 px-4 font-semibold'>{updateVersionMessage}</p>
       </div>
       <div className="px-4 print:hidden">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
