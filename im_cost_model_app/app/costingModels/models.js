@@ -146,7 +146,7 @@ export const CartonCostModel = {
         ink_rate: "Ink Rate",
         varnish_rate: "Varnish Rate",
         foil_rate: "Foil Rate",
-        film_rate: "File Rate",
+        film_rate: "Film Rate",
         primer_rate: "Primer Rate",
         no_of_colours: "No of Colours",
         common_colours: "Common Colours",
@@ -205,7 +205,7 @@ export const CartonCostModel = {
         spot_varnish_machine: "Spot Varnish Machine",
         hot_foiling_machine: "Hot Foiling Machine",
         lamination_machine: "Lamination Machine",
-        creasing_and_blanking_machine: "Creasing & Blanking Machine",
+        'creasing_&_blanking_machine': "Creasing & Blanking Machine",
         "folder_-_gluer_machine": "Folder - Gluer Machine",
         window_patching_machine: "Window Patching Machine",
 

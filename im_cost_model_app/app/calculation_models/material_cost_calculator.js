@@ -149,24 +149,33 @@ export default function MaterialCalculator({
     --------------------------------------------- */
     const summaryTableData = useMemo(() => {
         const rows = [];
-        let totalRow = {
+
+        const totalRow = {
             labelKey: "material_cost",
             label: summaryMap.material_cost || "Total",
             inr: "",
             eur: "",
-            pct: ""
+            pct: "0"
         };
 
         (allFormData?.summaryData || []).forEach(item => {
             if (!summaryMap[item.label]) return;
 
+            const value = Number(item.value || 0);
+            const percentValue = Number(item.percent);
+            const pctFormatted = isNaN(percentValue)
+                ? "0"
+                : `${(percentValue * 100).toFixed(0)}`;
+
+            /* ---------- TOTAL ROW ---------- */
             if (item.label === "material_cost") {
-                if (item.currency === "INR") totalRow.inr = `${Number(item.value || 0).toFixed(0)}`;
-                if (item.currency === "EUR") totalRow.eur = `${Number(item.value || 0).toFixed(0)}`;
-                if (item.percent) totalRow.pct = `${(item.percent * 100).toFixed(0)}`;
+                if (item.currency === "INR") totalRow.inr = value.toFixed(0);
+                if (item.currency === "EUR") totalRow.eur = value.toFixed(0);
+                totalRow.pct = pctFormatted;
                 return;
             }
 
+            /* ---------- NORMAL ROW ---------- */
             let row = rows.find(r => r.labelKey === item.label);
             if (!row) {
                 row = {
@@ -174,18 +183,18 @@ export default function MaterialCalculator({
                     label: summaryMap[item.label],
                     inr: "",
                     eur: "",
-                    pct: ""
+                    pct: "0"
                 };
                 rows.push(row);
             }
 
             if (item.currency === "INR") {
-                row.inr = `${Number(item.value || 0).toFixed(0)}`;
-                if (item.percent) row.pct = `${(item.percent * 100).toFixed(0)}`;
+                row.inr = value.toFixed(0);
+                row.pct = pctFormatted;
             }
 
             if (item.currency === "EUR") {
-                row.eur = `${Number(item.value || 0).toFixed(0)}`;
+                row.eur = value.toFixed(0);
             }
         });
 

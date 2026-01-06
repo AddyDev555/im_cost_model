@@ -135,7 +135,7 @@ export default function ConversionCostCalculation({
             existing.inr = `${Number(curr.value || 0).toFixed(0)}`;
             existing.pct = curr.percent
                 ? `${(Number(curr.percent) * 100).toFixed(0)}`
-                : "";
+                : "0";
         }
 
         if (curr.currency === "EUR") {

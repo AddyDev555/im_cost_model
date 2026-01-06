@@ -86,6 +86,8 @@ async def get_inputs_data(request: Request):
         input_data = convert_percentage_units(apps_script_response.get("inputData", []))
         summary_data = convert_percentage_units(apps_script_response.get("summaryData", []))
 
+        print("Fetched input data:", input_data, "\n")
+        print("Fetched summary data:", summary_data, "\n")
 
         # Return same structure to frontend
         return {

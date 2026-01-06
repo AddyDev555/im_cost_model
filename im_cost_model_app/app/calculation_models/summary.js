@@ -142,16 +142,9 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
         const summaryData = items
             .map(item => {
                 const eur = parseFloat(item.value);
-                const percent = parseFloat(item.percent);
+                const percent = parseFloat(item.percent)*100;
 
                 if (isNaN(eur) || eur <= 0) return null;
-
-                // Use percent field if available and totalEur is invalid, otherwise calculate
-                const percentValue = totalEur > 0
-                    ? (eur / totalEur * 100)
-                    : (!isNaN(percent) ? percent : 0);
-
-                if (percentValue <= 0) return null;
 
                 const inrItem = allFormData.summaryData.find(
                     d => d.label === item.label && d.currency === "INR"
@@ -160,7 +153,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
 
                 return {
                     name: GENERAL_SUMMARY_LABEL_MAP[item.label] || item.label,
-                    value: +percentValue.toFixed(0),
+                    value: +percent.toFixed(0),
                     eur_value: eur,
                     inr_value: inrValue
                 };
@@ -171,12 +164,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
         const summaryTableData = [
             ...items.map(item => {
                 const eur = parseFloat(item.value);
-                const percent = parseFloat(item.percent);
-
-                const eurValue = isNaN(eur) ? 0 : eur;
-                const percentValue = totalEur > 0
-                    ? (eurValue / totalEur * 100)
-                    : (!isNaN(percent) ? percent : 0);
+                const percent = parseFloat(item.percent)*100;
 
                 // Check if there's a corresponding INR value in summaryData
                 const inrItem = allFormData.summaryData.find(
@@ -188,8 +176,8 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                     key: item.label,
                     name: GENERAL_SUMMARY_LABEL_MAP[item.label] || item.label,
                     inr_value: `${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    eur_value: `${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    cost_ratio: `${percentValue.toFixed(0)}`
+                    eur_value: `${eur.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                    cost_ratio: `${isNaN(percent) ? "0" : percent.toFixed(0)}`
                 };
             }),
             totalItem ? (() => {
@@ -224,22 +212,10 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
         const items = order.map(label => labelMap[label]).filter(Boolean);
         const totalItem = labelMap["total"];
 
-
-        // Calculate total from process items for percentage calculation
-        const totalValue = items.reduce((sum, i) => {
-            const val = parseFloat(i.value);
-            return sum + (isNaN(val) ? 0 : val);
-        }, 0);
-
         return [
             ...items.map(item => {
                 const eurValue = parseFloat(item.value) || 0;
-                const percent = parseFloat(item.percent);
-
-                // Calculate percentage based on total or use provided percent
-                const percentValue = totalValue > 0
-                    ? (eurValue / totalValue * 100)
-                    : (!isNaN(percent) ? percent * 100 : 0); // Assuming percent is a decimal
+                const percent = parseFloat(item.percent)*100;
 
                 // Check if there's a corresponding INR value in summaryData
                 const inrItem = allFormData.summaryData.find(
@@ -252,7 +228,7 @@ export default function Summary({ isLoading, allFormData, sheetName, loadingSumm
                     name: PROCESS_SUMMARY_LABEL_MAP[item.label] || item.label,
                     inr_value: `${(isNaN(inrValue) ? 0 : inrValue).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
                     eur_value: `${eurValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                    per_value: `${percentValue.toFixed(0)}`
+                    per_value: `${isNaN(percent) ? "0" : percent.toFixed(0)}`
                 };
             }),
             totalItem ? (() => {
