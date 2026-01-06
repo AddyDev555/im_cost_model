@@ -437,6 +437,7 @@ export const RigidEBMCostModel = {
         injection: "Injection",
         assembly: "Assembly",
         dispatch: "Dispatch",
+        extrusion: "Extrusion",
         total: "Total",
     },
     material_inputs: {
@@ -550,6 +551,7 @@ export const RigidISBM1CostModel = {
         injection: "Injection",
         assembly: "Assembly",
         dispatch: "Dispatch",
+        "single-step_injection_stretch_blow_molding": "Single Step Injection Stretch Blow Molding",
         total: "Total",
     },
     material_inputs: {
