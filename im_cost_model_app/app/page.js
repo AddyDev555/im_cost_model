@@ -268,6 +268,21 @@ export default function Page() {
       return;
     }
 
+    const cachedRaw = localStorage.getItem(CACHE_KEY);
+    const cachedSheet = localStorage.getItem(CACHE_SHEET_KEY);
+
+    if (cachedRaw && cachedSheet === sheetName) {
+      const cached = JSON.parse(cachedRaw);
+
+      const cachedInputData = cached?.inputData || [];
+      const currentInputData = allFormData?.inputData || [];
+
+      if (isSameInputData(cachedInputData, currentInputData)) {
+        toast.info("No changes detected. Calculation already up to date.");
+        return;
+      }
+    }
+
     setLoadingSummary(true);
 
     const payload = {
