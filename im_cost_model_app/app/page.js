@@ -260,6 +260,10 @@ export default function Page() {
     };
   };
 
+  const isSameInputData = (a = [], b = []) => {
+    return JSON.stringify(a) === JSON.stringify(b);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
