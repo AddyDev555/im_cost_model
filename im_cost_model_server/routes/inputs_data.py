@@ -15,6 +15,7 @@ SHEET_ID_MAP = {
     },
     "carton_cost_model": {
         "sheetId": os.getenv("INITIAL_GS_ID_CARTON_COST_MODEL"),
+        "sheetId2": os.getenv("INITIAL_GS_ID_MDZ_CARTON_COST_MODEL"),
     },
     "corrugate_cost_model":{
         "sheetId": os.getenv("INITIAL_GS_ID_CORRUGATE_COST_MODEL"),
@@ -30,8 +31,7 @@ SHEET_ID_MAP = {
     },
     "tube_cost_model":{
         "sheetId": os.getenv("INITIAL_GS_ID_TUBE_COST_MODEL"),
-    }
-    # add more models here
+    },
 }
 
 def convert_percentage_units(data):
@@ -54,7 +54,7 @@ def convert_percentage_units(data):
 async def get_inputs_data(request: Request):
     try:
         payload = await request.json()
-
+        cost_model_key = payload.get("costModelKey")
         mode = payload.get("mode")  # fetch or update
         model_name = payload.get("modelName")
 
@@ -65,7 +65,10 @@ async def get_inputs_data(request: Request):
             raise HTTPException(status_code=400, detail=f"Unknown modelName: {model_name}")
 
         # Map mode to correct sheetId
-        sheet_id = SHEET_ID_MAP[model_name]["sheetId"] if mode == "fetch" else None
+        if model_name == "carton_cost_model" and cost_model_key == "Mondeleze":
+            sheet_id = SHEET_ID_MAP[model_name].get("sheetId2")
+        else:
+            sheet_id = SHEET_ID_MAP[model_name].get("sheetId")
 
         # Inject sheetId into payload for Apps Script
         payload["sheetId"] = sheet_id
@@ -93,7 +96,7 @@ async def get_inputs_data(request: Request):
         return {
             "success": True,
             "inputData": input_data,
-            "summaryData": summary_data 
+            "summaryData": summary_data
         }
 
     except requests.RequestException as e:

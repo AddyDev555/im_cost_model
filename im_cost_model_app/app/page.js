@@ -8,7 +8,7 @@ import SkuDescription from './calculation_models/sku_description';
 import ConversionCostCalculation from './calculation_models/conversion_cost_calculation';
 import SlateEditor from '../components/ui/richTextBox';
 import PDFDownload from './calculation_models/pdf_download';
-import { NotebookPen, FileText, TriangleAlert } from 'lucide-react';
+import { NotebookPen, FileText, TriangleAlert, LayoutTemplate } from 'lucide-react';
 import { api } from "@/utils/api";
 import { toast } from 'react-toastify';
 import SaveExcelButton from './calculation_models/download_excel';
@@ -44,6 +44,7 @@ export default function Page() {
   const [loadingPpRate, setLoadingPpRate] = useState(false);
   const [updateVersionMessage, setUpdateVersionMessage] = useState("");
   const [userCred, setUserCred] = useState("");
+  const [isAllInOneView, setIsAllInOneView] = useState(false);
 
   const [sheetName, setSheetName] = useState(
     Object.keys(sheetNameMapping)[0]
@@ -423,43 +424,42 @@ export default function Page() {
             </div>
           </div>
         </div>
+          <Accordion type="single" collapsible>
+            <AccordionItem value="summary">
+              <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Summary</AccordionTrigger>
+              <AccordionContent>
+                <Summary isLoading={isLoading} sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} loadingSummary={loadingSummary} />
+              </AccordionContent>
+            </AccordionItem>
 
-        <Accordion type="single" collapsible>
-          <AccordionItem value="summary">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Summary</AccordionTrigger>
-            <AccordionContent>
-              <Summary isLoading={isLoading} sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} loadingSummary={loadingSummary} />
-            </AccordionContent>
-          </AccordionItem>
+            <AccordionItem value="material">
+              <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Material Cost</AccordionTrigger>
+              <AccordionContent>
+                <MaterialCalculator
+                  ppRate={ppRate}
+                  loadingPpRate={loadingPpRate}
+                  isLoading={isLoading}
+                  sheetName={sheetName}
+                  allFormData={allFormData}
+                  setAllFormData={setAllFormData}
+                  loadingSummary={loadingSummary}
+                />
+              </AccordionContent>
+            </AccordionItem>
 
-          <AccordionItem value="material">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Material Cost</AccordionTrigger>
-            <AccordionContent>
-              <MaterialCalculator
-                ppRate={ppRate}
-                loadingPpRate={loadingPpRate}
-                isLoading={isLoading}
-                sheetName={sheetName}
-                allFormData={allFormData}
-                setAllFormData={setAllFormData}
-                loadingSummary={loadingSummary}
-              />
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="conversion">
-            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Conversion Cost</AccordionTrigger>
-            <AccordionContent>
-              <ConversionCostCalculation
-                isLoading={isLoading}
-                allFormData={allFormData}
-                setAllFormData={setAllFormData}
-                loadingSummary={loadingSummary}
-                sheetName={sheetName}
-              />
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+            <AccordionItem value="conversion">
+              <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Conversion Cost</AccordionTrigger>
+              <AccordionContent>
+                <ConversionCostCalculation
+                  isLoading={isLoading}
+                  allFormData={allFormData}
+                  setAllFormData={setAllFormData}
+                  loadingSummary={loadingSummary}
+                  sheetName={sheetName}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
       </div>
 
       <div id="pdf-content">
