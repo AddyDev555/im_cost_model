@@ -47,31 +47,6 @@ export default function Page() {
         Object.keys(sheetNameMapping)[0]
     );
 
-    const TableLoader = ({ rows = 6, cols = 4 }) => {
-        return (
-            <div className="border rounded overflow-hidden animate-pulse">
-                {/* Header */}
-                <div className="grid grid-cols-4 bg-gray-100">
-                    {Array.from({ length: cols }).map((_, i) => (
-                        <div key={i} className="h-8 border-r last:border-r-0" />
-                    ))}
-                </div>
-
-                {/* Body */}
-                {Array.from({ length: rows }).map((_, r) => (
-                    <div key={r} className="grid grid-cols-4 border-t">
-                        {Array.from({ length: cols }).map((_, c) => (
-                            <div
-                                key={c}
-                                className="h-8 border-r last:border-r-0 bg-gray-50"
-                            />
-                        ))}
-                    </div>
-                ))}
-            </div>
-        );
-    };
-
 
     /* ============================
        NOTES STATE

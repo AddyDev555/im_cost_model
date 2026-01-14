@@ -7,7 +7,6 @@ import MaterialCalculator from './material_cost_calculator';
 import ConversionCostCalculation from './conversion_cost_calculation';
 import { saveAs } from 'file-saver';
 import { pdf } from '@react-pdf/renderer';
-import Page from '../mondeleze/page';
 
 export default function PDFDownload({ mode, loadingPpRate, ppRate, allFormData, setAllFormData, loadingSummary, sheetName, sheetNameMapping }) {
     const [time, setTime] = useState("");
@@ -17,76 +16,63 @@ export default function PDFDownload({ mode, loadingPpRate, ppRate, allFormData, 
     }, []);
 
     return (
-        <div id="pdf-content" className="hidden print:block">
-            {mode === "Mondeleze" ? (
-                <div>
-                    <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold">
-                            {sheetNameMapping[sheetName] ?? sheetName} Report
-                        </h1>
-                        <p className="text-sm">{time}</p>
-                    </div>
-
-                    <Page />
+        <div id="pdf-content" className="hidden print:block">(
+            <div className="p-4">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold">{sheetNameMapping[sheetName] ?? sheetName} Report</h1>
+                    <p className="text-sm">{time}</p>
                 </div>
-            ) : (
-                <div className="p-4">
-                    <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-bold">{sheetNameMapping[sheetName] ?? sheetName} Report</h1>
-                        <p className="text-sm">{time}</p>
-                    </div>
 
-                    <div className="mb-4">
-                        {/* <h2 className="text-xl font-semibold border-b pb-2 mb-2">SKU Description</h2> */}
-                        <SkuDescription
+                <div className="mb-4">
+                    {/* <h2 className="text-xl font-semibold border-b pb-2 mb-2">SKU Description</h2> */}
+                    <SkuDescription
+                        allFormData={allFormData}
+                        setAllFormData={setAllFormData}
+                        sheetName={sheetName}
+                    />
+                </div>
+
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold border-b pb-2 mb-2">Summary</h2>
+                    <div className="w-full">
+                        <Summary
                             allFormData={allFormData}
                             setAllFormData={setAllFormData}
                             sheetName={sheetName}
                         />
                     </div>
-
-                    <div className="mb-4">
-                        <h2 className="text-xl font-semibold border-b pb-2 mb-2">Summary</h2>
-                        <div className="w-full">
-                            <Summary
-                                allFormData={allFormData}
-                                setAllFormData={setAllFormData}
-                                sheetName={sheetName}
-                            />
-                        </div>
-                    </div>
+                </div>
 
 
-                    <div className="mb-4">
-                        <h2 className="text-xl font-semibold border-b pb-2 mb-2">Material Cost</h2>
-                        <MaterialCalculator
-                            loadingPpRate={loadingPpRate}
-                            ppRate={ppRate}
-                            allFormData={allFormData}
-                            setAllFormData={setAllFormData}
-                            loadingSummary={loadingSummary}
-                            sheetName={sheetName}
-                        />
-                    </div>
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold border-b pb-2 mb-2">Material Cost</h2>
+                    <MaterialCalculator
+                        loadingPpRate={loadingPpRate}
+                        ppRate={ppRate}
+                        allFormData={allFormData}
+                        setAllFormData={setAllFormData}
+                        loadingSummary={loadingSummary}
+                        sheetName={sheetName}
+                    />
+                </div>
 
-                    <div className="mb-4">
-                        <h2 className="text-xl font-semibold border-b pb-2 mb-2">Conversion Cost</h2>
-                        <ConversionCostCalculation
-                            allFormData={allFormData}
-                            setAllFormData={setAllFormData}
-                            sheetName={sheetName}
-                        />
-                    </div>
+                <div className="mb-4">
+                    <h2 className="text-xl font-semibold border-b pb-2 mb-2">Conversion Cost</h2>
+                    <ConversionCostCalculation
+                        allFormData={allFormData}
+                        setAllFormData={setAllFormData}
+                        sheetName={sheetName}
+                    />
+                </div>
 
-                    {/* <div className="mb-4">
+                {/* <div className="mb-4">
                     <h2 className="text-xl font-semibold border-b pb-2 mb-2">Machine Cost</h2>
                     <MachineCostCalculation
                         allFormData={allFormData}
                         setAllFormData={setAllFormData}
                     />
                 </div> */}
-                </div>
-            )}
+            </div>
         </div>
     );
 }
