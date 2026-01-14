@@ -680,6 +680,7 @@ export default function Page() {
 
             <div id="pdf-content">
                 <PDFDownload
+                    mode = "Mondeleze"
                     loadingPpRate={loadingPpRate}
                     ppRate={ppRate}
                     isLoading={isLoading}
