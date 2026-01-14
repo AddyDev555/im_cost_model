@@ -96,7 +96,7 @@ export default function Page() {
                     backendRow?.value !== null &&
                     backendRow?.value !== "" &&
                     !isNaN(Number(backendRow.value))
-                    ? Math.round(Number(backendRow.value))
+                    ? parseFloat(Number(backendRow.value).toFixed(2))
                     : backendRow?.value ?? "";
 
             return {
