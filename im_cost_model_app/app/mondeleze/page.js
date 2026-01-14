@@ -42,6 +42,8 @@ export default function Page() {
     const [updateVersionMessage, setUpdateVersionMessage] = useState("");
     const [userCred, setUserCred] = useState("");
     const [isAllInOneView, setIsAllInOneView] = useState(false);
+    const [actualValues, setActualValues] = useState({});
+
 
     const [sheetName, setSheetName] = useState(
         Object.keys(sheetNameMapping)[0]
@@ -62,22 +64,48 @@ export default function Page() {
                 i => i.label === modelKey || i.label === modelLabel
             );
 
+            const resolvedValue =
+                backendRow?.value !== undefined &&
+                    backendRow?.value !== null &&
+                    backendRow?.value !== "" &&
+                    !isNaN(Number(backendRow.value))
+                    ? Math.round(Number(backendRow.value))
+                    : backendRow?.value ?? "";
+
             return {
-                key: modelKey,           // internal use
-                label: modelLabel,       // display label
+                key: modelKey,
+                label: modelLabel,
                 unit: backendRow?.unit || "",
-                value:
-                    backendRow?.value !== undefined &&
-                        backendRow?.value !== null &&
-                        backendRow?.value !== "" &&
-                        !isNaN(Number(backendRow.value))
-                        ? Math.round(Number(backendRow.value))
-                        : backendRow?.value ?? "",
+                value: resolvedValue,                // ACTUAL (mutable)
+                recommendedValue: resolvedValue,     // SNAPSHOT (UI only)
                 dropdownValues: backendRow?.dropdownValues || []
             };
         });
     };
 
+
+    const handleActualValueChange = (key, newValue) => {
+        const raw = String(newValue).trim();
+        const numeric = raw.replace(/,/g, "");
+        const parsed =
+            numeric !== "" && !isNaN(numeric) ? Number(numeric) : raw;
+
+        // 1️⃣ Store actual value for UI
+        setActualValues(prev => ({
+            ...prev,
+            [key]: parsed
+        }));
+
+        // 2️⃣ Overwrite real value (for backend & summary)
+        setAllFormData(prev => ({
+            ...prev,
+            inputData: prev.inputData.map(row =>
+                row.key === key
+                    ? { ...row, value: parsed }
+                    : row
+            )
+        }));
+    };
 
 
 
@@ -481,29 +509,53 @@ export default function Page() {
                             { title: "Label", key: "label" },
                             { title: "Unit", key: "unit" },
                             {
-                                title: "Recommended Values",
-                                key: "value",
-                                render: (row, rowIdx) => (
+                                title: "Recommended Value",
+                                key: "recommendedValue",
+                                render: (row) => (
                                     <input
-                                        type="number"
                                         readOnly
-                                        className="border rounded px-2 py-1 w-full text-sm bg-gray-100"
-                                        value={row.value ?? ""}
-                                        onChange={(e) => {
-                                            const updated = [...allFormData.inputData];
-                                            updated[rowIdx] = {
-                                                ...updated[rowIdx],
-                                                value: e.target.value,
-                                            };
-                                            setAllFormData(prev => ({
-                                                ...prev,
-                                                inputData: updated,
-                                            }));
-                                        }}
+                                        value={row.recommendedValue ?? ""}
+                                        className="w-full bg-gray-100 border px-2 py-1 text-sm"
                                     />
-                                ),
+                                )
                             },
+                            {
+                                title: "Actual Value",
+                                key: "actual",
+                                render: (row) => {
+                                    const hasDropdown =
+                                        Array.isArray(row.dropdownValues) &&
+                                        row.dropdownValues.length > 0;
+
+                                    const actual = actualValues[row.key] ?? "";
+
+                                    return hasDropdown ? (
+                                        <select
+                                            className="w-full border px-2 py-1 text-sm"
+                                            value={actual}
+                                            onChange={(e) =>
+                                                handleActualValueChange(row.key, e.target.value)
+                                            }
+                                        >
+                                            <option value="">Select</option>
+                                            {row.dropdownValues.map(opt => (
+                                                <option key={opt} value={opt}>{opt}</option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            className="w-full border px-2 py-1 text-sm"
+                                            value={actual}
+                                            onChange={(e) =>
+                                                handleActualValueChange(row.key, e.target.value)
+                                            }
+                                        />
+                                    );
+                                }
+                            }
+
                         ]}
+
                         data={allFormData.inputData || []}
                     />
                 </div>
