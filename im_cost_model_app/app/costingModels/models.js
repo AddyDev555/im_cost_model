@@ -905,7 +905,7 @@ export const MDZCartonCostModel = {
         "uv_ink_rate": "UV Ink Rate",
         "ink_consumption": "Ink Consumption",
         "ink_wastage": "Wastage (Ink)",
-        "aqueous_varnish_rate": "Aqueous Varnish (AV) Rate",
+        "aqueous_varnish_(av)_rate": "Aqueous Varnish (AV) Rate",
         "av_consumption": "AV Consumption",
         "av_wastage": "Wastage (AV)",
         "primer_rate": "Primer Rate",
@@ -944,7 +944,7 @@ export const MDZCartonCostModel = {
         "embossing/punching_cost": "Embossing/Punching Cost",
         "cartons_per_cfc": "Cartons per CFC",
         "7_ply_cfc_with": "7-ply CFC with",
-        " BOPP_tape_+_strapping": "BOPP Tape + Strapping"
+        " boop_tape_+_strapping": "BOPP Tape + Strapping"
     },
     summary: {
         "area_of_1_carton": "Area of 1 Carton",
@@ -959,7 +959,7 @@ export const MDZCartonCostModel = {
         "uv_cost_(matt_spot)": "UV Cost (Matt Spot)",
         "film_cost": "Film Cost",
         "adhesive_cost": "Adhesive Cost",
-        "labour_cost_single_side": "Labour Cost - Single Side",
+        "labour_cost_-_single_side": "Labour Cost - Single Side",
         "middle_layer": "Middle Layer",
         "back_layer": "Back Layer",
         "cost_of_carton": "Cost of Carton",
