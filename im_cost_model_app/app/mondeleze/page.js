@@ -41,13 +41,37 @@ export default function Page() {
     const [loadingPpRate, setLoadingPpRate] = useState(false);
     const [updateVersionMessage, setUpdateVersionMessage] = useState("");
     const [userCred, setUserCred] = useState("");
-    const [isAllInOneView, setIsAllInOneView] = useState(false);
     const [actualValues, setActualValues] = useState({});
-
 
     const [sheetName, setSheetName] = useState(
         Object.keys(sheetNameMapping)[0]
     );
+
+    const TableLoader = ({ rows = 6, cols = 4 }) => {
+        return (
+            <div className="border rounded overflow-hidden animate-pulse">
+                {/* Header */}
+                <div className="grid grid-cols-4 bg-gray-100">
+                    {Array.from({ length: cols }).map((_, i) => (
+                        <div key={i} className="h-8 border-r last:border-r-0" />
+                    ))}
+                </div>
+
+                {/* Body */}
+                {Array.from({ length: rows }).map((_, r) => (
+                    <div key={r} className="grid grid-cols-4 border-t">
+                        {Array.from({ length: cols }).map((_, c) => (
+                            <div
+                                key={c}
+                                className="h-8 border-r last:border-r-0 bg-gray-50"
+                            />
+                        ))}
+                    </div>
+                ))}
+            </div>
+        );
+    };
+
 
     /* ============================
        NOTES STATE
@@ -396,21 +420,21 @@ export default function Page() {
     /* ---------------------------------------------
         POLYMER PRICES (IM only)
         --------------------------------------------- */
-    useEffect(() => {
-        const fetchPPData = async () => {
-            setLoadingPpRate(true);
-            try {
-                const json = await api.get("/api/material/pp-rate");
-                setPpRate(json.data || []);
-            } catch (e) {
-                toast.error("Failed to fetch PP rate");
-            } finally {
-                setLoadingPpRate(false);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchPPData = async () => {
+    //         setLoadingPpRate(true);
+    //         try {
+    //             const json = await api.get("/api/material/pp-rate");
+    //             setPpRate(json.data || []);
+    //         } catch (e) {
+    //             toast.error("Failed to fetch PP rate");
+    //         } finally {
+    //             setLoadingPpRate(false);
+    //         }
+    //     };
 
-        fetchPPData();
-    }, [sheetName]);
+    //     fetchPPData();
+    // }, [sheetName]);
 
     useEffect(() => {
         const cred = localStorage.getItem("user_cred");
@@ -455,80 +479,87 @@ export default function Page() {
             <div className="px-4 print:hidden">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
                     <div className="flex flex-wrap gap-x-4 gap-y-4">
-                        {(allFormData?.skuDescription || []).map((item, index) => {
-                            const key = item.key || item.label || index;
-                            const label = item.label ?? key;
-                            const value = item.value ?? "";
-                            const isCurrency =
-                                label.toLowerCase().includes("currency") ||
-                                label.toLowerCase().includes("symbol");
-
-                            const hasDropdown =
-                                Array.isArray(item.dropdownValues) &&
-                                item.dropdownValues.length > 0;
-
-                            return (
-                                <div key={key} className="flex flex-col w-40">
-                                    <label className="text-xs font-medium text-gray-600 mb-1">
-                                        {label}
-                                    </label>
-
-                                    {hasDropdown ? (
-                                        <select
-                                            value={value}
-                                            onChange={(e) => {
-                                                const newValue = e.target.value;
-
-                                                setAllFormData(prev => ({
-                                                    ...prev,
-                                                    skuDescriptions: prev.skuDescriptions.map((row, i) =>
-                                                        i === index
-                                                            ? { ...row, value: newValue }
-                                                            : row
-                                                    )
-                                                }));
-
-                                                if (label.toLowerCase() === "country") {
-                                                    setCountryName(newValue);
-                                                }
-                                            }}
-                                            className="p-1 px-2 border rounded text-sm bg-white"
-                                        >
-                                            <option value="">Select</option>
-                                            {item.dropdownValues.map(opt => (
-                                                <option key={opt} value={opt}>
-                                                    {opt}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    ) : (
-                                        <input
-                                            type="text"
-                                            value={value}
-                                            readOnly={isCurrency}
-                                            onChange={(e) => {
-                                                const newValue = e.target.value;
-
-                                                setAllFormData(prev => ({
-                                                    ...prev,
-                                                    skuDescriptions: prev.skuDescriptions.map((row, i) =>
-                                                        i === index
-                                                            ? { ...row, value: newValue }
-                                                            : row
-                                                    )
-                                                }));
-
-                                                if (label.toLowerCase() === "country") {
-                                                    setCountryName(newValue);
-                                                }
-                                            }}
-                                            className={`p-1 px-2 border rounded text-sm
-                        ${isCurrency ? "bg-gray-100 cursor-not-allowed" : "bg-white"}`}
-                                        />
-                                    )}
+                        {isLoading ? (
+                            // Loader: show 6 placeholder cards
+                            Array.from({ length: 6 }).map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="flex flex-col w-40 p-2 border rounded animate-pulse bg-gray-50"
+                                >
+                                    <div className="h-3 bg-gray-200 rounded mb-2 w-3/4" />
+                                    <div className="h-6 bg-gray-100 rounded" />
                                 </div>
-                            );
-                        })}
+                            ))
+                        ) : (
+                            (allFormData?.skuDescription || []).map((item, index) => {
+                                const key = item.key || item.label || index;
+                                const label = item.label ?? key;
+                                const value = item.value ?? "";
+                                const isCurrency =
+                                    label.toLowerCase().includes("currency") ||
+                                    label.toLowerCase().includes("symbol");
+
+                                const hasDropdown =
+                                    Array.isArray(item.dropdownValues) &&
+                                    item.dropdownValues.length > 0;
+
+                                return (
+                                    <div key={key} className="flex flex-col w-40">
+                                        <label className="text-xs font-medium text-gray-600 mb-1">
+                                            {label}
+                                        </label>
+
+                                        {hasDropdown ? (
+                                            <select
+                                                value={value}
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value;
+                                                    setAllFormData(prev => ({
+                                                        ...prev,
+                                                        skuDescriptions: prev.skuDescriptions.map((row, i) =>
+                                                            i === index ? { ...row, value: newValue } : row
+                                                        )
+                                                    }));
+
+                                                    if (label.toLowerCase() === "country") {
+                                                        setCountryName(newValue);
+                                                    }
+                                                }}
+                                                className="p-1 px-2 border rounded text-sm bg-white"
+                                            >
+                                                <option value="">Select</option>
+                                                {item.dropdownValues.map(opt => (
+                                                    <option key={opt} value={opt}>
+                                                        {opt}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                value={value}
+                                                readOnly={isCurrency}
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value;
+                                                    setAllFormData(prev => ({
+                                                        ...prev,
+                                                        skuDescriptions: prev.skuDescriptions.map((row, i) =>
+                                                            i === index ? { ...row, value: newValue } : row
+                                                        )
+                                                    }));
+
+                                                    if (label.toLowerCase() === "country") {
+                                                        setCountryName(newValue);
+                                                    }
+                                                }}
+                                                className={`p-1 px-2 border rounded text-sm ${isCurrency ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+                                                    }`}
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })
+                        )}
                     </div>
                     <div>
                         <div className="flex items-center gap-3">
@@ -561,73 +592,83 @@ export default function Page() {
             <div className="p-2 px-4 grid grid-cols-1 lg:grid-cols-2 gap-2">
                 <div>
                     <h3 className="font-bold pb-3">Inputs</h3>
-                    <DataTable
-                        columns={[
-                            { title: "Label", key: "label" },
-                            { title: "Unit", key: "unit" },
-                            {
-                                title: "Recommended Value",
-                                key: "recommendedValue",
-                                render: (row) => (
-                                    <input
-                                        readOnly
-                                        value={row.recommendedValue ?? ""}
-                                        className="w-full bg-gray-100 border px-2 py-1 text-sm"
-                                    />
-                                )
-                            },
-                            {
-                                title: "Actual Value",
-                                key: "actual",
-                                render: (row) => {
-                                    const hasDropdown =
-                                        Array.isArray(row.dropdownValues) &&
-                                        row.dropdownValues.length > 0;
 
-                                    const actual = actualValues[row.key] ?? "";
-
-                                    return hasDropdown ? (
-                                        <select
-                                            className="w-full border px-2 py-1 text-sm"
-                                            value={actual}
-                                            onChange={(e) =>
-                                                handleActualValueChange(row.key, e.target.value)
-                                            }
-                                        >
-                                            <option value="">Select</option>
-                                            {row.dropdownValues.map(opt => (
-                                                <option key={opt} value={opt}>{opt}</option>
-                                            ))}
-                                        </select>
-                                    ) : (
+                    {isLoading ? (
+                        <TableLoader rows={8} cols={4} />
+                    ) : (
+                        <DataTable
+                            columns={[
+                                { title: "Label", key: "label" },
+                                { title: "Unit", key: "unit" },
+                                {
+                                    title: "Recommended Value",
+                                    key: "recommendedValue",
+                                    render: (row) => (
                                         <input
-                                            className="w-full border px-2 py-1 text-sm"
-                                            value={actual}
-                                            onChange={(e) =>
-                                                handleActualValueChange(row.key, e.target.value)
-                                            }
+                                            readOnly
+                                            value={row.recommendedValue ?? ""}
+                                            className="w-full bg-gray-100 border px-2 py-1 text-sm"
                                         />
-                                    );
+                                    )
+                                },
+                                {
+                                    title: "Actual Value",
+                                    key: "actual",
+                                    render: (row) => {
+                                        const hasDropdown =
+                                            Array.isArray(row.dropdownValues) &&
+                                            row.dropdownValues.length > 0;
+
+                                        const actual = actualValues[row.key] ?? "";
+
+                                        return hasDropdown ? (
+                                            <select
+                                                className="w-full border px-2 py-1 text-sm"
+                                                value={actual}
+                                                onChange={(e) =>
+                                                    handleActualValueChange(row.key, e.target.value)
+                                                }
+                                            >
+                                                <option value="">Select</option>
+                                                {row.dropdownValues.map(opt => (
+                                                    <option key={opt} value={opt}>{opt}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                className="w-full border px-2 py-1 text-sm"
+                                                value={actual}
+                                                onChange={(e) =>
+                                                    handleActualValueChange(row.key, e.target.value)
+                                                }
+                                            />
+                                        );
+                                    }
                                 }
-                            }
-
-                        ]}
-
-                        data={allFormData.inputData || []}
-                    />
+                            ]}
+                            data={allFormData.inputData || []}
+                        />
+                    )}
                 </div>
+
 
                 <div>
                     <h3 className="font-bold pb-3">Summary</h3>
-                    <DataTable
-                        columns={[
-                            { title: "Label", key: "label" },
-                            { title: "Unit", key: "unit" },
-                            { title: "Value", key: "value" },
-                        ]}
-                        data={allFormData.summaryData || []}
-                    />
+
+                    {isLoading || loadingSummary ? (
+                        <TableLoader rows={6} cols={3} />
+                    ) : (
+                        <DataTable
+                            columns={[
+                                { title: "Label", key: "label" },
+                                { title: "Unit", key: "unit" },
+                                { title: "Value", key: "value" },
+                            ]}
+                            data={allFormData.summaryData || []}
+                        />
+                    )}
                 </div>
+
 
             </div>
 
