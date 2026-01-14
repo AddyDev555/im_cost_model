@@ -589,7 +589,7 @@ export default function Page() {
 
             <div className="p-2 px-4 grid grid-cols-1 lg:grid-cols-2 gap-2">
                 <div>
-                    <h3 className="font-bold pb-3">Inputs</h3>
+                    <h3 className="font-bold pb-3 text-sm">Inputs</h3>
 
                     {isLoading ? (
                         <div className="space-y-2">
@@ -655,7 +655,7 @@ export default function Page() {
 
 
                 <div>
-                    <h3 className="font-bold pb-3">Summary</h3>
+                    <h3 className="font-bold pb-3 text-sm">Summary</h3>
 
                     {isLoading || loadingSummary ? (
                         <div className="space-y-2">
