@@ -353,7 +353,7 @@ export default function Page() {
 
         const payload = {
             mode: "update",
-            modelName: sheetName,
+            modelName: `${sheetName}_v1`,
             email: JSON.parse(userCred).email,
             inputData: allFormData.inputData || [],
             costModelKey: "Mondeleze"
