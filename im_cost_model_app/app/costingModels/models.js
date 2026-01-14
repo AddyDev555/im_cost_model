@@ -952,6 +952,7 @@ export const MDZCartonCostModel = {
         "length": "Length",
         "width": "Width",
         "area_of_sheet_used": "Area of Sheet Used",
+        "board_consumption": "Board Consumption",
         "board_cost": "Board Cost",
         "ink_cost": "Ink Cost",
         "av_cost": "AV Cost",
@@ -980,7 +981,7 @@ export const MDZCartonCostModel = {
         "corrugation_cost": "Corrugation Cost",
         "foil_cost": "Foil Cost",
         "other_material_cost": "Other Material Cost",
-        "conversion_cost": "Conversion Cost",
+        "total_conversion_cost": "Conversion Cost",
         "packing_cost": "Packing Cost",
         "carton_cost": "Carton Cost"
     }
