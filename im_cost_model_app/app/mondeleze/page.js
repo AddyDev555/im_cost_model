@@ -480,16 +480,14 @@ export default function Page() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
                     <div className="flex flex-wrap gap-x-4 gap-y-4">
                         {isLoading ? (
-                            // Loader: show 6 placeholder cards
-                            Array.from({ length: 6 }).map((_, i) => (
-                                <div
-                                    key={i}
-                                    className="flex flex-col w-40 p-2 border rounded animate-pulse bg-gray-50"
-                                >
-                                    <div className="h-3 bg-gray-200 rounded mb-2 w-3/4" />
-                                    <div className="h-6 bg-gray-100 rounded" />
-                                </div>
-                            ))
+                            <div className="flex flex-wrap gap-4">
+                                {[0, 1, 2, 3, 4].map(i => (
+                                    <div key={i} className="flex flex-col">
+                                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1" />
+                                        <div className="h-8 w-40 bg-gray-200 rounded animate-pulse" />
+                                    </div>
+                                ))}
+                            </div>
                         ) : (
                             (allFormData?.skuDescription || []).map((item, index) => {
                                 const key = item.key || item.label || index;
@@ -594,7 +592,11 @@ export default function Page() {
                     <h3 className="font-bold pb-3">Inputs</h3>
 
                     {isLoading ? (
-                        <TableLoader rows={8} cols={4} />
+                        <div className="space-y-2">
+                            {[0, 1, 2, 3].map(i => (
+                                <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                            ))}
+                        </div>
                     ) : (
                         <DataTable
                             columns={[
@@ -656,7 +658,11 @@ export default function Page() {
                     <h3 className="font-bold pb-3">Summary</h3>
 
                     {isLoading || loadingSummary ? (
-                        <TableLoader rows={6} cols={3} />
+                        <div className="space-y-2">
+                            {[0, 1, 2, 3].map(i => (
+                                <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
+                            ))}
+                        </div>
                     ) : (
                         <DataTable
                             columns={[
