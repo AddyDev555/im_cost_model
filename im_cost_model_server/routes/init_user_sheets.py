@@ -20,13 +20,23 @@ async def init_sheets(request: Request):
         if "email" not in incoming:
             return {"error": "email is required"}
 
-        incoming["sheets"] = [
-            {
-                "modelName": model_name,
-                "sheetId": data["sheetId"]
-            }
-            for model_name, data in SHEET_ID_MAP.items()
-        ]
+        sheets_payload = []
+
+        for model_name, data in SHEET_ID_MAP.items():
+            sheet_ids = []
+
+            # Collect ALL keys that start with "sheetId"
+            for key, value in data.items():
+                if key.lower().startswith("sheetid") and value:
+                    sheet_ids.append(value)
+
+            if sheet_ids:
+                sheets_payload.append({
+                    "modelName": model_name,
+                    "sheetIds": sheet_ids
+                })
+
+        incoming["sheets"] = sheets_payload
 
         res = requests.post(
             APPSCRIPT_URL,
@@ -34,8 +44,6 @@ async def init_sheets(request: Request):
             headers={"Content-Type": "application/json"},
             timeout=20
         )
-
-        print(res.json())
 
         return res.json()
 

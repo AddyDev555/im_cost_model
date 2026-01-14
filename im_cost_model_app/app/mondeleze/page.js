@@ -61,7 +61,10 @@ export default function Page() {
     const mapMDZInputsToTableData = (modelInputs, backendInputData = []) => {
         return Object.entries(modelInputs).map(([modelKey, modelLabel]) => {
             const backendRow = backendInputData.find(
-                i => i.label === modelKey || i.label === modelLabel
+                i =>
+                    i.label === modelKey ||
+                    i.label === modelLabel ||
+                    i.key === modelKey
             );
 
             const resolvedValue =
@@ -73,15 +76,17 @@ export default function Page() {
                     : backendRow?.value ?? "";
 
             return {
-                key: modelKey,
-                label: modelLabel,
+                key: modelKey,                    // UI identity
+                label: modelLabel,                // Display label
+                cell: backendRow?.cell || null,   // ✅ PRESERVED
                 unit: backendRow?.unit || "",
-                value: resolvedValue,                // ACTUAL (mutable)
-                recommendedValue: resolvedValue,     // SNAPSHOT (UI only)
+                value: resolvedValue,             // editable
+                recommendedValue: resolvedValue,  // UI snapshot
                 dropdownValues: backendRow?.dropdownValues || []
             };
         });
     };
+
 
 
     const handleActualValueChange = (key, newValue) => {
@@ -165,11 +170,17 @@ export default function Page() {
                     result.inputData
                 );
 
+                const mappedSKUDescription = mapMDZInputsToTableData(
+                    MDZCartonCostModel.sku_description,
+                    result.inputData
+                );
+
 
                 const finalData = {
                     ...result,
                     inputData: mappedInputData,
                     summaryData: mappedSummary,
+                    skuDescription: mappedSKUDescription
                 };
 
                 localStorage.setItem(CACHE_KEY, JSON.stringify(finalData));
@@ -236,9 +247,6 @@ export default function Page() {
         fetchNotes();
     }, []);
 
-    /* ============================
-       NOTES SAVE (DEBOUNCED)
-    ============================ */
     /* ============================
        NOTES SAVE (DEBOUNCED)
     ============================ */
@@ -309,26 +317,6 @@ export default function Page() {
 
         if (cached && cachedSheet === sheetName) {
             setAllFormData(JSON.parse(cached));
-
-            //   const payload = {
-            //     mode: "update",
-            //     modelName: sheetName,
-            //     inputData: JSON.parse(cached).inputData || [],
-            //   };
-
-            //   fetch("http://127.0.0.1:8000/api/updates/update-inputs", {
-            //     method: "POST",
-            //     headers: { "Content-Type": "application/json" },
-            //     body: JSON.stringify(payload),
-            //   })
-            //     .then(res => res.json())
-            //     .then(res => {
-            //       if (!res.success) throw new Error("Update failed");
-            //       console.log("Reset Done from backend as well!");
-            //     })
-            //     .catch(console.error)
-            //     .finally(() => setLoadingSummary(false));
-            // };
         };
     };
 
@@ -359,6 +347,8 @@ export default function Page() {
             }
         }
 
+        console.log("Submitting data for calculation:", allFormData.inputData);
+
         setLoadingSummary(true);
 
         const payload = {
@@ -366,6 +356,7 @@ export default function Page() {
             modelName: sheetName,
             email: JSON.parse(userCred).email,
             inputData: allFormData.inputData || [],
+            costModelKey: "Mondeleze"
         };
 
         api.post("/api/updates/update-inputs", payload)
@@ -377,9 +368,14 @@ export default function Page() {
                     return;
                 }
 
+                const formatSummary = mapMDZInputsToTableData(
+                    MDZCartonCostModel.summary,
+                    res.summaryData || []
+                );
+
                 setAllFormData(prev => ({
                     ...prev,
-                    summaryData: res.summaryData || [],
+                    summaryData: formatSummary || [],
                 }));
             })
             .catch(console.error)
@@ -397,21 +393,8 @@ export default function Page() {
     const formatValue = v =>
         typeof v === "number" ? Math.round(v) : v;
 
-
-    /* ============================
-       LOADING UI
-    ============================ */
-    // if (isLoading) {
-    //   return (
-    //     <div className="flex flex-col items-center justify-center h-screen">
-    //       <div className="w-16 h-16 border-4 border-violet-400 border-t-transparent rounded-full animate-spin" />
-    //       <h1 className="text-slate-500 text-center p-2 pl-3 align-center">Loading...</h1>
-    //     </div>
-    //   );
-    // }
-
     /* ---------------------------------------------
-           POLYMER PRICES (IM only)
+        POLYMER PRICES (IM only)
         --------------------------------------------- */
     useEffect(() => {
         const fetchPPData = async () => {
@@ -471,8 +454,82 @@ export default function Page() {
             )}
             <div className="px-4 print:hidden">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
-                    <SkuDescription isLoading={isLoading} allFormData={allFormData} setAllFormData={setAllFormData} sheetName={sheetName} setCountryName={setCountryName} />
+                    <div className="flex flex-wrap gap-x-4 gap-y-4">
+                        {(allFormData?.skuDescription || []).map((item, index) => {
+                            const key = item.key || item.label || index;
+                            const label = item.label ?? key;
+                            const value = item.value ?? "";
+                            const isCurrency =
+                                label.toLowerCase().includes("currency") ||
+                                label.toLowerCase().includes("symbol");
 
+                            const hasDropdown =
+                                Array.isArray(item.dropdownValues) &&
+                                item.dropdownValues.length > 0;
+
+                            return (
+                                <div key={key} className="flex flex-col w-40">
+                                    <label className="text-xs font-medium text-gray-600 mb-1">
+                                        {label}
+                                    </label>
+
+                                    {hasDropdown ? (
+                                        <select
+                                            value={value}
+                                            onChange={(e) => {
+                                                const newValue = e.target.value;
+
+                                                setAllFormData(prev => ({
+                                                    ...prev,
+                                                    skuDescriptions: prev.skuDescriptions.map((row, i) =>
+                                                        i === index
+                                                            ? { ...row, value: newValue }
+                                                            : row
+                                                    )
+                                                }));
+
+                                                if (label.toLowerCase() === "country") {
+                                                    setCountryName(newValue);
+                                                }
+                                            }}
+                                            className="p-1 px-2 border rounded text-sm bg-white"
+                                        >
+                                            <option value="">Select</option>
+                                            {item.dropdownValues.map(opt => (
+                                                <option key={opt} value={opt}>
+                                                    {opt}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={value}
+                                            readOnly={isCurrency}
+                                            onChange={(e) => {
+                                                const newValue = e.target.value;
+
+                                                setAllFormData(prev => ({
+                                                    ...prev,
+                                                    skuDescriptions: prev.skuDescriptions.map((row, i) =>
+                                                        i === index
+                                                            ? { ...row, value: newValue }
+                                                            : row
+                                                    )
+                                                }));
+
+                                                if (label.toLowerCase() === "country") {
+                                                    setCountryName(newValue);
+                                                }
+                                            }}
+                                            className={`p-1 px-2 border rounded text-sm
+                        ${isCurrency ? "bg-gray-100 cursor-not-allowed" : "bg-white"}`}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
                     <div>
                         <div className="flex items-center gap-3">
                             <select

@@ -894,14 +894,11 @@ export const MDZCartonCostModel = {
         "currency_:": "Currency",
         "symbol_:": "Symbol",
     },
-
     inputs: {
         "length-across_deckel": "Length -Across Deckel",
         "width_-along_grain": "Width-Along Grain",
         "lengthwise": "Lengthwise",
         "widthwise": "Widthwise",
-        "length": "Length",
-        "width": "Width",
         "gsm_specs": "GSM Specs",
         "board_rate": "Board Rate",
         "board_wastage": "Wastage (Board)",
@@ -952,6 +949,8 @@ export const MDZCartonCostModel = {
     summary: {
         "area_of_1_carton": "Area of 1 Carton",
         "no_of_ups_per_sheet": "No of Ups per sheet",
+        "length": "Length",
+        "width": "Width",
         "area_of_sheet_used": "Area of Sheet Used",
         "board_cost": "Board Cost",
         "ink_cost": "Ink Cost",
