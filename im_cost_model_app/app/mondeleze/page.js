@@ -25,6 +25,36 @@ const sheetNameMapping = {
     tube_cost_model: "Tube Cost Model",
 };
 
+const INPUT_SEGMENTS = [
+    {
+        title: "BOARD Inputs",
+        insertAt: "START",
+    },
+    {
+        title: "CORRUGATION Inputs",
+        afterLabel: "Conversion Wastage",
+    },
+    {
+        title: "FOIL STAMPING Inputs",
+        afterLabel: "Paper Wastage",
+    },
+];
+
+const SUMMARY_SEGMENTS = [
+    {
+        title: "BOARD Summary",
+        insertAt: "START",
+    },
+    {
+        title: "CORRUGATION Summary",
+        afterLabel: "Labour Cost - Single Side",
+    },
+    {
+        title: "FOIL STAMPING Summary",
+        afterLabel: "Conversion Cost",
+    },
+];
+
 /* ============================
    CACHE HELPERS
 ============================ */
@@ -86,7 +116,33 @@ export default function Page() {
         });
     };
 
+    const applySegmentation = (data = [], segments = []) => {
+        let result = [...data];
 
+        segments.forEach(segment => {
+            const segmentRow = {
+                isSegment: true,
+                label: segment.title,
+            };
+
+            if (segment.insertAt === "START") {
+                result.unshift(segmentRow);
+                return;
+            }
+
+            if (segment.afterLabel) {
+                const index = result.findIndex(
+                    r => r.label === segment.afterLabel
+                );
+
+                if (index !== -1) {
+                    result.splice(index + 1, 0, segmentRow);
+                }
+            }
+        });
+
+        return result;
+    };
 
     const handleActualValueChange = (key, newValue) => {
         const raw = String(newValue).trim();
@@ -564,7 +620,7 @@ export default function Page() {
 
             <div className="p-2 px-4 grid grid-cols-1 lg:grid-cols-2 gap-2">
                 <div>
-                    <h3 className="font-bold pb-3 text-sm">Inputs</h3>
+                    {/* <h3 className="font-bold pb-3 text-sm">Inputs</h3> */}
 
                     {isLoading ? (
                         <div className="space-y-2">
@@ -575,23 +631,39 @@ export default function Page() {
                     ) : (
                         <DataTable
                             columns={[
-                                { title: "Label", key: "label" },
+                                {
+                                    title: "Label",
+                                    key: "label",
+                                    render: (row) => {
+                                        if (row.isSegment) {
+                                            return (
+                                                <div className="font-bold text-sm uppercase text-violet-700 py-2">
+                                                    {row.label}
+                                                </div>
+                                            );
+                                        }
+                                        return row.label;
+                                    }
+                                },
                                 { title: "Unit", key: "unit" },
                                 {
                                     title: "Recommended Value",
                                     key: "recommendedValue",
-                                    render: (row) => (
-                                        <input
-                                            readOnly
-                                            value={row.recommendedValue ?? ""}
-                                            className="w-full bg-gray-100 border px-2 py-1 text-sm"
-                                        />
-                                    )
+                                    render: (row) =>
+                                        row.isSegment ? null : (
+                                            <input
+                                                readOnly
+                                                value={row.recommendedValue ?? ""}
+                                                className="w-full bg-gray-100 border px-2 py-1 text-sm"
+                                            />
+                                        )
                                 },
                                 {
                                     title: "Actual Value",
                                     key: "actual",
                                     render: (row) => {
+                                        if (row.isSegment) return null;
+
                                         const hasDropdown =
                                             Array.isArray(row.dropdownValues) &&
                                             row.dropdownValues.length > 0;
@@ -623,14 +695,19 @@ export default function Page() {
                                     }
                                 }
                             ]}
-                            data={allFormData.inputData || []}
+                            data={applySegmentation(
+                                allFormData.inputData || [],
+                                INPUT_SEGMENTS
+                            )}
+
+                            mode="Mondeleze"
                         />
                     )}
                 </div>
 
 
                 <div>
-                    <h3 className="font-bold pb-3 text-sm">Summary</h3>
+                    {/* <h3 className="font-bold pb-3 text-sm">Summary</h3> */}
 
                     {isLoading || loadingSummary ? (
                         <div className="space-y-2">
@@ -641,11 +718,34 @@ export default function Page() {
                     ) : (
                         <DataTable
                             columns={[
-                                { title: "Label", key: "label" },
-                                { title: "Unit", key: "unit" },
-                                { title: "Value", key: "value" },
+                                {
+                                    title: "Label",
+                                    key: "label",
+                                    render: (row) =>
+                                        row.isSegment ? (
+                                            <div className="py-2 font-bold text-sm uppercase text-violet-700">
+                                                {row.label}
+                                            </div>
+                                        ) : (
+                                            row.label
+                                        ),
+                                },
+                                {
+                                    title: "Unit",
+                                    key: "unit",
+                                    render: (row) => (row.isSegment ? null : row.unit),
+                                },
+                                {
+                                    title: "Value",
+                                    key: "value",
+                                    render: (row) => (row.isSegment ? null : row.value),
+                                },
                             ]}
-                            data={allFormData.summaryData || []}
+                            data={applySegmentation(
+                                allFormData.summaryData || [],
+                                SUMMARY_SEGMENTS
+                            )}
+                            mode="Mondeleze"
                         />
                     )}
                 </div>
@@ -655,7 +755,7 @@ export default function Page() {
 
             <div id="pdf-content">
                 <PDFDownload
-                    mode = "Mondeleze"
+                    mode="Mondeleze"
                     loadingPpRate={loadingPpRate}
                     ppRate={ppRate}
                     isLoading={isLoading}

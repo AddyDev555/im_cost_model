@@ -1,9 +1,20 @@
 import React from 'react';
 
 // Simple shadcn-style DataTable fallback component
-export default function DataTable({ columns, data, hideHeader = false }) {
+export default function DataTable({
+    columns,
+    data,
+    hideHeader = false,
+    mode,
+}) {
     return (
-        <div className="w-full h-65 overflow-auto overflow-x-hidden print:h-auto print:overflow-visible">
+        <div
+            className={`w-full overflow-x-hidden print:h-auto print:overflow-visible
+    ${mode === "Mondeleze"
+                    ? "h-[75vh] overflow-visible"
+                    : "h-65 overflow-auto"}
+    `}
+        >
             <table className="w-full text-sm border-collapse h-full">
                 {!hideHeader && (
                     <thead>
