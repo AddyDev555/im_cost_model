@@ -6,6 +6,7 @@ from utils.models import User
 from sqlalchemy.orm import Session
 import os
 from dotenv import load_dotenv
+from fastapi import BackgroundTasks
 
 
 router = APIRouter()
@@ -21,12 +22,14 @@ def get_db():
         db.close()
 
 @router.post("/send-magic-link")
-def send_link(data: dict):
+def send_link(data: dict, bg: BackgroundTasks):
     email = data.get("email")
     if not email:
         raise HTTPException(status_code=400, detail="Email is required")
+
     token = generate_magic_token(email)
-    send_magic_link(email, token)
+    bg.add_task(send_magic_link, email, token)
+
     return {"message": "Magic link sent"}
 
 @router.post("/verify")
