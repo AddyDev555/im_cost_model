@@ -73,6 +73,15 @@ export default function Page() {
         Object.keys(sheetNameMapping)[0]
     );
 
+    const printDateTime = new Date().toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+
+
 
     /* ============================
        NOTES STATE
@@ -623,8 +632,23 @@ export default function Page() {
                 </div>
             </div>
 
+            {/* PRINT HEADER */}
+            <div className="hidden print:block px-4 pt-4 pb-2">
+                <h1 className="text-xl font-bold text-center uppercase">
+                    {sheetNameMapping[sheetName]}
+                </h1>
+
+                <p className="text-xs text-center text-gray-600 mt-1">
+                    Printed on: {printDateTime}
+                </p>
+
+                <hr className="my-3 border-gray-400" />
+            </div>
+
+
             <div className="p-2 px-4 grid grid-cols-1 lg:grid-cols-2 gap-2">
-                <div>
+                <div className="print:order-2 order-1">
+
                     {/* <h3 className="font-bold pb-3 text-sm">Inputs</h3> */}
 
                     {isLoading ? (
@@ -711,7 +735,7 @@ export default function Page() {
                 </div>
 
 
-                <div>
+                <div className="print:order-1 order-2">
                     {/* <h3 className="font-bold pb-3 text-sm">Summary</h3> */}
 
                     {isLoading || loadingSummary ? (

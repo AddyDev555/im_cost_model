@@ -18,9 +18,16 @@ export default function PDFDownload({ mode, loadingPpRate, ppRate, allFormData, 
     return (
         <div id="pdf-content" className="hidden print:block">(
             <div className="p-4">
-                <div className="flex justify-between items-center mb-4">
-                    <h1 className="text-2xl font-bold">{sheetNameMapping[sheetName] ?? sheetName} Report</h1>
-                    <p className="text-sm">{time}</p>
+                <div className="hidden print:block px-4 pt-4 pb-2">
+                    <h1 className="text-xl font-bold text-center uppercase">
+                        {sheetNameMapping[sheetName] ?? sheetName} Report
+                    </h1>
+
+                    <p className="text-xs text-center text-gray-600 mt-1">
+                        Printed on: {time}
+                    </p>
+
+                    <hr className="my-3 border-gray-400" />
                 </div>
 
                 <div className="mb-4">
