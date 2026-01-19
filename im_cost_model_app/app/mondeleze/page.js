@@ -49,10 +49,6 @@ const SUMMARY_SEGMENTS = [
         title: "CORRUGATION Summary",
         afterLabel: "Labour Cost - Single Side",
     },
-    {
-        title: "FOIL STAMPING Summary",
-        afterLabel: "Conversion Cost",
-    },
 ];
 
 /* ============================
@@ -430,8 +426,17 @@ export default function Page() {
 
                 setAllFormData(prev => ({
                     ...prev,
-                    summaryData: formatSummary || [],
+                    summaryData: prev.summaryData.map(oldRow => {
+                        const updatedRow = formatSummary.find(r => r.key === oldRow.key);
+                        if (!updatedRow) return oldRow;
+
+                        return {
+                            ...oldRow,
+                            value: updatedRow.value,
+                        };
+                    }),
                 }));
+
             })
             .catch(console.error)
             .finally(() => setLoadingSummary(false));
@@ -736,9 +741,24 @@ export default function Page() {
                                     render: (row) => (row.isSegment ? null : row.unit),
                                 },
                                 {
-                                    title: "Value",
+                                    title: "Recommended Value",
+                                    key: "recommendedValue",
+                                    render: (row) =>
+                                        row.isSegment ? null : (
+                                            <span className="text-gray-500">
+                                                {row.recommendedValue}
+                                            </span>
+                                        ),
+                                },
+                                {
+                                    title: "Actual Value",
                                     key: "value",
-                                    render: (row) => (row.isSegment ? null : row.value),
+                                    render: (row) =>
+                                        row.isSegment ? null : (
+                                            <span className="font-semibold">
+                                                {row.value}
+                                            </span>
+                                        ),
                                 },
                             ]}
                             data={applySegmentation(
