@@ -753,20 +753,6 @@ export default function Page() {
 
             </div>
 
-            <div id="pdf-content">
-                <PDFDownload
-                    mode="Mondeleze"
-                    loadingPpRate={loadingPpRate}
-                    ppRate={ppRate}
-                    isLoading={isLoading}
-                    allFormData={allFormData}
-                    setAllFormData={setAllFormData}
-                    loadingSummary={loadingSummary}
-                    sheetName={sheetName}
-                    sheetNameMapping={sheetNameMapping}
-                />
-            </div>
-
             {isNotesVisible && (
                 <div ref={notesEditorRef} className="fixed bottom-15 right-8 z-50">
                     <SlateEditor notes={notes} setNotes={setNotes} />

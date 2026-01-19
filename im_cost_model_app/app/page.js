@@ -290,12 +290,18 @@ export default function Page() {
 
     setLoadingSummary(true);
 
+    const finalModelName =
+      sheetName === "carton_cost_model"
+        ? `${sheetName}_v1`
+        : sheetName;
+
     const payload = {
       mode: "update",
-      modelName: sheetName,
+      modelName: finalModelName,
       email: JSON.parse(userCred).email,
       inputData: allFormData.inputData || [],
     };
+
 
     api.post("/api/updates/update-inputs", payload)
       .then(res => {
@@ -424,42 +430,42 @@ export default function Page() {
             </div>
           </div>
         </div>
-          <Accordion type="single" collapsible>
-            <AccordionItem value="summary">
-              <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Summary</AccordionTrigger>
-              <AccordionContent>
-                <Summary isLoading={isLoading} sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} loadingSummary={loadingSummary} />
-              </AccordionContent>
-            </AccordionItem>
+        <Accordion type="single" collapsible>
+          <AccordionItem value="summary">
+            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Summary</AccordionTrigger>
+            <AccordionContent>
+              <Summary isLoading={isLoading} sheetName={sheetName} allFormData={allFormData} setAllFormData={setAllFormData} loadingSummary={loadingSummary} />
+            </AccordionContent>
+          </AccordionItem>
 
-            <AccordionItem value="material">
-              <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Material Cost</AccordionTrigger>
-              <AccordionContent>
-                <MaterialCalculator
-                  ppRate={ppRate}
-                  loadingPpRate={loadingPpRate}
-                  isLoading={isLoading}
-                  sheetName={sheetName}
-                  allFormData={allFormData}
-                  setAllFormData={setAllFormData}
-                  loadingSummary={loadingSummary}
-                />
-              </AccordionContent>
-            </AccordionItem>
+          <AccordionItem value="material">
+            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Material Cost</AccordionTrigger>
+            <AccordionContent>
+              <MaterialCalculator
+                ppRate={ppRate}
+                loadingPpRate={loadingPpRate}
+                isLoading={isLoading}
+                sheetName={sheetName}
+                allFormData={allFormData}
+                setAllFormData={setAllFormData}
+                loadingSummary={loadingSummary}
+              />
+            </AccordionContent>
+          </AccordionItem>
 
-            <AccordionItem value="conversion">
-              <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Conversion Cost</AccordionTrigger>
-              <AccordionContent>
-                <ConversionCostCalculation
-                  isLoading={isLoading}
-                  allFormData={allFormData}
-                  setAllFormData={setAllFormData}
-                  loadingSummary={loadingSummary}
-                  sheetName={sheetName}
-                />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <AccordionItem value="conversion">
+            <AccordionTrigger className="font-semibold cursor-pointer border py-1 shadow-sm border-violet-400 px-4 mt-2 hover:no-underline">Conversion Cost</AccordionTrigger>
+            <AccordionContent>
+              <ConversionCostCalculation
+                isLoading={isLoading}
+                allFormData={allFormData}
+                setAllFormData={setAllFormData}
+                loadingSummary={loadingSummary}
+                sheetName={sheetName}
+              />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
 
       <div id="pdf-content">
