@@ -1,26 +1,26 @@
-import smtplib
-from email.mime.text import MIMEText
-from dotenv import load_dotenv
 import os
+import resend
 
-load_dotenv()
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 def send_magic_link(email: str, token: str):
-    magic_link = f"{os.getenv('FRONTEND_URL')}/verify?token={token}"
+    frontend = os.getenv("FRONTEND_URL")
+    sender = os.getenv("EMAIL")
 
-    msg = MIMEText(f"""
-Click the link below to verify your email:
+    if not frontend or not sender:
+        raise RuntimeError("Missing FRONTEND_URL or EMAIL")
 
-{magic_link}
+    magic_link = f"{frontend}/verify?token={token}"
 
-This link expires in 10 minutes.
-""")
+    resend.Emails.send({
+        "from": sender,
+        "to": email,
+        "subject": "Verify your email",
+        "html": f"""
+        <p>Click the link below to verify your email:</p>
+        <p><a href="{magic_link}">Verify Email</a></p>
+        <p>This link expires in 10 minutes.</p>
+        """
+    })
 
-    msg["Subject"] = "Verify your email"
-    msg["From"] = os.getenv("EMAIL")
-    msg["To"] = email
-
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(os.getenv("EMAIL"), os.getenv("APP_PASSWORD"))
-        server.send_message(msg)
+    print(f"Magic link sent to {email}")
