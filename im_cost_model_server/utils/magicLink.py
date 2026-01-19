@@ -10,13 +10,14 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
 
 def send_magic_link(email: str, token: str):
+    SECRET_KEY = "1234567890abcdef"
+
     # Build magic link
     magic_link = f"{os.getenv('FRONTEND_URL')}/verify?token={token}"
 
     # Prepare payload
     payload = {
         "subject": "Verify your email",
-        "from": os.getenv("EMAIL"),  # optional, just for reference
         "to": email,
         "body": f"""
 Click the link below to verify your email:
@@ -24,7 +25,8 @@ Click the link below to verify your email:
 {magic_link}
 
 This link expires in 10 minutes.
-"""
+""", 
+        "secret_key": SECRET_KEY
     }
 
     try:
