@@ -935,7 +935,7 @@ export const MDZCartonCostModel = {
         "paper_wastage": "Paper Wastage",
         "foil_used_width_per_carton": "Foil used- Width /carton",
         "foil_used_length_per_carton": "Foil used- Length /carton",
-        "foil_cost": "Foil Cost",
+        "foil_stamping_cost": "Foil Cost",
         "foiling_wastage": "Foiling Wastage",
         "foil_stampting_conversion_costs": "Foil Stampting Conversion Costs",
         "glue_cost": "Glue Cost",
@@ -944,7 +944,7 @@ export const MDZCartonCostModel = {
         "embossing/punching_cost": "Embossing/Punching Cost",
         "cartons_per_cfc": "Cartons per CFC",
         "7_ply_cfc_with": "7-ply CFC with",
-        " bopp_tape_+_strapping": "BOPP Tape + Strapping"
+        "bopp_tape_+_strapping": "BOPP Tape + Strapping"
     },
     summary: {
         "board_cost": "Board Cost",
