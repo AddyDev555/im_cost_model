@@ -150,8 +150,6 @@ export default function Page() {
     };
 
     const handleActualValueChange = (key, newValue) => {
-        const raw = String(newValue).trim();
-
         // 1️⃣ Store actual value for UI
         setActualValues(prev => ({
             ...prev,
@@ -443,6 +441,8 @@ export default function Page() {
                         };
                     }),
                 }));
+
+                setActualValues({});
 
             })
             .catch(console.error)
