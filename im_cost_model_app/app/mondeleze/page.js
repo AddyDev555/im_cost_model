@@ -522,14 +522,14 @@ export default function Page() {
                 </div>
             )}
             <div className="px-4 print:hidden">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
+                <div className="flex flex-col md:flex-row items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
                     <div className="w-25 md:mb-0">
                         <img src="mondelez-logo.png" alt="Mondelez Logo" />
                     </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-4">
+                    <div className="flex ml-5 flex-wrap gap-x-4 gap-y-4">
                         {isLoading ? (
                             <div className="flex flex-wrap gap-4">
-                                {[0, 1, 2, 3, 4].map(i => (
+                                {[0, 1, 2, 3].map(i => (
                                     <div key={i} className="flex flex-col">
                                         <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1" />
                                         <div className="h-8 w-40 bg-gray-200 rounded animate-pulse" />
@@ -607,7 +607,7 @@ export default function Page() {
                             })
                         )}
                     </div>
-                    <div>
+                    <div className="ml-auto">
                         <div className="flex items-center gap-3">
                             <select
                                 value={sheetName}
