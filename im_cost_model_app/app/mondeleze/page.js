@@ -431,6 +431,7 @@ export default function Page() {
 
                 setAllFormData(prev => ({
                     ...prev,
+                    inputData: cachedInputData,
                     summaryData: prev.summaryData.map(oldRow => {
                         const updatedRow = formatSummary.find(r => r.key === oldRow.key);
                         if (!updatedRow) return oldRow;
@@ -441,9 +442,6 @@ export default function Page() {
                         };
                     }),
                 }));
-
-                setActualValues({});
-
             })
             .catch(console.error)
             .finally(() => setLoadingSummary(false));
