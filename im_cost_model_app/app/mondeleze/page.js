@@ -523,6 +523,9 @@ export default function Page() {
             )}
             <div className="px-4 print:hidden">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 py-2 bg-white shadow rounded gap-2 md:gap-0">
+                    <div className="w-25 md:mb-0">
+                        <img src="mondelez-logo.png" alt="Mondelez Logo" />
+                    </div>
                     <div className="flex flex-wrap gap-x-4 gap-y-4">
                         {isLoading ? (
                             <div className="flex flex-wrap gap-4">
