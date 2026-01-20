@@ -373,6 +373,8 @@ export default function Page() {
 
         if (cached && cachedSheet === sheetName) {
             setAllFormData(JSON.parse(cached));
+
+            setActualValues({})
         };
     };
 
