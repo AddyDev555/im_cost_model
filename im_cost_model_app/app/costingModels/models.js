@@ -901,7 +901,7 @@ export const MDZCartonCostModel = {
         "widthwise": "Widthwise",
         "gsm_specs": "Board GSM Specs",
         "board_rate": "Board Rate",
-        "board_wastage": "Board ",
+        "board_wastage": "Board Wastage",
         "uv_ink_rate": "UV Ink Rate",
         "ink_consumption": "Ink Consumption",
         "ink_wastage": "Ink Wastage",
@@ -944,7 +944,7 @@ export const MDZCartonCostModel = {
         "embossing/punching_cost": "Embossing/Punching Cost",
         "cartons_per_cfc": "Cartons per CFC",
         "7_ply_cfc_with": "7-ply CFC with",
-        " boop_tape_+_strapping": "BOPP Tape + Strapping"
+        " bopp_tape_+_strapping": "BOPP Tape + Strapping"
     },
     summary: {
         "board_cost": "Board Cost",
