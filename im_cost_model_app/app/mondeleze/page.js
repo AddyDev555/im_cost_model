@@ -429,6 +429,11 @@ export default function Page() {
                     res.summaryData || []
                 );
 
+                const cachedRaw = localStorage.getItem(CACHE_KEY);
+                const cachedInputData = cachedRaw
+                    ? JSON.parse(cachedRaw)?.inputData || []
+                    : [];
+
                 setAllFormData(prev => ({
                     ...prev,
                     inputData: cachedInputData,
