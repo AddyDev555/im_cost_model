@@ -152,21 +152,10 @@ export default function Page() {
     const handleActualValueChange = (key, newValue) => {
         const raw = String(newValue).trim();
 
-        // Remove commas
-        let cleaned = raw.replace(/,/g, "");
-
-        // Allow only numbers, one dot, and optional leading minus
-        const isValidNumber = /^-?\d*\.?\d*$/.test(cleaned);
-
-        const parsed =
-            cleaned !== "" && isValidNumber && !isNaN(cleaned)
-                ? Number(cleaned)
-                : raw;
-
         // 1️⃣ Store actual value for UI
         setActualValues(prev => ({
             ...prev,
-            [key]: parsed
+            [key]: newValue
         }));
 
         // 2️⃣ Overwrite real value (for backend & summary)
@@ -174,7 +163,7 @@ export default function Page() {
             ...prev,
             inputData: prev.inputData.map(row =>
                 row.key === key
-                    ? { ...row, value: parsed }
+                    ? { ...row, value: newValue }
                     : row
             )
         }));
