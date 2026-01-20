@@ -151,9 +151,17 @@ export default function Page() {
 
     const handleActualValueChange = (key, newValue) => {
         const raw = String(newValue).trim();
-        const numeric = raw.replace(/,/g, "");
+
+        // Remove commas
+        let cleaned = raw.replace(/,/g, "");
+
+        // Allow only numbers, one dot, and optional leading minus
+        const isValidNumber = /^-?\d*\.?\d*$/.test(cleaned);
+
         const parsed =
-            numeric !== "" && !isNaN(numeric) ? Number(numeric) : raw;
+            cleaned !== "" && isValidNumber && !isNaN(cleaned)
+                ? Number(cleaned)
+                : raw;
 
         // 1️⃣ Store actual value for UI
         setActualValues(prev => ({
@@ -171,6 +179,7 @@ export default function Page() {
             )
         }));
     };
+
 
 
 
