@@ -431,24 +431,24 @@ export default function Page() {
                     res.summaryData || []
                 );
 
-                const cachedRaw = localStorage.getItem(CACHE_KEY);
-                const cachedInputData = cachedRaw
-                    ? JSON.parse(cachedRaw)?.inputData || []
-                    : [];
+                // const cachedRaw = localStorage.getItem(CACHE_KEY);
+                // const cachedInputData = cachedRaw
+                //     ? JSON.parse(cachedRaw)?.inputData || []
+                //     : [];
 
-                setAllFormData(prev => ({
-                    ...prev,
-                    inputData: cachedInputData,
-                    summaryData: prev.summaryData.map(oldRow => {
-                        const updatedRow = formatSummary.find(r => r.key === oldRow.key);
-                        if (!updatedRow) return oldRow;
+                // setAllFormData(prev => ({
+                //     ...prev,
+                //     inputData: cachedInputData,
+                //     summaryData: prev.summaryData.map(oldRow => {
+                //         const updatedRow = formatSummary.find(r => r.key === oldRow.key);
+                //         if (!updatedRow) return oldRow;
 
-                        return {
-                            ...oldRow,
-                            value: updatedRow.value,
-                        };
-                    }),
-                }));
+                //         return {
+                //             ...oldRow,
+                //             value: updatedRow.value,
+                //         };
+                //     }),
+                // }));
             })
             .catch(console.error)
             .finally(() => setLoadingSummary(false));
