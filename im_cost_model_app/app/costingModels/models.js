@@ -922,7 +922,7 @@ export const MDZCartonCostModel = {
         "film_specs": "Film Specs",
         "film_wastage": "Film Wastage",
         "adhesive_rate": "Adhesive Rate",
-        "adhesive_specs": "Adhesive Specs",
+        "adhesive_specs": "Adhesive",
         "adhesive_wastage": "Adhesive Wastage",
         "inputs_conversion_cost": "Conversion Cost",
         "conversion_wastage": "Conversion Wastage",
@@ -954,7 +954,7 @@ export const MDZCartonCostModel = {
         "corrugation_cost": "Corrugation Cost",
         "foil_cost": "Foil Cost",
         "other_material_cost": "Other Material Cost",
-        "total_conversion_cost": "Conversion cost",
+        "conversion_cost": "Conversion cost",
         "packing_cost": "Packing Cost",
         "carton_cost": "Carton Cost"
     }
