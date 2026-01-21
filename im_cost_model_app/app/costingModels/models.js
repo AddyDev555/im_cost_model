@@ -954,7 +954,7 @@ export const MDZCartonCostModel = {
         "corrugation_cost": "Corrugation Cost",
         "foil_cost": "Foil Cost",
         "other_material_cost": "Other Material Cost",
-        "total_conversion_cost": "Conversion Cost",
+        "conversion_cost": "Conversion Cost",
         "packing_cost": "Packing Cost",
         "carton_cost": "Carton Cost"
     }
