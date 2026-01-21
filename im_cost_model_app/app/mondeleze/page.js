@@ -443,7 +443,9 @@ export default function Page() {
                         };
                     }),
                 }));
+                console.log("Calculation response:", formatSummary);
             })
+
             .catch(console.error)
             .finally(() => setLoadingSummary(false));
     };
