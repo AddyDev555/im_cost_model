@@ -42,7 +42,7 @@ const INPUT_SEGMENTS = [
 
 const SUMMARY_SEGMENTS = [
     {
-        title: "BOARD Summary",
+        title: "COST Summary",
         insertAt: "START",
     },
     {
