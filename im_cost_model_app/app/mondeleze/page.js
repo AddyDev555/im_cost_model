@@ -523,7 +523,7 @@ export default function Page() {
                     currentModel.summary,
                     res.summaryData || []
                 );
-                
+
                 setAllFormData(prev => ({
                     ...prev,
                     summaryData: prev.summaryData.map(oldRow => {
@@ -877,13 +877,24 @@ export default function Page() {
                                 {
                                     title: "Actual Value",
                                     key: "value",
-                                    render: (row) =>
-                                        row.isSegment ? null : (
+                                    render: (row) => {
+                                        if (row.isSegment) return null;
+
+                                        const isContribution =
+                                            row.label?.toLowerCase().includes("contribution");
+
+                                        const displayValue =
+                                            isContribution && typeof row.value === "number"
+                                                ? `${(row.value * 100).toFixed(2)}`
+                                                : row.value;
+
+                                        return (
                                             <span className="font-semibold">
-                                                {row.value}
+                                                {displayValue}
                                             </span>
-                                        ),
-                                },
+                                        );
+                                    },
+                                }
                             ]}
                             data={applySegmentation(
                                 allFormData.summaryData || [],
