@@ -193,11 +193,13 @@ export default function Page() {
 
     const mapMDZInputsToTableData = (modelInputs, backendInputData = []) => {
         return Object.entries(modelInputs).map(([modelKey, modelLabel]) => {
-            const backendRow = backendInputData.find(
-                i =>
-                    i.label === modelKey ||
-                    i.label === modelLabel ||
-                    i.key === modelKey
+            const normalize = s =>
+                s?.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+            const backendRow = backendInputData.find(i =>
+                normalize(i.key) === normalize(modelKey) ||
+                normalize(i.label) === normalize(modelKey) ||
+                normalize(i.label) === normalize(modelLabel)
             );
 
             const resolvedValue =
@@ -310,14 +312,6 @@ export default function Page() {
             const result = await api.post("/api/inputs/get-inputs-data", payload);
 
             if (result?.success && result?.inputData) {
-                console.log("SHEET NAME:", sheetName);
-                console.log("MODEL_CONFIG keys:", Object.keys(MODEL_CONFIG));
-                console.log("MODEL_CONFIG[sheetName]:", MODEL_CONFIG[sheetName]);
-                console.log("CURRENT MODEL:", currentModel);
-                console.log("MODEL INPUTS:", currentModel?.inputs);
-                console.log("FORM DATA:", allFormData);
-
-
 
                 const mappedInputData = mapMDZInputsToTableData(
                     currentModel.inputs,
@@ -506,8 +500,6 @@ export default function Page() {
             }
         }
 
-        console.log("Submitting data for calculation:", allFormData.inputData);
-
         setLoadingSummary(true);
 
         const payload = {
@@ -531,11 +523,18 @@ export default function Page() {
                     currentModel.summary,
                     res.summaryData || []
                 );
-
+                
                 setAllFormData(prev => ({
                     ...prev,
                     summaryData: prev.summaryData.map(oldRow => {
-                        const updatedRow = formatSummary.find(r => r.key === oldRow.key);
+                        const normalize = s =>
+                            s?.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+                        const updatedRow = formatSummary.find(
+                            r =>
+                                r.key === oldRow.key ||
+                                normalize(r.label) === normalize(oldRow.label)
+                        );
                         if (!updatedRow) return oldRow;
 
                         return {
@@ -544,7 +543,6 @@ export default function Page() {
                         };
                     }),
                 }));
-                console.log("Calculation response:", formatSummary);
             })
 
             .catch(console.error)
@@ -600,7 +598,6 @@ export default function Page() {
                     payload
                 );
 
-                console.log("Version check response:", response);
                 setUpdateVersionMessage(response.message || "");
             } catch (error) {
                 console.error("Version check failed:", error.message);
