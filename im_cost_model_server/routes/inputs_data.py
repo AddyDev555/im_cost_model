@@ -32,6 +32,10 @@ SHEET_ID_MAP = {
     "tube_cost_model":{
         "sheetId": os.getenv("INITIAL_GS_ID_TUBE_COST_MODEL"),
     },
+    "flexible_cost_model":{
+        "sheetId": os.getenv("INITIAL_GS_ID_FLEXIBLE_MODEL"),
+        "sheetId2": os.getenv("INITIAL_GS_ID_FLEXIBLE_MODEL"),
+    }
 }
 
 def convert_percentage_units(data):
@@ -65,16 +69,13 @@ async def get_inputs_data(request: Request):
             raise HTTPException(status_code=400, detail=f"Unknown modelName: {model_name}")
 
         # Map mode to correct sheetId
-        if model_name == "carton_cost_model" and cost_model_key == "Mondeleze":
+        if cost_model_key == "Mondeleze":
             sheet_id = SHEET_ID_MAP[model_name].get("sheetId2")
         else:
             sheet_id = SHEET_ID_MAP[model_name].get("sheetId")
 
         # Inject sheetId into payload for Apps Script
         payload["sheetId"] = sheet_id
-
-        # Optional: remove modelName before sending
-        payload.pop("modelName", None)
         
         # Forward request to Apps Script via POST
         res = requests.post(

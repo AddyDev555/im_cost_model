@@ -10,8 +10,6 @@ from dotenv import load_dotenv
 router = APIRouter()
 load_dotenv()
 
-SHEETS_VERSION = os.getenv("VERSION")
-
 def get_db():
     db = SessionLocal()
     try:
@@ -31,32 +29,51 @@ def send_link(data: dict):
 
     return {"message": "Magic link sent"}
 
+
 @router.post("/verify")
-def verify(
-    data: dict,
-    db: Session = Depends(get_db)
-):
+def verify(data: dict, db: Session = Depends(get_db)):
     token = data.get("token")
-    if not token:
-        raise HTTPException(status_code=400, detail="Token required")
+    email = data.get("email")
+    password = data.get("password")
 
     try:
-        email = verify_magic_token(token)
+        # 🔐 CASE 1: MAGIC LINK AUTH
+        if token:
+            email_from_token = verify_magic_token(token)
+
+            user = db.query(User).filter(User.email == email_from_token).first()
+            if not user:
+                user = User(email=email_from_token, version=1)
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+
+            return {
+                "success": True,
+                "auth_type": "magic_link",
+                "email": email_from_token
+            }
+
+        # 🔑 CASE 2: EMAIL + PASSWORD AUTH
+        if not email or not password:
+            raise HTTPException(
+                status_code=400,
+                detail="Email and password are required"
+            )
 
         user = db.query(User).filter(User.email == email).first()
+        print(user.email)
         if not user:
-            user = User(email=email, version=1)
-            db.add(user)
-            db.commit()
-            db.refresh(user)
+            raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        print(f"Verified user: {email}")
-        
         return {
             "success": True,
+            "auth_type": "password",
             "email": email
         }
 
-    except Exception:
-        print("Invalid or expired token")
-        raise HTTPException(status_code=400, detail="Invalid or expired link")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("Auth error:", str(e))
+        raise HTTPException(status_code=400, detail="Authentication failed")

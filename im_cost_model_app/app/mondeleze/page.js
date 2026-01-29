@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = "force-dynamic";
 import React, { useEffect, useState, useRef } from 'react'
-import { MDZCartonCostModel } from "../costingModels/models";
+import { MDZCartonCostModel, FlexibleCostModel } from "../costingModels/models";
 import SkuDescription from '../calculation_models/sku_description';
 import SlateEditor from '../../components/ui/richTextBox';
 import PDFDownload from '../calculation_models/pdf_download';
@@ -16,40 +16,125 @@ import DataTable from '@/components/ui/data-table';
    SHEET NAME MAP
 ============================ */
 const sheetNameMapping = {
-    im_cost_model: "IM Cost Model",
     carton_cost_model: "Carton Cost Model",
-    corrugate_cost_model: "Corrugate Cost Model",
-    rigid_ebm_cost_model: "Rigid EBM Cost Model",
-    rigid_isbm1_cost_model: "Rigid ISBM1 Cost Model",
-    rigid_isbm2_cost_model: "Rigid ISBM2 Cost Model",
-    tube_cost_model: "Tube Cost Model",
+    flexible_cost_model: "Flexible Cost Model"
 };
 
-const INPUT_SEGMENTS = [
-    {
-        title: "BOARD Inputs",
-        insertAt: "START",
+/* ============================
+   MODEL MAPPING - Maps sheet names to their respective models
+============================ */
+const MODEL_CONFIG = {
+    carton_cost_model: {
+        model: MDZCartonCostModel,
+        inputSegments: [
+            {
+                title: "BOARD Inputs",
+                insertAt: "START",
+            },
+            {
+                title: "CORRUGATION Inputs",
+                afterLabel: "Conversion Wastage",
+            },
+            {
+                title: "FOIL STAMPING Inputs",
+                afterLabel: "Paper Wastage",
+            },
+        ],
+        summarySegments: [
+            {
+                title: "COST Summary",
+                insertAt: "START",
+            },
+            {
+                title: "CORRUGATION Summary",
+                afterLabel: "Labour Cost - Single Side",
+            },
+        ],
     },
-    {
-        title: "CORRUGATION Inputs",
-        afterLabel: "Conversion Wastage",
-    },
-    {
-        title: "FOIL STAMPING Inputs",
-        afterLabel: "Paper Wastage",
-    },
-];
-
-const SUMMARY_SEGMENTS = [
-    {
-        title: "COST Summary",
-        insertAt: "START",
-    },
-    {
-        title: "CORRUGATION Summary",
-        afterLabel: "Labour Cost - Single Side",
-    },
-];
+    flexible_cost_model: {
+        model: FlexibleCostModel,
+        inputSegments: [
+            {
+                title: "Layer 1",
+                afterLabel: "Laminate GSM",
+            },
+            {
+                title: "Layer 2",
+                afterLabel: "L1 Layer Rate",
+            },
+            {
+                title: "Layer 3",
+                afterLabel: "L2 Layer Rate",
+            },
+            {
+                title: "Layer 4",
+                afterLabel: "L3 Layer Rate",
+            },
+            {
+                title: "Layer 5",
+                afterLabel: "L4 Layer Rate",
+            },
+            {
+                title: "Layer 6",
+                afterLabel: "L5 Layer Rate",
+            },
+            {
+                title: "Layer 7",
+                afterLabel: "L6 Layer Rate",
+            },
+            {
+                title: "Layer 8",
+                afterLabel: "L7 Layer Rate",
+            },
+            {
+                title: "Layer 9",
+                afterLabel: "L8 Layer Rate",
+            },
+        ],
+        summarySegments: [
+            {
+                title: "Layer 1",
+                afterLabel: "No of Sleeve per sqm",
+            },
+            {
+                title: "Layer 2",
+                afterLabel: "L1 Layer Cost",
+            },
+            {
+                title: "Layer 3",
+                afterLabel: "L2 Layer Cost",
+            },
+            {
+                title: "Layer 4",
+                afterLabel: "L3 Layer Cost",
+            },
+            {
+                title: "Layer 5",
+                afterLabel: "L4 Layer Cost",
+            },
+            {
+                title: "Layer 6",
+                afterLabel: "L5 Layer Cost",
+            },
+            {
+                title: "Layer 7",
+                afterLabel: "L6 Layer Cost",
+            },
+            {
+                title: "Layer 8",
+                afterLabel: "L7 Layer Cost",
+            },
+            {
+                title: "Layer 9",
+                afterLabel: "L8 Layer Cost",
+            },
+            {
+                title: "Lamination Summary",
+                afterLabel: "L9 Layer Cost",
+            }
+        ],
+    }
+};
 
 /* ============================
    CACHE HELPERS
@@ -69,9 +154,8 @@ export default function Page() {
     const [userCred, setUserCred] = useState("");
     const [actualValues, setActualValues] = useState({});
 
-    const [sheetName, setSheetName] = useState(
-        Object.keys(sheetNameMapping)[0]
-    );
+    const [sheetName, setSheetName] = useState("carton_cost_model");
+
 
     const printDateTime = new Date().toLocaleString("en-IN", {
         day: "2-digit",
@@ -81,7 +165,22 @@ export default function Page() {
         minute: "2-digit",
     });
 
+    /* ============================
+       GET CURRENT MODEL CONFIG
+    ============================ */
+    const getCurrentModelConfig = () => {
+        if (!sheetName) return MODEL_CONFIG.carton_cost_model;
+        return MODEL_CONFIG[sheetName] ?? MODEL_CONFIG.carton_cost_model;
+    };
+    const modelConfig = getCurrentModelConfig();
+    const currentModel = modelConfig?.model;
 
+    if (!currentModel) {
+        console.error("Model not found for sheet:", sheetName);
+    }
+
+    const INPUT_SEGMENTS = getCurrentModelConfig().inputSegments;
+    const SUMMARY_SEGMENTS = getCurrentModelConfig().summarySegments;
 
     /* ============================
        NOTES STATE
@@ -167,10 +266,6 @@ export default function Page() {
         }));
     };
 
-
-
-
-
     /* ============================
      FETCH INPUT DATA
   ============================ */
@@ -215,22 +310,29 @@ export default function Page() {
             const result = await api.post("/api/inputs/get-inputs-data", payload);
 
             if (result?.success && result?.inputData) {
+                console.log("SHEET NAME:", sheetName);
+                console.log("MODEL_CONFIG keys:", Object.keys(MODEL_CONFIG));
+                console.log("MODEL_CONFIG[sheetName]:", MODEL_CONFIG[sheetName]);
+                console.log("CURRENT MODEL:", currentModel);
+                console.log("MODEL INPUTS:", currentModel?.inputs);
+                console.log("FORM DATA:", allFormData);
+
+
 
                 const mappedInputData = mapMDZInputsToTableData(
-                    MDZCartonCostModel.inputs,
+                    currentModel.inputs,
                     result.inputData
                 );
 
                 const mappedSummary = mapMDZInputsToTableData(
-                    MDZCartonCostModel.summary,
+                    currentModel.summary,
                     result.inputData
                 );
 
                 const mappedSKUDescription = mapMDZInputsToTableData(
-                    MDZCartonCostModel.sku_description,
+                    currentModel.sku_description,
                     result.inputData
                 );
-
 
                 const finalData = {
                     ...result,
@@ -373,7 +475,6 @@ export default function Page() {
 
         if (cached && cachedSheet === sheetName) {
             setAllFormData(JSON.parse(cached));
-
             setActualValues({})
         };
     };
@@ -427,7 +528,7 @@ export default function Page() {
                 }
 
                 const formatSummary = mapMDZInputsToTableData(
-                    MDZCartonCostModel.summary,
+                    currentModel.summary,
                     res.summaryData || []
                 );
 
