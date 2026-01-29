@@ -153,6 +153,8 @@ export default function Page() {
     const [updateVersionMessage, setUpdateVersionMessage] = useState("");
     const [userCred, setUserCred] = useState("");
     const [actualValues, setActualValues] = useState({});
+    const [hasCalculatedAfterChange, setHasCalculatedAfterChange] = useState(false);
+
 
     const [sheetName, setSheetName] = useState("carton_cost_model");
 
@@ -251,6 +253,8 @@ export default function Page() {
     };
 
     const handleActualValueChange = (key, newValue) => {
+        setHasCalculatedAfterChange(false);
+
         // 1️⃣ Store actual value for UI
         setActualValues(prev => ({
             ...prev,
@@ -464,6 +468,8 @@ export default function Page() {
        ACTIONS
     ============================ */
     const handleReset = () => {
+        setHasCalculatedAfterChange(false);
+
         const cached = localStorage.getItem(CACHE_KEY);
         const cachedSheet = localStorage.getItem(CACHE_SHEET_KEY);
 
@@ -543,6 +549,8 @@ export default function Page() {
                         };
                     }),
                 }));
+
+                setHasCalculatedAfterChange(true);
             })
 
             .catch(console.error)
@@ -838,7 +846,7 @@ export default function Page() {
                 <div className="print:order-1 order-2">
                     {/* <h3 className="font-bold pb-3 text-sm">Summary</h3> */}
 
-                    {isLoading || loadingSummary ? (
+                    {isLoading ? (
                         <div className="space-y-2">
                             {[0, 1, 2, 3].map(i => (
                                 <div key={i} className="h-8 bg-gray-200 rounded animate-pulse" />
@@ -880,12 +888,23 @@ export default function Page() {
                                     render: (row) => {
                                         if (row.isSegment) return null;
 
-                                        const isContribution =
-                                            row.label?.toLowerCase().includes("contribution");
+                                        // 🔄 Column-only loader (same animation)
+                                        if (loadingSummary) {
+                                            return (
+                                                <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
+                                            );
+                                        }
+
+                                        if (!hasCalculatedAfterChange) return "--";
+
+                                        const label = row.label?.toLowerCase() || "";
+                                        const isPercentage =
+                                            label.includes("contribution") ||
+                                            label.includes("wastage");
 
                                         const displayValue =
-                                            isContribution && typeof row.value === "number"
-                                                ? `${(row.value * 100).toFixed(2)}`
+                                            isPercentage && typeof row.value === "number"
+                                                ? (row.value * 100).toFixed(2)
                                                 : row.value;
 
                                         return (
