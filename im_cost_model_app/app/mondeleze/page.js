@@ -1,7 +1,7 @@
 'use client';
 export const dynamic = "force-dynamic";
 import React, { useEffect, useState, useRef } from 'react'
-import { MDZCartonCostModel, FlexibleCostModel } from "../costingModels/models";
+import { MDZCartonCostModel, FlexibleCostModel2 } from "../costingModels/models";
 import SkuDescription from '../calculation_models/sku_description';
 import SlateEditor from '../../components/ui/richTextBox';
 import PDFDownload from '../calculation_models/pdf_download';
@@ -28,17 +28,37 @@ const MODEL_CONFIG = {
         model: MDZCartonCostModel,
         inputSegments: [
             {
-                title: "BOARD Inputs",
+                title: "Flat Size",
                 insertAt: "START",
             },
             {
-                title: "CORRUGATION Inputs",
-                afterLabel: "Conversion Wastage",
+                title: "BOARD",
+                afterLabel: "No of UPs placed Widthwise",
             },
             {
-                title: "FOIL STAMPING Inputs",
-                afterLabel: "Paper Wastage",
+                title: "INK",
+                afterLabel: "Board Rate",
             },
+            {
+                title: "VARNISH",
+                afterLabel: "UV Ink Rate",
+            },
+            {
+                title: "LAMINATION",
+                afterLabel: "Primer Rate",
+            },
+            {
+                title: "Corrugation",
+                afterLabel: "Labour Cost",
+            },
+            {
+                title: "FOIL STAMPING",
+                afterLabel: "Corrugation Conversion Cost",
+            },
+            {
+                title:"CONVERSION COSTS",
+                afterLabel:"Other Costs",
+            }
         ],
         summarySegments: [
             {
@@ -52,7 +72,7 @@ const MODEL_CONFIG = {
         ],
     },
     flexible_cost_model: {
-        model: FlexibleCostModel,
+        model: FlexibleCostModel2,
         inputSegments: [
             {
                 title: "Layer 1",
@@ -75,26 +95,14 @@ const MODEL_CONFIG = {
                 afterLabel: "L4 Layer Rate",
             },
             {
-                title: "Layer 6",
+                title: "Conversion cost",
                 afterLabel: "L5 Layer Rate",
-            },
-            {
-                title: "Layer 7",
-                afterLabel: "L6 Layer Rate",
-            },
-            {
-                title: "Layer 8",
-                afterLabel: "L7 Layer Rate",
-            },
-            {
-                title: "Layer 9",
-                afterLabel: "L8 Layer Rate",
-            },
+            }
         ],
         summarySegments: [
             {
                 title: "Layer 1",
-                afterLabel: "No of Sleeve per sqm",
+                insertAt: "START",
             },
             {
                 title: "Layer 2",
@@ -113,25 +121,9 @@ const MODEL_CONFIG = {
                 afterLabel: "L4 Layer Cost",
             },
             {
-                title: "Layer 6",
+                title: "Lamination Summary",
                 afterLabel: "L5 Layer Cost",
             },
-            {
-                title: "Layer 7",
-                afterLabel: "L6 Layer Cost",
-            },
-            {
-                title: "Layer 8",
-                afterLabel: "L7 Layer Cost",
-            },
-            {
-                title: "Layer 9",
-                afterLabel: "L8 Layer Cost",
-            },
-            {
-                title: "Lamination Summary",
-                afterLabel: "L9 Layer Cost",
-            }
         ],
     }
 };
@@ -784,7 +776,7 @@ export default function Page() {
                                 },
                                 { title: "Unit", key: "unit" },
                                 {
-                                    title: "Recommended Value",
+                                    title: "Existing Cost",
                                     key: "recommendedValue",
                                     render: (row) =>
                                         row.isSegment ? null : (
@@ -796,7 +788,7 @@ export default function Page() {
                                         )
                                 },
                                 {
-                                    title: "Actual Value",
+                                    title: "New Cost",
                                     key: "actual",
                                     render: (row) => {
                                         if (row.isSegment) return null;
@@ -873,7 +865,7 @@ export default function Page() {
                                     render: (row) => (row.isSegment ? null : row.unit),
                                 },
                                 {
-                                    title: "Recommended Value",
+                                    title: "Existing Cost",
                                     key: "recommendedValue",
                                     render: (row) =>
                                         row.isSegment ? null : (
@@ -883,7 +875,7 @@ export default function Page() {
                                         ),
                                 },
                                 {
-                                    title: "Actual Value",
+                                    title: "New Cost",
                                     key: "value",
                                     render: (row) => {
                                         if (row.isSegment) return null;
