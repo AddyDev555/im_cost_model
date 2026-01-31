@@ -80,23 +80,23 @@ const MODEL_CONFIG = {
             },
             {
                 title: "Layer 2",
-                afterLabel: "L1 Layer Rate",
+                afterLabel: "Layer 1 Rate",
             },
             {
                 title: "Layer 3",
-                afterLabel: "L2 Layer Rate",
+                afterLabel: "Layer 2 Rate",
             },
             {
                 title: "Layer 4",
-                afterLabel: "L3 Layer Rate",
+                afterLabel: "Layer 3 Rate",
             },
             {
                 title: "Layer 5",
-                afterLabel: "L4 Layer Rate",
+                afterLabel: "Layer 4 Rate",
             },
             {
                 title: "Conversion cost",
-                afterLabel: "L5 Layer Rate",
+                afterLabel: "Layer 5 Rate",
             }
         ],
         summarySegments: [
@@ -106,23 +106,23 @@ const MODEL_CONFIG = {
             },
             {
                 title: "Layer 2",
-                afterLabel: "L1 Layer Cost",
+                afterLabel: "Layer 1 Cost",
             },
             {
                 title: "Layer 3",
-                afterLabel: "L2 Layer Cost",
+                afterLabel: "Layer 2 Cost",
             },
             {
                 title: "Layer 4",
-                afterLabel: "L3 Layer Cost",
+                afterLabel: "Layer 3 Cost",
             },
             {
                 title: "Layer 5",
-                afterLabel: "L4 Layer Cost",
+                afterLabel: "Layer 4 Cost",
             },
             {
                 title: "Lamination Summary",
-                afterLabel: "L5 Layer Cost",
+                afterLabel: "Layer 5 Cost",
             },
         ],
     }
