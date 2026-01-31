@@ -56,8 +56,8 @@ const MODEL_CONFIG = {
                 afterLabel: "Corrugation Conversion Cost",
             },
             {
-                title:"CONVERSION COSTS",
-                afterLabel:"Other Costs",
+                title: "CONVERSION COSTS",
+                afterLabel: "Other Costs",
             }
         ],
         summarySegments: [
@@ -101,28 +101,12 @@ const MODEL_CONFIG = {
         ],
         summarySegments: [
             {
-                title: "Layer 1",
-                insertAt: "START",
-            },
-            {
-                title: "Layer 2",
-                afterLabel: "Layer 1 Cost",
-            },
-            {
-                title: "Layer 3",
-                afterLabel: "Layer 2 Cost",
-            },
-            {
-                title: "Layer 4",
-                afterLabel: "Layer 3 Cost",
-            },
-            {
-                title: "Layer 5",
-                afterLabel: "Layer 4 Cost",
+                title: "Material Cost",
+                afterLabel: "Laminate Cost SQM",
             },
             {
                 title: "Lamination Summary",
-                afterLabel: "Layer 5 Cost",
+                insertAt: "START",
             },
         ],
     }
@@ -608,6 +592,27 @@ export default function Page() {
         versionCheck(JSON.parse(localStorage.getItem("user_cred"))?.email);
     }, []);
 
+
+    const NO_UNIT_LABELS = new Set([
+        "Carton Cost",
+        "Board Cost",
+        "Ink Cost",
+        "Varnish Cost",
+        "Lamination Cost",
+        "Corrugation Cost",
+        "Foil Cost",
+        "Other Material Cost",
+        "Conversion cost",
+        "Packing Cost",
+        "Carton Cost",
+        "Layer 1 Cost",
+        "Layer 2 Cost",
+        "Layer 3 Cost",
+        "Layer 4 Cost",
+        "Layer 5 Cost",
+    ]);
+
+
     /* ============================
        RENDER
     ============================ */
@@ -850,29 +855,68 @@ export default function Page() {
                                 {
                                     title: "Label",
                                     key: "label",
-                                    render: (row) =>
-                                        row.isSegment ? (
-                                            <div className="py-2 font-bold text-sm uppercase text-violet-700">
+                                    render: (row) => {
+                                        if (row.isSegment) {
+                                            return (
+                                                <div className="py-2 font-bold text-sm uppercase text-violet-700">
+                                                    {row.label}
+                                                </div>
+                                            );
+                                        }
+
+                                        const isImportant =
+                                            row.label === "Laminate Cost" ||
+                                            row.label === "Carton Cost";
+
+                                        return (
+                                            <span className={isImportant ? "font-bold text-black" : ""}>
                                                 {row.label}
-                                            </div>
-                                        ) : (
-                                            row.label
-                                        ),
+                                            </span>
+                                        );
+                                    },
+
                                 },
                                 {
                                     title: "Unit",
                                     key: "unit",
-                                    render: (row) => (row.isSegment ? null : row.unit),
+                                    render: (row) => {
+                                        if (row.isSegment) return null;
+
+                                        // if (NO_UNIT_LABELS.has(row.label)) {
+                                        //     return null; // 🚫 hide unit
+                                        // }
+
+                                        const isImportant =
+                                            row.label === "Laminate Cost" ||
+                                            row.label === "Carton Cost";
+
+                                        return (
+                                            <span className={isImportant ? "font-bold" : ""}>
+                                                {row.unit}
+                                            </span>
+                                        );
+                                    },
                                 },
                                 {
                                     title: "Existing Cost",
                                     key: "recommendedValue",
-                                    render: (row) =>
-                                        row.isSegment ? null : (
-                                            <span className="text-gray-500">
+                                    render: (row) => {
+                                        if (row.isSegment) return null;
+
+                                        const isImportant =
+                                            row.label === "Laminate Cost" ||
+                                            row.label === "Carton Cost";
+
+                                        return (
+                                            <span
+                                                className={`text-gray-500 ${isImportant ? "font-bold text-black" : ""
+                                                    }`}
+                                            >
                                                 {row.recommendedValue}
                                             </span>
-                                        ),
+                                        );
+                                    },
+
                                 },
                                 {
                                     title: "New Cost",
@@ -899,8 +943,12 @@ export default function Page() {
                                                 ? (row.value * 100).toFixed(2)
                                                 : row.value;
 
+                                        const isImportant =
+                                            row.label === "Laminate Cost" ||
+                                            row.label === "Carton Cost";
+
                                         return (
-                                            <span className="font-semibold">
+                                            <span className={isImportant ? "font-bold text-black" : "font-semibold"}>
                                                 {displayValue}
                                             </span>
                                         );

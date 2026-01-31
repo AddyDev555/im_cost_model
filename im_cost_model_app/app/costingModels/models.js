@@ -1044,16 +1044,17 @@ export const FlexibleCostModel2 = {
         "conversion_cost": "Conversion Cost",
     },
     summary: {
+        "material_cost": "Material Cost",
+        "total_waste": "Total Waste",
+        "total_material_cost": "Total Material Cost",
+        "conversion_cost": "Conversion Cost",
+        "packing_cost": "Packing Cost",
+        "laminate_cost": "Laminate Cost",
+        "laminate_cost_sqm": "Laminate Cost SQM",
         "layer_1_cost": "Layer 1 Cost",
         "layer_2_cost": "Layer 2 Cost",
         "layer_3_cost": "Layer 3 Cost",
         "layer_4_cost": "Layer 4 Cost",
         "layer_5_cost": "Layer 5 Cost",
-        "material_cost": "Material Cost",
-        "total_waste": "Total Waste",
-        "total_material_cost": "Total Material Cost",
-        "packing_cost": "Packing Cost",
-        "laminate_cost": "Laminate Cost",
-        "laminate_cost_sqm": "Laminate Cost SQM"
     }
 }
