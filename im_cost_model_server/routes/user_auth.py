@@ -61,8 +61,8 @@ def verify(data: dict, db: Session = Depends(get_db)):
                 detail="Email and password are required"
             )
 
-        user = db.query(User).filter(User.email == email).first()
-        print(user.email)
+        user = db.query(User).filter(User.email == email and User.password == password).first()
+        print(user.email, user.password)
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
