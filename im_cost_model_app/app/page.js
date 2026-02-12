@@ -268,7 +268,10 @@ export default function Page() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!userCred) {
+    const cred = localStorage.getItem("user_cred");
+
+
+    if (!cred) {
       toast.warning("Please Login to Calculate!");
       return;
     }
@@ -298,7 +301,7 @@ export default function Page() {
     const payload = {
       mode: "update",
       modelName: finalModelName,
-      email: JSON.parse(userCred).email,
+      email: JSON.parse(cred).email,
       inputData: allFormData.inputData || [],
     };
 

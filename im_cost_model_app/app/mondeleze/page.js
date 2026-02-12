@@ -157,6 +157,14 @@ export default function Page() {
         console.error("Model not found for sheet:", sheetName);
     }
 
+    const formatSummaryValue = (value) => {
+        if (typeof value === "number") {
+            return Math.round(value); // 🔥 no decimals
+        }
+        return value ?? "--";
+    };
+
+
     const INPUT_SEGMENTS = getCurrentModelConfig().inputSegments;
     const SUMMARY_SEGMENTS = getCurrentModelConfig().summarySegments;
 
@@ -462,7 +470,9 @@ export default function Page() {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        if (!userCred) {
+        const cred = localStorage.getItem("user_cred");
+
+        if (!cred) {
             toast.warning("Please Login to Calculate!");
             return;
         }
@@ -487,7 +497,7 @@ export default function Page() {
         const payload = {
             mode: "update",
             modelName: `${sheetName}_v2`,
-            email: JSON.parse(userCred).email,
+            email: JSON.parse(cred).email,
             inputData: allFormData.inputData || [],
             costModelKey: "Mondeleze"
         };
@@ -912,7 +922,7 @@ export default function Page() {
                                                 className={`text-gray-500 ${isImportant ? "font-bold text-black" : ""
                                                     }`}
                                             >
-                                                {row.recommendedValue}
+                                                {formatSummaryValue(row.recommendedValue)}
                                             </span>
                                         );
                                     },
@@ -938,10 +948,14 @@ export default function Page() {
                                             label.includes("contribution") ||
                                             label.includes("wastage");
 
-                                        const displayValue =
-                                            isPercentage && typeof row.value === "number"
-                                                ? (row.value * 100).toFixed(2)
-                                                : row.value;
+                                        let displayValue;
+
+                                        if (isPercentage && typeof row.value === "number") {
+                                            displayValue = Math.round(row.value * 100); // % → integer
+                                        } else {
+                                            displayValue = formatSummaryValue(row.value); // cost → integer
+                                        }
+
 
                                         const isImportant =
                                             row.label === "Laminate Cost" ||

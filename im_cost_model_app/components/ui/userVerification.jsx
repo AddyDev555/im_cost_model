@@ -11,16 +11,13 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Loader2, Mail, LogOut, Lock } from "lucide-react"
+import { Loader2, LogOut, Lock } from "lucide-react"
 import { api } from "@/utils/api"
 
-export default function MagicLinkDialog() {
+export default function LoginDialog() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
-    const [loginType, setLoginType] = useState("magic")
-
     const [loading, setLoading] = useState(false)
-    const [sent, setSent] = useState(false)
     const [error, setError] = useState("")
     const [storedEmail, setStoredEmail] = useState(null)
     const [showMenu, setShowMenu] = useState(false)
@@ -38,25 +35,9 @@ export default function MagicLinkDialog() {
         setShowMenu(false)
     }
 
-    async function sendMagicLink() {
-        if (!email) return setError("Email is required")
-
-        setLoading(true)
-        setError("")
-
-        try {
-            await api.post("/api/auth/send-magic-link", { email })
-            setSent(true)
-        } catch (err) {
-            setError(err?.response?.data?.detail || "Something went wrong")
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    async function handleEmailLogin() {
+    async function handleLogin() {
         if (!email || !password) {
-            return setError("Email and password are required")
+            return setError("Username and password are required")
         }
 
         setLoading(true)
@@ -77,8 +58,7 @@ export default function MagicLinkDialog() {
             await api.post("/api/init/init-sheets", {
                 mode: "init",
                 email: res.email,
-            });
-
+            })
         } catch (err) {
             setError(err?.response?.data?.detail || "Invalid credentials")
         } finally {
@@ -123,125 +103,58 @@ export default function MagicLinkDialog() {
                 <DialogHeader>
                     <DialogTitle>Login</DialogTitle>
                     <DialogDescription>
-                        Choose how you want to sign in
+                        Enter your username and password
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* 🔀 LOGIN TYPE TOGGLE */}
-                <div className="flex gap-2 mb-4">
-                    <Button
-                        type="button"
-                        variant={loginType === "magic" ? "default" : "outline"}
-                        onClick={() => {
-                            setLoginType("magic")
-                            setError("")
-                            setSent(false)
-                        }}
-                    >
-                        Magic Link
-                    </Button>
-
-                    <Button
-                        type="button"
-                        variant={loginType === "password" ? "default" : "outline"}
-                        onClick={() => {
-                            setLoginType("password")
-                            setError("")
-                            setSent(false)
-                        }}
-                    >
-                        Email & Password
-                    </Button>
-                </div>
-
-                {/* MAGIC LINK */}
-                {loginType === "magic" && (
-                    <>
-                        {sent ? (
-                            <p className="text-sm text-green-600">
-                                ✅ Magic link sent! Check your inbox.
-                            </p>
-                        ) : (
-                            <form
-                                onSubmit={(e) => {
-                                    e.preventDefault()
-                                    sendMagicLink()
-                                }}
-                                className="space-y-3"
-                            >
-                                <Input
-                                    type="email"
-                                    placeholder="you@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-
-                                {error && (
-                                    <p className="text-sm text-red-500">{error}</p>
-                                )}
-
-                                <Button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full bg-violet-500 hover:bg-violet-600"
-                                >
-                                    {loading ? (
-                                        <Loader2 className="animate-spin" />
-                                    ) : (
-                                        <>
-                                            <Mail className="mr-2 h-4 w-4" />
-                                            Send Magic Link
-                                        </>
-                                    )}
-                                </Button>
-                            </form>
-                        )}
-                    </>
-                )}
-
-                {/* EMAIL + PASSWORD */}
-                {loginType === "password" && (
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault()
-                            handleEmailLogin()
-                        }}
-                        className="space-y-3"
-                    >
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault()
+                        handleLogin()
+                    }}
+                    className="space-y-4"
+                >
+                    <div className="space-y-1">
+                        <label htmlFor="username" className="text-xs font-medium text-gray-700">Username</label>
                         <Input
-                            type="email"
-                            placeholder="you@example.com"
+                            id="username"
+                            type="text"
+                            placeholder="eg: JohnDoe"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
+                    </div>
 
+                    <div className="space-y-1">
+                        <label htmlFor="password" className="text-xs font-medium text-gray-700">Password</label>
                         <Input
+                            id="password"
                             type="password"
-                            placeholder="••••••••"
+                            placeholder="**********"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
+                    </div>
 
-                        {error && (
-                            <p className="text-sm text-red-500">{error}</p>
+                    {error && (
+                        <p className="text-sm text-red-500">{error}</p>
+                    )}
+
+                    <Button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-violet-500 hover:bg-violet-600"
+                    >
+                        {loading ? (
+                            <Loader2 className="animate-spin" />
+                        ) : (
+                            <>
+                                <Lock className="mr-2 h-4 w-4" />
+                                Login
+                            </>
                         )}
-
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-violet-500 hover:bg-violet-600"
-                        >
-                            {loading ? (
-                                <Loader2 className="animate-spin" />
-                            ) : (
-                                <>
-                                    <Lock className="mr-2 h-4 w-4" />
-                                    Login / Sign up
-                                </>
-                            )}
-                        </Button>
-                    </form>
-                )}
+                    </Button>
+                </form>
             </DialogContent>
         </Dialog>
     )
